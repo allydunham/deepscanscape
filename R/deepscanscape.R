@@ -11,6 +11,5 @@
 #'
 #' @docType package
 #' @name deepscanscape
-#' @import dplyr
 NULL
 #>NULL

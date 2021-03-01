@@ -10,4 +10,4 @@
 #' }
 #'
 #' @source \href{https://www.biorxiv.org/content/10.1101/2020.05.26.116756v1}{Dunham and Beltrao (2020)}
-#"deepmutationalscans"
+"deep_mutational_scans"
