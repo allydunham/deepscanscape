@@ -2,10 +2,16 @@
 % Please edit documentation in R/standardise.R
 \name{normalise_dms}
 \alias{normalise_dms}
-\title{Normalise DMS data}
+\title{Normalise deep mutational scanning fitness scores}
 \usage{
-normalise_dms(x)
+normalise_dms(x, q = 0.1)
+}
+\arguments{
+\item{x}{Vector of fitness scores}
+
+\item{q}{Quantile to normalise against. Values other than 0.1 differ from
+those used in the combined dataset}
 }
 \description{
-Normalise DMS data
+Normalise deep mutational scanning fitness scores
 }

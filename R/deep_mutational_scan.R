@@ -1,49 +1,166 @@
 # S3 class / attributes thing to store a dms dataset
+# TODO - Test these funcs
 
-# TODO - Store attributes to specify state or use list?
-# TODO - data frame or tibble?
 #' Deep mutational scan data
 #'
 #' Store deep mutational scanning data in a standardised format, alongside
 #' metadata describing the state of the data. The primary data is contained in
-#' a data frame
+#' a tibble
 #'
-#' @param x A data frame to parse
-#' @param format Original data format (see description)
+#' @param df A data frame to parse
+#' @param scheme Original data scheme (see \code{\link{parse_dms_data}})
+#' @param trans Function to transform scores onto the standard scale.
+#' Accepts a string corresponding to known transforms (see details) or a custom
+#' function.
+#' @param na_value Value to set missense NA scores to
+#' @param wt_value Value to set synonymous NA scores to
+#' @param study Source of the deep mutational scan
+#' @param gene Gene scanned
 #' @return A deep mutational scan S3 object
 #' @export
-deep_mutational_scan <- function(x){
+deep_mutational_scan <- function(df, scheme=NULL, trans=NULL, na_value=0,
+                                 wt_value=0, study=NULL, gene=NULL) {
 
-  class(x) <- c('deep_mutational_scan', class(x))
-  return(x)
+  # Initialise object
+  out <- list(study = study, gene = gene)
+  class(out) <- c("deep_mutational_scan", class(out))
+
+  # Parse scheme
+  if (!is.null(scheme)) {
+    df <- parse_dms_data(df, scheme)
+  } else {
+    df <- tibble::as_tibble(df)
+    if (!all(c("position", "wt", "mut", "score") %in% names(df))) {
+      stop("Incorrect input df, must include position, wt, mut and score columns")
+    }
+    df <- dplyr::select(df, .data$position, .data$wt, .data$mut, .data$score, dplyr::everything())
+  }
+
+  # Transform
+  if (!is.null(trans)) {
+    df$score <- transform_dms(df$score, trans)
+  }
+
+  # Normalise
+  df$score <- normalise_dms(df$score)
+
+  # Format tibble
+  amino_acids <- c("A", "C", "D", "E", "F", "G", "H", "I", "K", "L",
+                   "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y")
+  df <- df[df$mut %in% amino_acids, ]
+  df <- dplyr::arrange(df, .data$position, .data$mut)
+  df[df$wt == df$mut & is.na(df$score), "score"] <- wt_value
+  df <- tidyr::pivot_wider(df, names_from = "mut", values_from = "score")
+  df <- dplyr::select(df, .data$position, .data$wt, {{ amino_acids }}, dplyr::everything())
+
+  # Impute
+  # TODO - Not implemented yet
+  # TODO - Keep track of rows with too many missing?
+  # TODO - Do we need to impute here? possibly not necessary
+
+  # Set attributes
+  out$data <- df
+  return(out)
 }
 
-#' Print method for Deep Mutational Scans
+# TODO - implement other generics (length, dim, etc.)
+#' General S3 Methods for Deep Mutational Scans
 #'
-#' @export
-print.deep_mutational_scan <- function(x, ...){
+#' @param x,object \link{deep_mutational_scan} object
+#' @param ... Additional arguments
+#'
+#' @name dms_s3
+NULL
+#> NULL
 
+# TODO - Pretty print when extra columns added
+#' @describeIn dms_s3 S3 print method
+#' @export
+format.deep_mutational_scan <- function(x, ...) {
+  out <- c(paste("# A deep_mutational_scan"),
+           paste("# Study:", ifelse(is.null(x$study), "Unknown", x$study)),
+           paste("# Gene:", ifelse(is.null(x$gene), "Unknown", x$gene)),
+           paste("#", nrow(x$data), "positions"),
+           "# Positional data:",
+           format(x$data)[-1])
+
+  if (requireNamespace("crayon", quietly = TRUE)) {
+    out[1:5] <- crayon::make_style("darkgrey")(out[1:5])
+  }
+
+  return(out)
 }
 
-#' Summary method for Deep Mutational Scans
-#'
+#' @describeIn dms_s3 S3 print method
 #' @export
-summary.deep_mutational_scan <- function(object, ...){
-
+print.deep_mutational_scan <- function(x, ...) {
+  cat(format(x, ...), sep = "\n")
 }
 
-#' Autoplot method for Deep Mutational Scans
+#' @describeIn dms_s3 S3 str method
+#' @export
+str.deep_mutational_scan <- function(object, ...) {
+  stop("Not implemented yet")
+}
+
+
+#' @describeIn dms_s3 S3 as_tibble method
+#' @importFrom tibble as_tibble
+#' @export
+as_tibble.deep_mutational_scan <- function(x, ...) { # nolint
+  return(x$data)
+}
+
+#' @describeIn dms_s3  S3 as.data.frame method
+#' @export
+as.data.frame.deep_mutational_scan <- function(x, ...) {
+  return(as.data.frame(as_tibble(x, ...)))
+}
+
+# Create tibble with study and gene columns
+to_full_tibble <- function(x) {
+  out <- tibble::as_tibble(x)
+  out$study <- x$study
+  out$gene <- x$gene
+  return(dplyr::select(out, .data$study, .data$gene, dplyr::everything()))
+}
+
+#' Combine deep mutational scan data
+#'
+#' @param ... \link{deep_mutational_scan} objects to combine
 #'
 #' @export
+rbind.deep_mutational_scan <- function(...) {
+  dplyr::bind_rows(lapply(list(...), to_full_tibble))
+}
+
+# TODO - Need output object for this?
+#' Summarise Deep Mutational Scans
+#'
+#' @param object A \link{deep_mutational_scan} object.
+#' @param ... Additional arguments
+#'
+#' @export
+summary.deep_mutational_scan <- function(object, ...) {
+  stop("Not implemented yet")
+}
+
+#' Summary plot for Deep Mutational Scans
+#'
+#' @param object,x \link{deep_mutational_scan} to produce a
+#' summary plot for.
+#' @param ... Additional parameters
+#'
+#' @export
+#' @name dms_plot
 #' @importFrom ggplot2 autoplot
-autoplot.deep_mutational_scan <- function(x, ...){
-
+autoplot.deep_mutational_scan <- function(object, ...){ # nolint
+  stop("Not implemented yet")
 }
 
-#' Plot method for Deep Mutational Scans
-#'
+#' @describeIn dms_plot S3 plot method
 #' @export
 #' @importFrom graphics plot
-plot.deep_mutational_scan <- function(x, ...){
+plot.deep_mutational_scan <- function(x, ...) {
   print(autoplot(x, ...))
 }

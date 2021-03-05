@@ -6,6 +6,9 @@
 \usage{
 compare_dms(x)
 }
+\arguments{
+\item{x}{\link{deep_mutational_scan} to analyse}
+}
 \description{
 Compare a new DMS dataset to the combined landscape
 }

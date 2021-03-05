@@ -6,6 +6,9 @@
 \usage{
 recluster_dms(x)
 }
+\arguments{
+\item{x}{\link{deep_mutational_scan} to recluster}
+}
 \description{
 Recluster DMS data with a combined dataset
 }

@@ -2,10 +2,15 @@
 % Please edit documentation in R/deep_mutational_scan.R
 \name{summary.deep_mutational_scan}
 \alias{summary.deep_mutational_scan}
-\title{Summary method for Deep Mutational Scans}
+\title{Summarise Deep Mutational Scans}
 \usage{
-\method{summary}{deep_mutational_scan}(x, ...)
+\method{summary}{deep_mutational_scan}(object, ...)
+}
+\arguments{
+\item{object}{A \link{deep_mutational_scan} object.}
+
+\item{...}{Additional arguments}
 }
 \description{
-Summary method for Deep Mutational Scans
+Summarise Deep Mutational Scans
 }

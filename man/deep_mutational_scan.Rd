@@ -4,12 +4,32 @@
 \alias{deep_mutational_scan}
 \title{Deep mutational scan data}
 \usage{
-deep_mutational_scan(x)
+deep_mutational_scan(
+  df,
+  scheme = NULL,
+  trans = NULL,
+  na_value = 0,
+  wt_value = 0,
+  study = NULL,
+  gene = NULL
+)
 }
 \arguments{
-\item{x}{A data frame to parse}
+\item{df}{A data frame to parse}
 
-\item{format}{Original data format (see description)}
+\item{scheme}{Original data scheme (see \code{\link{parse_dms_data}})}
+
+\item{trans}{Function to transform scores onto the standard scale.
+Accepts a string corresponding to known transforms (see details) or a custom
+function.}
+
+\item{na_value}{Value to set missense NA scores to}
+
+\item{wt_value}{Value to set synonymous NA scores to}
+
+\item{study}{Source of the deep mutational scan}
+
+\item{gene}{Gene scanned}
 }
 \value{
 A deep mutational scan S3 object
@@ -17,5 +37,5 @@ A deep mutational scan S3 object
 \description{
 Store deep mutational scanning data in a standardised format, alongside
 metadata describing the state of the data. The primary data is contained in
-a data frame
+a tibble
 }

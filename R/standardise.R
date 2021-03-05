@@ -1,33 +1,55 @@
 # Normalise and standardise DMS scores
+# TODO - test functions
+# TODO - Add additional transforms
 
-# TODO - should this go from a df? or somehow opperate on vectors (might be hard if using wide format)
-#' Normalise DMS data
+#' Normalise deep mutational scanning fitness scores
+#'
+#' @param x Vector of fitness scores
+#' @param q Quantile to normalise against. Values other than 0.1 differ from
+#' those used in the combined dataset
 #'
 #' @export
-normalise_dms <- function(x){
-
+normalise_dms <- function(x, q=0.1) {
+  q <- stats::quantile(x, q, na.rm = TRUE)
+  return(x / -stats::median(x[x <= q], na.rm = TRUE))
 }
 
 #' Again, could work on df or vector, probably df
 #' Standardise DMS data
 #'
+#' @param x Vector of fitness scores
+#' @param trans Transform to apply (see description). Accepts either a
+#' string or function
+#' @param base Log base of current scores (used for log transform)
+#'
 #' @export
-standardise_dms <- function(x){
+transform_dms <- function(x, trans, base=2) {
+  methods <- c("vamp-Seq" = transform_vamp,
+              "log" = transform_log,
+              "unit" = transform_unit)
 
+  if (is.character(trans)) {
+    ind <- pmatch(stringr::str_to_lower(trans), names(methods))
+    if (is.na(ind)) {
+      stop(paste0("Unrecognised transform \"", trans, "\"\n",
+                  "Recognised options: ", paste(methods, collapse = ", ")))
+    }
+    trans <- methods[[ind]]
+  }
+
+  return(trans(x, base))
 }
 
-# TODO - export these?
-#' Standardise VAMP type DMS data
-standardise_vamp <- function(x){
-
+# Transform data pro
+transform_vamp <- function(x, ...) {
+  y <- 1 + (x - 1) / -min(x - 1, na.rm = TRUE)
+  return(log2(y + min(y[y > 0], na.rm = TRUE)))
 }
 
-#' Standardise log scaled DMS data
-standardise_log <- function(x, base=2){
-
+transform_log <- function(x, base=2, ...) {
+  stop("Not implemented yet")
 }
 
-#' Standardise 0-1 type DMS data
-standardise_unit <- function(x){
-
+transform_unit <- function(x, ...) {
+  stop("Not implemented yet")
 }

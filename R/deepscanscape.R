@@ -17,3 +17,4 @@ NULL
 
 # TODO - Add examples to all functions
 # TODO - Add vignettes
+# TODO - Where to process counts?
