@@ -4,3 +4,4 @@
 ^\.github$
 ^data_raw$
 ^\.lintr$
+^test_data\.R$

@@ -8,8 +8,8 @@ deep_mutational_scan(
   df,
   scheme = NULL,
   trans = NULL,
-  na_value = 0,
-  wt_value = 0,
+  na_value = "impute",
+  annotate = TRUE,
   study = NULL,
   gene = NULL
 )
@@ -19,13 +19,12 @@ deep_mutational_scan(
 
 \item{scheme}{Original data scheme (see \code{\link{parse_dms_data}})}
 
-\item{trans}{Function to transform scores onto the standard scale.
-Accepts a string corresponding to known transforms (see details) or a custom
-function.}
+\item{trans}{Function to transform scores onto the standard scale. Accepts a string corresponding to known transforms
+or a custom function (\code{\link{transform_dms}}).}
 
-\item{na_value}{Value to set missense NA scores to}
+\item{na_value}{Value to set missense NA scores to (see \code{\link{impute_dms}})}
 
-\item{wt_value}{Value to set synonymous NA scores to}
+\item{annotate}{Annotate the dataset with mutational landscape data (PCA, UMAP and amino acid subtypes)}
 
 \item{study}{Source of the deep mutational scan}
 

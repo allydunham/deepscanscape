@@ -9,20 +9,19 @@
 #'
 #' @param df A data frame to parse
 #' @param scheme Original data scheme (see \code{\link{parse_dms_data}})
-#' @param trans Function to transform scores onto the standard scale.
-#' Accepts a string corresponding to known transforms (see details) or a custom
-#' function.
-#' @param na_value Value to set missense NA scores to
-#' @param wt_value Value to set synonymous NA scores to
+#' @param trans Function to transform scores onto the standard scale. Accepts a string corresponding to known transforms
+#' or a custom function (\code{\link{transform_dms}}).
+#' @param na_value Value to set missense NA scores to (see \code{\link{impute_dms}})
+#' @param annotate Annotate the dataset with mutational landscape data (PCA, UMAP and amino acid subtypes)
 #' @param study Source of the deep mutational scan
 #' @param gene Gene scanned
 #' @return A deep mutational scan S3 object
 #' @export
-deep_mutational_scan <- function(df, scheme=NULL, trans=NULL, na_value=0,
-                                 wt_value=0, study=NULL, gene=NULL) {
+deep_mutational_scan <- function(df, scheme=NULL, trans=NULL, na_value="impute",
+                                 annotate=TRUE, study=NULL, gene=NULL) {
 
   # Initialise object
-  out <- list(study = study, gene = gene)
+  out <- list(study = study, gene = gene, annotated = FALSE)
   class(out) <- c("deep_mutational_scan", class(out))
 
   # Parse scheme
@@ -45,22 +44,78 @@ deep_mutational_scan <- function(df, scheme=NULL, trans=NULL, na_value=0,
   df$score <- normalise_dms(df$score)
 
   # Format tibble
-  amino_acids <- c("A", "C", "D", "E", "F", "G", "H", "I", "K", "L",
-                   "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y")
   df <- df[df$mut %in% amino_acids, ]
   df <- dplyr::arrange(df, .data$position, .data$mut)
-  df[df$wt == df$mut & is.na(df$score), "score"] <- wt_value
   df <- tidyr::pivot_wider(df, names_from = "mut", values_from = "score")
-  df <- dplyr::select(df, .data$position, .data$wt, {{ amino_acids }}, dplyr::everything())
-
-  # Impute
-  # TODO - Not implemented yet
-  # TODO - Keep track of rows with too many missing?
-  # TODO - Do we need to impute here? possibly not necessary
+  df <- dplyr::select(df, .data$position, .data$wt, amino_acids, dplyr::everything())
 
   # Set attributes
   out$data <- df
+
+  # Impute
+  if (!(is.na(na_value) | is.null(na_value))) {
+    out <- impute_dms(out)
+  }
+
+  # Annotate
+  if (annotate) {
+    out <- annotate_dms(out)
+  }
+
   return(out)
+}
+
+# TODO Document this fully - [ and [[ go to data tbl, $ goes to list
+#' Extracting and replacing deep mutational scanning data
+#'
+#' @param x \link{deep_mutational_scan} object
+#' @param i,j,... Indeces to access
+#' @param drop Coerce result to lowest possible dimension
+#' @param exact Ignored for tibbles (which is the underlying data structure)
+#' @param value Value to set
+#'
+#' @name dms_extract
+NULL
+#> NULL
+
+#' @describeIn dms_extract Extract
+#' @export
+`[.deep_mutational_scan` <- function(x, i, j, drop = FALSE, ...) {  # nolint
+  if (missing(j)) {
+    return(x$data[i])
+  }
+  return(x$data[i, j, ..., drop = drop])
+}
+
+#' @describeIn dms_extract Assign
+#' @export
+`[<-.deep_mutational_scan` <- function(x, i, j, ..., value) {  # nolint
+  if (missing(j)) {
+    x$data[i] <- value
+  } else {
+    x$data[i, j, ...] <- value
+  }
+  return(x)
+}
+
+#' @describeIn dms_extract Double Extract
+#' @export
+`[[.deep_mutational_scan` <- function(x, i, j, exact = FALSE, ...) {  # nolint
+  if (missing(j)) {
+    return(x$data[[i]])
+  }
+  return(x$data[[i, j, ..., exact = exact]])
+}
+
+#' @describeIn dms_extract Double Assign
+#' @export
+`[[<-.deep_mutational_scan` <- function(x, i, j, ..., value) {  # nolint
+  if (missing(j)) {
+    x$data[[i]] <- value
+  } else {
+    x$data[[i, j, ...]] <- value
+  }
+  return(x)
 }
 
 # TODO - implement other generics (length, dim, etc.)

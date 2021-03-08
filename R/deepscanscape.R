@@ -17,4 +17,6 @@ NULL
 
 # TODO - Add examples to all functions
 # TODO - Add vignettes
-# TODO - Where to process counts?
+# TODO - Where to process counts? if at all
+# TODO - Use generics internally?
+# TODO - Function names - dms bit?

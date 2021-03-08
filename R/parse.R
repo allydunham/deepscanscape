@@ -2,18 +2,6 @@
 # TODO - Test funcs
 # TODO - Add additional formats
 
-aa_3_to_1 <- c(ala = "A", arg = "R", asn = "N", asp = "D", cys = "C", gln = "Q",
-               glu = "E", gly = "G", his = "H", ile = "I", leu = "L", lys = "K",
-               met = "M", phe = "F", pro = "P", ser = "S", thr = "T", trp = "W",
-               tyr = "Y", val = "V", sec = "U", pyl = "O", asx = "B", xle = "J",
-               glx = "Z", xaa = "X", ter = "*")
-
-# aa_1_to_3 <- c(A = "ala", R = "arg", N = "asn", D = "asp", C = "cys", Q = "gln",
-#                E = "glu", G = "gly", H = "his", I = "ile", L = "leu", K = "lys",
-#                M = "met", F = "phe", P = "pro", S = "ser", T = "thr", W = "trp",
-#                Y = "tyr", V = "val", U = "sec", O = "pyl", B = "asx", J = "xle",
-#                Z = "glx", X = "xaa", `*` = "ter")
-
 #' Parse deep mutational scanning data
 #'
 #' @param x A tibble or an object that can be converted to one

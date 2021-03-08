@@ -2,8 +2,7 @@
 % Please edit documentation in R/standardise.R
 \name{transform_dms}
 \alias{transform_dms}
-\title{Again, could work on df or vector, probably df
-Standardise DMS data}
+\title{Standardise DMS data}
 \usage{
 transform_dms(x, trans, base = 2)
 }
@@ -16,6 +15,5 @@ string or function}
 \item{base}{Log base of current scores (used for log transform)}
 }
 \description{
-Again, could work on df or vector, probably df
 Standardise DMS data
 }

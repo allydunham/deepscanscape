@@ -14,7 +14,6 @@ normalise_dms <- function(x, q=0.1) {
   return(x / -stats::median(x[x <= q], na.rm = TRUE))
 }
 
-#' Again, could work on df or vector, probably df
 #' Standardise DMS data
 #'
 #' @param x Vector of fitness scores
