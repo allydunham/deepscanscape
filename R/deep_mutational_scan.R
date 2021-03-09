@@ -1,5 +1,50 @@
-# S3 class / attributes thing to store a dms dataset
+# S3 class to store a dms dataset
 # TODO - Test these funcs
+
+#' Internal deep_mutational_scan constructor
+#'
+#' Create a new raw deep_mutational_scan object. This is expected to have no annotations and no imputation but have
+#' had scores transformed and normalised onto the standard scale.
+#'
+#' @param df A data frame in the required format (position, wt, A-Y, additional data...).
+#' @param study The source study
+#' @param gene The studied gene
+new_deep_mutational_scan <- function(df, study, gene) {
+  out <- list(data = tibble::as_tibble(df), study = study, gene = gene, annotated = FALSE, impute_mask = NA)
+  class(out) <- c("deep_mutational_scan")
+  return(out)
+}
+
+# TODO implement this check
+#' Validate deep_mutational_scan objects
+#'
+#' @param x \link{deep_mutational_scan} object
+validate_deep_mutational_scan <- function(x) {
+  if (!"deep_mutational_scan" %in% class(x)) {
+    stop("deep_mutational_scan not listed in class()")
+  }
+
+  if (!all(c("data", "study", "gene", "annotated", "impute_mask") %in% names(x))) {
+    stop("Missing field(s). The object must contain 'data', 'study', 'gene', 'annotated' & 'impute_mask'")
+  }
+
+  if (!is.logical(x$annotated)) {
+    stop("Invalid 'annotated' value (", x$annotated, "). Must be TRUE/FALSE")
+  }
+
+  if (!(is.matrix(x$impute_mask) & is.logical(x$impute_mask) | is.na(x$impute_mask))) {
+    stop("Invalid 'impute_mask'. Must be a logical matrix or NA")
+  }
+
+  headers <- c("position", "wt", amino_acids)[which(!c("position", "wt", amino_acids) %in% names(x$data))]
+  if (length(headers) > 0) {
+    stop("Missing data columns: ", paste(headers, sep = ", "))
+  }
+
+  # TODO - Check annotations present
+  # TODO - Check scores fit right profile? (Maybe too fragile)
+  return(x)
+}
 
 #' Deep mutational scan data
 #'
@@ -18,12 +63,7 @@
 #' @return A deep mutational scan S3 object
 #' @export
 deep_mutational_scan <- function(df, scheme=NULL, trans=NULL, na_value="impute",
-                                 annotate=TRUE, study=NULL, gene=NULL) {
-
-  # Initialise object
-  out <- list(study = study, gene = gene, annotated = FALSE)
-  class(out) <- c("deep_mutational_scan", class(out))
-
+                                 annotate=TRUE, study=NA, gene=NA) {
   # Parse scheme
   if (!is.null(scheme)) {
     df <- parse_dms_data(df, scheme)
@@ -49,8 +89,8 @@ deep_mutational_scan <- function(df, scheme=NULL, trans=NULL, na_value="impute",
   df <- tidyr::pivot_wider(df, names_from = "mut", values_from = "score")
   df <- dplyr::select(df, .data$position, .data$wt, amino_acids, dplyr::everything())
 
-  # Set attributes
-  out$data <- df
+  # Construct object
+  out <- validate_deep_mutational_scan(new_deep_mutational_scan(df = df, study = study, gene = gene))
 
   # Impute
   if (!(is.na(na_value) | is.null(na_value))) {
@@ -65,13 +105,21 @@ deep_mutational_scan <- function(df, scheme=NULL, trans=NULL, na_value="impute",
   return(out)
 }
 
+#' Determine if an object is a deep_mutational_scan
+#'
+#' @param x Object to check
+#'
+#' @export
+is.deep_mutational_scan <- function(x) { # nolint
+  return(inherits(x, "deep_mutational_scan"))
+}
+
 # TODO Document this fully - [ and [[ go to data tbl, $ goes to list
 #' Extracting and replacing deep mutational scanning data
 #'
 #' @param x \link{deep_mutational_scan} object
 #' @param i,j,... Indeces to access
 #' @param drop Coerce result to lowest possible dimension
-#' @param exact Ignored for tibbles (which is the underlying data structure)
 #' @param value Value to set
 #'
 #' @name dms_extract
@@ -79,7 +127,6 @@ NULL
 #> NULL
 
 #' @describeIn dms_extract Extract
-#' @export
 `[.deep_mutational_scan` <- function(x, i, j, drop = FALSE, ...) {  # nolint
   if (missing(j)) {
     return(x$data[i])
@@ -98,30 +145,11 @@ NULL
   return(x)
 }
 
-#' @describeIn dms_extract Double Extract
-#' @export
-`[[.deep_mutational_scan` <- function(x, i, j, exact = FALSE, ...) {  # nolint
-  if (missing(j)) {
-    return(x$data[[i]])
-  }
-  return(x$data[[i, j, ..., exact = exact]])
-}
-
-#' @describeIn dms_extract Double Assign
-#' @export
-`[[<-.deep_mutational_scan` <- function(x, i, j, ..., value) {  # nolint
-  if (missing(j)) {
-    x$data[[i]] <- value
-  } else {
-    x$data[[i, j, ...]] <- value
-  }
-  return(x)
-}
-
-# TODO - implement other generics (length, dim, etc.)
 #' General S3 Methods for Deep Mutational Scans
 #'
 #' @param x,object \link{deep_mutational_scan} object
+#' @param indent.str Indent string for \link[utils]{str}
+#' @param nest.lev Nest level for \link[utils]{str}
 #' @param ... Additional arguments
 #'
 #' @name dms_s3
@@ -133,8 +161,8 @@ NULL
 #' @export
 format.deep_mutational_scan <- function(x, ...) {
   out <- c(paste("# A deep_mutational_scan"),
-           paste("# Study:", ifelse(is.null(x$study), "Unknown", x$study)),
-           paste("# Gene:", ifelse(is.null(x$gene), "Unknown", x$gene)),
+           paste("# Study:", x$study),
+           paste("# Gene:", x$gene),
            paste("#", nrow(x$data), "positions"),
            "# Positional data:",
            format(x$data)[-1])
@@ -148,36 +176,52 @@ format.deep_mutational_scan <- function(x, ...) {
 
 #' @describeIn dms_s3 S3 print method
 #' @export
-print.deep_mutational_scan <- function(x, ...) {
+print.deep_mutational_scan <- function(x, ...) { # nolint
   cat(format(x, ...), sep = "\n")
 }
 
 #' @describeIn dms_s3 S3 str method
 #' @export
-str.deep_mutational_scan <- function(object, ...) {
-  stop("Not implemented yet")
+str.deep_mutational_scan <- function(object, ..., indent.str = " ", nest.lev = 0) { # nolint
+  if (nest.lev != 0L) {
+    cat(indent.str)
+  }
+
+  cat("deep_mutational_scan [", nrow(object$data), " positions]", "\n", sep = "")
+
+  utils::str(list(study = object$study, gene = object$gene, annotated = object$annotated, data = as.list(object$data)),
+             no.list = TRUE, ..., nest.lev = nest.lev + 2L, indent.str = indent.str)
 }
 
-
-#' @describeIn dms_s3 S3 as_tibble method
-#' @importFrom tibble as_tibble
+#' @describeIn dms_s3 S3 dim method
 #' @export
-as_tibble.deep_mutational_scan <- function(x, ...) { # nolint
+dim.deep_mutational_scan <- function(x) {
+  return(dim(x$data))
+}
+
+#' Convert deep_mutational_scans to data frames
+#'
+#' @param x \link{deep_mutational_scan} object
+#' @param full Include columns containing metadata (study, gene)
+#' @param ... Ignored
+#'
+#' @importFrom tibble as_tibble
+#' @name as_tibble
+#' @export
+as_tibble.deep_mutational_scan <- function(x, ..., full=FALSE) { # nolint
+  if (full) {
+    out <- tibble::as_tibble(x)
+    out$study <- x$study
+    out$gene <- x$gene
+    return(dplyr::select(out, .data$study, .data$gene, dplyr::everything()))
+  }
   return(x$data)
 }
 
-#' @describeIn dms_s3  S3 as.data.frame method
+#' @describeIn as_tibble S3 as.data.frame method
 #' @export
-as.data.frame.deep_mutational_scan <- function(x, ...) {
-  return(as.data.frame(as_tibble(x, ...)))
-}
-
-# Create tibble with study and gene columns
-to_full_tibble <- function(x) {
-  out <- tibble::as_tibble(x)
-  out$study <- x$study
-  out$gene <- x$gene
-  return(dplyr::select(out, .data$study, .data$gene, dplyr::everything()))
+as.data.frame.deep_mutational_scan <- function(x, ..., full=FALSE) {
+  return(as.data.frame(as_tibble(x, full = full, ...)))
 }
 
 #' Combine deep mutational scan data
@@ -186,7 +230,7 @@ to_full_tibble <- function(x) {
 #'
 #' @export
 rbind.deep_mutational_scan <- function(...) {
-  dplyr::bind_rows(lapply(list(...), to_full_tibble))
+  dplyr::bind_rows(lapply(list(...), as_tibble, full = TRUE))
 }
 
 # TODO - Need output object for this?

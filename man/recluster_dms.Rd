@@ -4,10 +4,10 @@
 \alias{recluster_dms}
 \title{Recluster DMS data with a combined dataset}
 \usage{
-recluster_dms(x)
+recluster_dms(...)
 }
 \arguments{
-\item{x}{\link{deep_mutational_scan} to recluster}
+\item{...}{\link{deep_mutational_scan} objects to recluster}
 }
 \description{
 Recluster DMS data with a combined dataset

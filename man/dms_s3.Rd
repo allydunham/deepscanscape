@@ -5,24 +5,25 @@
 \alias{format.deep_mutational_scan}
 \alias{print.deep_mutational_scan}
 \alias{str.deep_mutational_scan}
-\alias{as_tibble.deep_mutational_scan}
-\alias{as.data.frame.deep_mutational_scan}
+\alias{dim.deep_mutational_scan}
 \title{General S3 Methods for Deep Mutational Scans}
 \usage{
 \method{format}{deep_mutational_scan}(x, ...)
 
 \method{print}{deep_mutational_scan}(x, ...)
 
-\method{str}{deep_mutational_scan}(object, ...)
+\method{str}{deep_mutational_scan}(object, ..., indent.str = " ", nest.lev = 0)
 
-\method{as_tibble}{deep_mutational_scan}(x, ...)
-
-\method{as.data.frame}{deep_mutational_scan}(x, ...)
+\method{dim}{deep_mutational_scan}(x)
 }
 \arguments{
 \item{x, object}{\link{deep_mutational_scan} object}
 
 \item{...}{Additional arguments}
+
+\item{indent.str}{Indent string for \link[utils]{str}}
+
+\item{nest.lev}{Nest level for \link[utils]{str}}
 }
 \description{
 General S3 Methods for Deep Mutational Scans
@@ -35,8 +36,6 @@ General S3 Methods for Deep Mutational Scans
 
 \item \code{str.deep_mutational_scan}: S3 str method
 
-\item \code{as_tibble.deep_mutational_scan}: S3 as_tibble method
-
-\item \code{as.data.frame.deep_mutational_scan}: S3 as.data.frame method
+\item \code{dim.deep_mutational_scan}: S3 dim method
 }}
 

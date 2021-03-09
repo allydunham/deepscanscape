@@ -10,8 +10,8 @@ deep_mutational_scan(
   trans = NULL,
   na_value = "impute",
   annotate = TRUE,
-  study = NULL,
-  gene = NULL
+  study = NA,
+  gene = NA
 )
 }
 \arguments{

@@ -4,17 +4,11 @@
 \alias{dms_extract}
 \alias{[.deep_mutational_scan}
 \alias{[<-.deep_mutational_scan}
-\alias{[[.deep_mutational_scan}
-\alias{[[<-.deep_mutational_scan}
 \title{Extracting and replacing deep mutational scanning data}
 \usage{
 \method{[}{deep_mutational_scan}(x, i, j, drop = FALSE, ...)
 
 \method{[}{deep_mutational_scan}(x, i, j, ...) <- value
-
-\method{[[}{deep_mutational_scan}(x, i, j, exact = FALSE, ...)
-
-\method{[[}{deep_mutational_scan}(x, i, j, ...) <- value
 }
 \arguments{
 \item{x}{\link{deep_mutational_scan} object}
@@ -24,8 +18,6 @@
 \item{drop}{Coerce result to lowest possible dimension}
 
 \item{value}{Value to set}
-
-\item{exact}{Ignored for tibbles (which is the underlying data structure)}
 }
 \description{
 Extracting and replacing deep mutational scanning data
@@ -35,9 +27,5 @@ Extracting and replacing deep mutational scanning data
 \item \code{[.deep_mutational_scan}: Extract
 
 \item \code{[<-.deep_mutational_scan}: Assign
-
-\item \code{[[.deep_mutational_scan}: Double Extract
-
-\item \code{[[<-.deep_mutational_scan}: Double Assign
 }}
 

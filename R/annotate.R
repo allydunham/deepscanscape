@@ -14,9 +14,6 @@ annotate_dms <- function(x) {
     stop("NA fitness scores present\nUse impute_dms")
   }
 
-  # Assign subtypes
-  # TODO
-
   # Map onto PCAs
   pca <- stats::predict(dms_pca, newdata = as.matrix(x[amino_acids]))
   x$data <- dplyr::bind_cols(x$data, tibble::as_tibble(pca))
@@ -25,6 +22,11 @@ annotate_dms <- function(x) {
   model <- uwot::load_uwot(system.file("extdata", "dms_umap", package = "deepscanscape"))
   umap <- uwot::umap_transform(as.matrix(x[amino_acids]), model = model)
   x[c("umap1", "umap2")] <- umap
+
+  # Assign subtypes
+  # Simple nearest neighbour?
+  # Assign permissive positions then assign?
+  # Use cosine distance of PCA?
 
   x$annotated <- TRUE
   return(x)

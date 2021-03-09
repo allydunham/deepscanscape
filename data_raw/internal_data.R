@@ -21,11 +21,13 @@ aa_3_to_1 <- c(ala = "A", arg = "R", asn = "N", asp = "D", cys = "C", gln = "Q",
 #                Z = "glx", X = "xaa", `*` = "ter")
 
 # Median DMS Scores
-median_scores <- read_tsv('data_raw/raw_mutational_scans.tsv') %>%
-  filter(!mut == '*', !is.na(score)) %>%
+dms <- read_tsv('data_raw/raw_mutational_scans.tsv')
+median_scores <- filter(dms, !mut == '*', !is.na(score)) %>%
   group_by(wt, mut) %>%
   summarise(score = median(score, na.rm = TRUE), .groups = 'drop') %>%
   pivot_wider(names_from = 'mut', values_from = 'score') %>%
   tblhelpr::tibble_to_matrix(-wt, row_names = 'wt')
+
+# Cluster centroids
 
 usethis::use_data(dms_pca, median_scores, aa_3_to_1, amino_acids, internal = TRUE, overwrite = TRUE)
