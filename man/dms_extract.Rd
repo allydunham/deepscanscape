@@ -13,7 +13,7 @@
 \arguments{
 \item{x}{\link{deep_mutational_scan} object}
 
-\item{i, j, ...}{Indeces to access}
+\item{i, j, ...}{Indices to access}
 
 \item{drop}{Coerce result to lowest possible dimension}
 

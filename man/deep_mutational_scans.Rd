@@ -7,6 +7,7 @@
 \format{
 A data frame with 6357 rows
 \describe{
+  \item{cluster}{Amino acid subtype}
   \item{study}{Source study}
   \item{gene}{Gene tested}
   \item{position}{Position in gene}

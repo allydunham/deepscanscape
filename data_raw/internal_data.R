@@ -21,13 +21,20 @@ aa_3_to_1 <- c(ala = "A", arg = "R", asn = "N", asp = "D", cys = "C", gln = "Q",
 #                Z = "glx", X = "xaa", `*` = "ter")
 
 # Median DMS Scores
-dms <- read_tsv('data_raw/raw_mutational_scans.tsv')
-median_scores <- filter(dms, !mut == '*', !is.na(score)) %>%
+median_scores <- read_tsv('data_raw/raw_mutational_scans.tsv') %>%
+  filter(!mut == '*', !is.na(score)) %>%
   group_by(wt, mut) %>%
   summarise(score = median(score, na.rm = TRUE), .groups = 'drop') %>%
   pivot_wider(names_from = 'mut', values_from = 'score') %>%
   tblhelpr::tibble_to_matrix(-wt, row_names = 'wt')
 
 # Cluster centroids
+cluster_centers <- read_tsv('data_raw/combined_mutational_scans.tsv') %>%
+  filter(!str_detect(cluster, "[A-Y]O"), !str_detect(cluster, "[A-Y]P")) %>%
+  group_by(cluster) %>%
+  summarise(across(.cols = c(PC1:PC20), .fns = mean))
+cluster_centers <- select(cluster_centers, PC2:PC20) %>%
+  as.matrix() %>%
+  magrittr::set_rownames(cluster_centers$cluster)
 
-usethis::use_data(dms_pca, median_scores, aa_3_to_1, amino_acids, internal = TRUE, overwrite = TRUE)
+usethis::use_data(dms_pca, median_scores, cluster_centers, aa_3_to_1, amino_acids, internal = TRUE, overwrite = TRUE)

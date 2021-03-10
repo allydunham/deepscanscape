@@ -15,7 +15,7 @@ new_deep_mutational_scan <- function(df, study, gene) {
   return(out)
 }
 
-# TODO implement this check
+# TODO Check position / wt rows are distinct, this is assumed downstream
 #' Validate deep_mutational_scan objects
 #'
 #' @param x \link{deep_mutational_scan} object
@@ -118,7 +118,7 @@ is.deep_mutational_scan <- function(x) { # nolint
 #' Extracting and replacing deep mutational scanning data
 #'
 #' @param x \link{deep_mutational_scan} object
-#' @param i,j,... Indeces to access
+#' @param i,j,... Indices to access
 #' @param drop Coerce result to lowest possible dimension
 #' @param value Value to set
 #'
@@ -127,6 +127,7 @@ NULL
 #> NULL
 
 #' @describeIn dms_extract Extract
+#' @export
 `[.deep_mutational_scan` <- function(x, i, j, drop = FALSE, ...) {  # nolint
   if (missing(j)) {
     return(x$data[i])
@@ -160,12 +161,18 @@ NULL
 #' @describeIn dms_s3 S3 print method
 #' @export
 format.deep_mutational_scan <- function(x, ...) {
+  # Select columns to show
+  # TODO add more columns when annotated?
+  # TODO show additional added columns
+  tbl <- x$data
+  tbl <- dplyr::select(tbl, .data$position, .data$wt, dplyr::one_of("cluster", "cluster_notes"), amino_acids)
+
   out <- c(paste("# A deep_mutational_scan"),
            paste("# Study:", x$study),
            paste("# Gene:", x$gene),
            paste("#", nrow(x$data), "positions"),
            "# Positional data:",
-           format(x$data)[-1])
+           format(tbl)[-1])
 
   if (requireNamespace("crayon", quietly = TRUE)) {
     out[1:5] <- crayon::make_style("darkgrey")(out[1:5])
