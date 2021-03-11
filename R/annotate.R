@@ -1,6 +1,7 @@
 # Annotate positions based on the overall dataset
 # TODO test annotation functions
 
+# TODO add more parameters
 # TODO Store distance measurements in class
 # TODO Note secondary clusters when margin is very small?
 #' Annotate positions based on the deep mutational landscape

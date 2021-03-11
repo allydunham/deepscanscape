@@ -4,10 +4,23 @@
 \alias{recluster_dms}
 \title{Recluster DMS data with a combined dataset}
 \usage{
-recluster_dms(...)
+recluster_dms(
+  x,
+  keep_clustering = FALSE,
+  deep_split = NULL,
+  add_combined = TRUE
+)
 }
 \arguments{
-\item{...}{\link{deep_mutational_scan} objects to recluster}
+\item{x}{data frame or list of \link{deep_mutational_scan} objects to recluster}
+
+\item{keep_clustering}{logical. Keep the outputs of \link[stats]{hclust} and \link[dynamicTreeCut]{cutreeHybrid} for
+downstream analysis}
+
+\item{deep_split}{Named vector of deepSplit parameters to pass to \link[dynamicTreeCut]{cutreeHybrid}. Must be a
+numeric vector with a named entry for each amino acid or a single integer to apply to all amino acids}
+
+\item{add_combined}{Combine the supplied data with the data contained in \link{deep_mutational_scans}}
 }
 \description{
 Recluster DMS data with a combined dataset
