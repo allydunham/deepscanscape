@@ -10,7 +10,8 @@
 #' @param study The source study
 #' @param gene The studied gene
 new_deep_mutational_scan <- function(df, study, gene) {
-  out <- list(data = tibble::as_tibble(df), study = study, gene = gene, annotated = FALSE, impute_mask = NA)
+  out <- list(data = tibble::as_tibble(df), study = study, gene = gene,
+              annotated = FALSE, impute_mask = NA, cluster = NA)
   class(out) <- c("deep_mutational_scan")
   return(out)
 }
@@ -24,7 +25,7 @@ validate_deep_mutational_scan <- function(x) {
     stop("deep_mutational_scan not listed in class()")
   }
 
-  if (!all(c("data", "study", "gene", "annotated", "impute_mask") %in% names(x))) {
+  if (!all(c("data", "study", "gene", "annotated", "impute_mask", "cluster") %in% names(x))) {
     stop("Missing field(s). The object must contain 'data', 'study', 'gene', 'annotated' & 'impute_mask'")
   }
 
@@ -164,19 +165,26 @@ format.deep_mutational_scan <- function(x, ...) {
   # Select columns to show
   # TODO add more columns when annotated?
   # TODO show additional added columns
-  tbl <- x$data
-  tbl <- dplyr::select(tbl, .data$position, .data$wt, dplyr::one_of("cluster", "cluster_notes"), amino_acids)
 
   out <- c(paste("# A deep_mutational_scan"),
            paste("# Study:", x$study),
            paste("# Gene:", x$gene),
-           paste("#", nrow(x$data), "positions"),
-           "# Positional data:",
-           format(tbl)[-1])
+           paste("#", nrow(x$data), "positions"))
+
+  if (x$annotated) {
+    out <- c(out, "# Annotated with clusters, pricipal components and UMAP coordinates")
+  }
+
+  out <- c(out, "# Positional data:")
 
   if (requireNamespace("crayon", quietly = TRUE)) {
-    out[1:5] <- crayon::make_style("darkgrey")(out[1:5])
+    out <- crayon::make_style("darkgrey")(out)
   }
+
+  tbl <- x$data
+  tbl <- dplyr::select(tbl, dplyr::one_of("cluster"), .data$position, .data$wt, amino_acids, dplyr::everything())
+  tbl_str <- format(tbl)
+  out <- c(out, tbl_str[-1])
 
   return(out)
 }

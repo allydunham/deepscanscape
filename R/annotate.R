@@ -17,6 +17,10 @@ annotate_dms <- function(x) {
     stop("NA fitness scores present\nUse impute_dms")
   }
 
+  if (x$annotated) {
+    stop("dataset already annotated")
+  }
+
   # Map onto PCAs
   pca <- stats::predict(dms_pca, newdata = as.matrix(x[amino_acids]))
   x$data <- dplyr::bind_cols(x$data, tibble::as_tibble(pca))
@@ -32,33 +36,40 @@ annotate_dms <- function(x) {
   }
 
   cluster_dists <- t(sapply(seq_len(nrow(x$data)), calc_dist))
+  colnames(cluster_dists) <- stringr::str_c("dist", 1:8)
   closest <- apply(cluster_dists, 1, which.min)
-  cluster <- stringr::str_c(x$data$wt, closest)
+  cluster <- tibble::tibble(wt = x$data$wt, cluster = stringr::str_c(.data$wt, closest), base_cluster = .data$cluster)
 
   # Permissive positions
-  permissive <- apply(x$data[, amino_acids], 1, check_permissive)
-  cluster[permissive] <- stringr::str_c(x$data$wt[permissive], "P")
-
-  x$data$cluster <- cluster
+  cluster$permissive <- apply(x$data[, amino_acids], 1, check_permissive)
 
   # Identify low confidence  positions
   margin <- t(apply(cluster_dists, 1, calculate_margin))
-  margin_small <- apply(margin, 1, any_less_than, threshold = 0.03)
+  cluster$small_margin <- apply(margin, 1, any_less_than, threshold = 0.03)
 
   check_distance <- function(x) {
     min(x, na.rm = TRUE) > 0.45
   }
-  dist_high <- apply(cluster_dists, 1, check_distance)
+  cluster$high_distance <- apply(cluster_dists, 1, check_distance)
 
-  notes <- rep(NA, length(cluster))
-  # TODO Note which clusters are ambiguous
-  # TODO better naming here?
-  notes[!permissive & margin_small] <- "margin"
-  notes[!permissive & dist_high] <- "distance"
-  notes[!permissive & margin_small & dist_high] <- "both"
-  x$data$cluster_notes <- notes
+  # Resolve cluster assignment
+  outlier_ind <- cluster$small_margin | cluster$high_distance
+  cluster$cluster[outlier_ind] <- stringr::str_c(cluster$wt[outlier_ind], "O")
+  cluster$cluster[cluster$permissive] <- stringr::str_c(cluster$wt[cluster$permissive], "P")
+  cluster <- dplyr::bind_cols(cluster, as.data.frame(cluster_dists))
+  cluster <- dplyr::select(cluster, -.data$wt)
 
-  x$data <- dplyr::select(x$data, .data$position, .data$wt, .data$cluster, .data$cluster_notes, dplyr::everything())
+  # Add cluster notes
+  cluster$notes <- rep(NA, nrow(cluster))
+  cluster$notes[cluster$small_margin] <- "Top cluster is only nearer by a small margin"
+  cluster$notes[cluster$high_distance] <- "Not close to any cluster center"
+  cluster$notes[cluster$small_margin & cluster$high_distance] <- "Both distant and only nearer one by a small margin"
+  cluster$notes[cluster$permissive] <- "No mutation with |ER| > 0.4"
+
+  # Tidy object
+  x$cluster <- cluster
+  x$data$cluster <- cluster$cluster
+  x$data <- dplyr::select(x$data, .data$cluster, .data$position, .data$wt, dplyr::everything())
   x$annotated <- TRUE
   return(x)
 }
