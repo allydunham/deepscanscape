@@ -94,6 +94,7 @@ deep_mutational_scan <- function(df, scheme=NULL, trans=NULL, na_value="impute",
   out <- validate_deep_mutational_scan(new_deep_mutational_scan(df = df, study = study, gene = gene))
 
   # Impute
+  # TODO note what happens when not doing this
   if (!(is.na(na_value) | is.null(na_value))) {
     out <- impute_dms(out)
   }
@@ -159,7 +160,7 @@ NULL
 #> NULL
 
 # TODO - Pretty print when extra columns added
-#' @describeIn dms_s3 S3 print method
+#' @describeIn dms_s3 S3 format method
 #' @export
 format.deep_mutational_scan <- function(x, ...) {
   # Select columns to show
@@ -239,6 +240,13 @@ as.data.frame.deep_mutational_scan <- function(x, ..., full=FALSE) {
   return(as.data.frame(as_tibble(x, full = full, ...)))
 }
 
+#' @describeIn as_tibble S3 as.list method
+#' @export
+as.list.deep_mutational_scan <- function(x, ...) {
+  class(x) <- "list"
+  return(x)
+}
+
 #' Combine deep mutational scan data
 #'
 #' @param ... \link{deep_mutational_scan} objects to combine
@@ -246,17 +254,6 @@ as.data.frame.deep_mutational_scan <- function(x, ..., full=FALSE) {
 #' @export
 rbind.deep_mutational_scan <- function(...) {
   dplyr::bind_rows(lapply(list(...), as_tibble, full = TRUE))
-}
-
-# TODO - Need output object for this?
-#' Summarise Deep Mutational Scans
-#'
-#' @param object A \link{deep_mutational_scan} object.
-#' @param ... Additional arguments
-#'
-#' @export
-summary.deep_mutational_scan <- function(object, ...) {
-  stop("Not implemented yet")
 }
 
 #' Summary plot for Deep Mutational Scans
@@ -269,7 +266,7 @@ summary.deep_mutational_scan <- function(object, ...) {
 #' @name dms_plot
 #' @importFrom ggplot2 autoplot
 autoplot.deep_mutational_scan <- function(object, ...){ # nolint
-  stop("Not implemented yet")
+  plot_dms_heatmap(object)
 }
 
 #' @describeIn dms_plot S3 plot method

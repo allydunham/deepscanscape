@@ -30,7 +30,7 @@ General S3 Methods for Deep Mutational Scans
 }
 \section{Functions}{
 \itemize{
-\item \code{format.deep_mutational_scan}: S3 print method
+\item \code{format.deep_mutational_scan}: S3 format method
 
 \item \code{print.deep_mutational_scan}: S3 print method
 

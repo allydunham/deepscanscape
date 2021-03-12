@@ -1,4 +1,3 @@
-# TODO - Pretty study names?
 #' Standardised deep mutational scanning studies results
 #'
 #' A dataset containing combined results from 28 deep mutational scanning

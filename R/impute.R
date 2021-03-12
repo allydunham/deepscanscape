@@ -1,6 +1,5 @@
 # Impute missing DMS data
 
-# TODO - track which values have been imputed
 #' Impute missing deep mutational scan data
 #'
 #' @param x link{deep_mutational_scan} to impute data from
@@ -14,6 +13,17 @@ impute_dms <- function(x, na_value="impute") {
   }
 
   df <- tidyr::pivot_longer(x$data, dplyr::one_of(amino_acids), names_to = "mut", values_to = "score")
+
+  # Calculate impute mask
+  # TODO document the structure of this
+  mask <- df
+  mask$mask <- 0
+  mask$mask[is.na(mask$score) & mask$wt == mask$mut] <- 1
+  mask$mask[is.na(mask$score) & mask$wt != mask$mut] <- 2
+  mask <- tidyr::pivot_wider(mask[c("position", "wt", "mut", "mask")],
+                             names_from = .data$mut, values_from = .data$mask)[amino_acids]
+  x$impute_mask <- as.matrix(mask)
+
   df$score[df$wt == df$mut & is.na(df$score)] <- 0
 
   if (na_value == "impute") {
@@ -24,5 +34,6 @@ impute_dms <- function(x, na_value="impute") {
 
   df <- tidyr::pivot_wider(df, names_from = "mut", values_from = "score")
   x$data <- dplyr::select(df, .data$position, .data$wt, amino_acids, dplyr::everything())
+  x$impute_mask <- mask
   return(x)
 }

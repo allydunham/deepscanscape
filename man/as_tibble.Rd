@@ -4,11 +4,14 @@
 \alias{as_tibble}
 \alias{as_tibble.deep_mutational_scan}
 \alias{as.data.frame.deep_mutational_scan}
+\alias{as.list.deep_mutational_scan}
 \title{Convert deep_mutational_scans to data frames}
 \usage{
 \method{as_tibble}{deep_mutational_scan}(x, ..., full = FALSE)
 
 \method{as.data.frame}{deep_mutational_scan}(x, ..., full = FALSE)
+
+\method{as.list}{deep_mutational_scan}(x, ...)
 }
 \arguments{
 \item{x}{\link{deep_mutational_scan} object}
@@ -23,5 +26,7 @@ Convert deep_mutational_scans to data frames
 \section{Methods (by class)}{
 \itemize{
 \item \code{deep_mutational_scan}: S3 as.data.frame method
+
+\item \code{deep_mutational_scan}: S3 as.list method
 }}
 
