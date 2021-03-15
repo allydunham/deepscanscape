@@ -122,3 +122,54 @@ plot_dms_landscape <- function(x, name = NULL, feature = NULL) {
   }
   return(p)
 }
+
+#' Plot amino acid subtype frequencies
+#'
+#' @param x \link{deep_mutational_scan} or data frame containing multiple deep mutational scans.
+plot_dms_cluster_frequencies <- function(x) {
+  if ("deep_mutational_scan" %in% class(x)) {
+    if (!x$annotated) {
+      warning("deep_mutational_scan is not annotated. Annotating using annotate_dms().")
+      x <- annotate_dms(x)
+    }
+    df <- x$data
+  } else if ("data.frame" %in% class(x)) {
+    df <- tibble::as_tibble(x)
+    # TODO document what happens with dataframe
+    if (!all(c("cluster", "wt") %in% names(df))) {
+      stop("Data frame does not contain cluster or wt column")
+    }
+  }
+
+  overview <- dplyr::summarise(dplyr::group_by(df, .data$wt, .data$cluster), n = dplyr::n(), .groups = "drop_last")
+  overview <- dplyr::ungroup(dplyr::mutate(overview, prop = .data$n / sum(.data$n)))
+  overview$wt <- factor(overview$wt, levels = sort(unique(overview$wt), decreasing = TRUE))
+  overview$cluster_num <- stringr::str_sub(overview$cluster, start = 2)
+
+  max_cluster <- max(as.integer(stringr::str_subset(overview$cluster_num, "[0-9]+")))
+  overview$cluster_num <- factor(overview$cluster_num, levels = c("O", "P", seq_len(max_cluster)))
+
+  counts <- dplyr::summarise(dplyr::group_by(overview, .data$wt), n = sum(.data$n), .groups = "drop")
+  sec_axis <- ggplot2::dup_axis(name = "", labels = counts$n)
+
+  if (max_cluster <= 7) {
+    pal <- "Set1"
+  } else {
+    if (max_cluster > 10) {
+      warning(">10 clusters for at least one amino acid, colours may not be ideal")
+    }
+    pal <- "Set3"
+  }
+
+  ggplot2::ggplot(overview, ggplot2::aes(x = as.integer(.data$wt), y = .data$prop, fill = .data$cluster_num)) +
+    ggplot2::scale_x_continuous(breaks = seq_len(20), labels = counts$wt, sec.axis = sec_axis) +
+    ggplot2::scale_y_continuous(labels = function(x) stringr::str_c(100 * x, "%")) +
+    ggplot2::coord_flip(expand = FALSE) +
+    ggplot2::geom_col(position = "stack") +
+    ggplot2::labs(x = "WT Amino Acid", y = "Percentage of Positions") +
+    ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE)) +
+    ggplot2::scale_fill_brewer(name = "Subtype", type = "qual", palette = pal) +
+    theme_deepscanscape() +
+    ggplot2::theme(panel.grid.major.y = ggplot2::element_blank(),
+                   axis.ticks.y = ggplot2::element_blank())
+}
