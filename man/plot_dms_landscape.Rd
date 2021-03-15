@@ -4,13 +4,15 @@
 \alias{plot_dms_landscape}
 \title{Plot a new study on the deep mutational landscape}
 \usage{
-plot_dms_landscape(x, name = NULL)
+plot_dms_landscape(x, name = NULL, feature = NULL)
 }
 \arguments{
 \item{x}{\link{deep_mutational_scan} to analyse. Unannotated datasets will be annotated using \link{annotate_dms},
 but it is generally better to do this beforehand as it an expensive operation.}
 
 \item{name}{Name of this dataset. When NULL a name is generated from the object data}
+
+\item{feature}{Feature from the \link{deep_mutational_scans} dataset to map positions against}
 }
 \description{
 Plot a new study on the deep mutational landscape
