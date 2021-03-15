@@ -186,7 +186,7 @@ plot_dms_recluster <- function(df, aa = NULL, square_tiles = TRUE) {
   # Make plot
   p <- ggplot2::ggplot() +
     ggplot2::scale_x_continuous(breaks = 1:26, limits = c(0, 26), labels = x_labels) +
-    ggplot2::scale_y_continuous(breaks = seq_len(length(y_labels)), limits = c(0.5, length(y_labels) + 0.5),
+    ggplot2::scale_y_continuous(breaks = seq_along(y_labels), limits = c(0.5, length(y_labels) + 0.5),
                                 labels = y_labels, sec.axis = ggplot2::dup_axis(name = "", labels = y_sec_labels)) +
     ggplot2::geom_vline(xintercept = 22) +
     ggplot2::geom_vline(xintercept = 23:26, linetype = "dotted") +
