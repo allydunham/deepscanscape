@@ -82,6 +82,10 @@ recluster_dms <- function(x, keep_clustering = FALSE, deep_split=NULL, add_combi
   df <- dplyr::select(df, .data$cluster, dplyr::everything())
   df <- dplyr::arrange(df, .data$study, .data$gene, .data$position)
 
+  # Rename outlier clusters
+  outlier_inds <- stringr::str_detect(df$cluster, "[A-Z]0")
+  df$cluster[outlier_inds] <- stringr::str_replace(df$cluster[outlier_inds], "0", "O")
+
   if (keep_clustering) {
     return(list(data = df, hclust = lapply(clusts, "[[", "hclust"), treeCut = lapply(clusts, "[[", "treeCut")))
   }
@@ -115,4 +119,89 @@ cosine_distance_matrix <- function(m) {
   cosine <- tcrossprod(m) / sqrt(tcrossprod(rowSums(m^2)))
   cosine <- acos(round(cosine, digits = 8)) / pi
   return(cosine)
+}
+
+#' Summarise a deep mutational scan recluster
+#'
+#' @param df reclustered data, as output by \link{recluster_dms}
+#' @param aa Character vector of amino acids to summarise clusters from.
+#' @param square_tiles Force heatmap tiles to be square. It can be useful to disable this when summarising a large
+#'   number of clusters.
+plot_dms_recluster <- function(df, aa = NULL, square_tiles = TRUE) {
+  req_cols <- c("cluster", "study",  "gene", "position", "wt", amino_acids)
+  if (!all(req_cols %in% names(df))) {
+    stop("Incorrect columns in df, must include: ", stringr::str_c(req_cols, collapse = ", "))
+  }
+
+  if (!is.null(aa)) {
+    if (!all(aa %in% amino_acids)) {
+      stop("Incorrect AA argument")
+    }
+    df <- df[df$wt %in% aa, ]
+  }
+
+  # Calculate cluster profiles and counts
+  profile <- dplyr::summarise(dplyr::group_by(df, .data$cluster), dplyr::across(dplyr::one_of(amino_acids), mean))
+  profile <- tidyr::pivot_longer(profile, -.data$cluster, names_to = "mut", values_to = "er")
+  profile$mut <- as.factor(profile$mut)
+
+  counts <- dplyr::summarise(dplyr::group_by(df, .data$cluster), n = dplyr::n())
+  counts$percent <- counts$n / sum(counts$n)
+
+  # Set cluster order
+  cluster_levels <- unique(profile$cluster)
+  cluster_levels <- c(sort(stringr::str_subset(cluster_levels, "[A-Z]O"), decreasing = TRUE),
+                      sort(stringr::str_subset(cluster_levels, "[A-Z]P"), decreasing = TRUE),
+                      sort(stringr::str_subset(cluster_levels, "[A-Z][0-9]+"), decreasing = TRUE))
+
+  profile$cluster <- factor(profile$cluster, levels = cluster_levels)
+  counts$cluster <- factor(counts$cluster, levels = levels(profile$cluster))
+
+  # Format axes
+  y_labels <- levels(profile$cluster)
+  y_sec_labels <- counts$n[order(counts$cluster)]
+
+  if (max(counts$percent) < 0.05) {
+    x_labels <- c(amino_acids, "", "0%", "1.25%", "2.5%", "3.75%", "5%")
+    x_mult <- 80
+  } else if (max(counts$percent) < 0.1) {
+    x_labels <- c(amino_acids, "", "0%", "2.5%", "5%", "7.5%", "10%")
+    x_mult <- 40
+  } else if (max(counts$percent) < 0.2) {
+    x_labels <- c(amino_acids, "", "0%", "5%", "10%", "15%", "20%")
+    x_mult <- 20
+  } else if (max(counts$percent) < 0.4) {
+    x_labels <- c(amino_acids, "", "0%", "10%", "20%", "30%", "40%")
+    x_mult <- 10
+  } else {
+    x_labels <- c(amino_acids, "", "0%", "25%", "50%", "75%", "100%")
+    x_mult <- 4
+  }
+
+  # Calculate aesthetic layers
+  tile_aes <- ggplot2::aes(x = as.integer(.data$mut), y = as.integer(.data$cluster), fill = .data$er)
+  bar_aes <- ggplot2::aes(xmin = 22, xmax = 22 + x_mult * .data$percent, ymin = as.integer(.data$cluster) - 0.25,
+                          ymax = as.integer(.data$cluster) + 0.25)
+
+  # Make plot
+  p <- ggplot2::ggplot() +
+    ggplot2::scale_x_continuous(breaks = 1:26, limits = c(0, 26), labels = x_labels) +
+    ggplot2::scale_y_continuous(breaks = seq_len(length(y_labels)), limits = c(0.5, length(y_labels) + 0.5),
+                                labels = y_labels, sec.axis = ggplot2::dup_axis(name = "", labels = y_sec_labels)) +
+    ggplot2::geom_vline(xintercept = 22) +
+    ggplot2::geom_vline(xintercept = 23:26, linetype = "dotted") +
+    ggplot2::geom_tile(data = profile, mapping = tile_aes) +
+    ggplot2::geom_rect(data = counts, mapping = bar_aes, fill = "#542788") +
+    ggplot2::scale_fill_gradient2(name = "Mean ER", low = "#a50026", mid = "#ffffbf", high = "#313695") +
+    theme_deepscanscape() +
+    ggplot2::theme(panel.grid.major.y = ggplot2::element_blank(),
+                   axis.ticks = ggplot2::element_blank(),
+                   axis.title = ggplot2::element_blank())
+
+  if (square_tiles) {
+    p <- p + ggplot2::coord_equal(expand = FALSE)
+  } else {
+    p <- p + ggplot2::coord_cartesian(expand = FALSE)
+  }
+  return(p)
 }
