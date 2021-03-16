@@ -22,3 +22,4 @@ NULL
 # TODO - Function names - dms bit?
 # TODO - Add to documentation - values, description, details, authour etc.
 # TODO - Add progress bars to longer opperations?
+# TODO - consistency of cluster/subtype

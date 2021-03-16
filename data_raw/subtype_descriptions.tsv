@@ -1,0 +1,120 @@
+wt	cluster	group	description	notes
+A	A1	Not aromatic	Tolerates smaller residues	These positions tolerate smaller residues, generally being buried in the protein and tending to be near other hydrophobic residues
+A	A2	Aliphatic	Selects against (most) polar, charged & aromatic	These positions select for hydrophobic residues, as well as tolerating serine, threonine and cysteine, all of which are small and likely don't disrupt the structure with polarity (potentially h-bonding to the backbone to resolve dipoles). They are also usually buried
+A	A3	Not proline	Anything but proline (weaker than usual)	Spread throughout proteins these positions are only selective against proline. They are less conserved than other subtypes
+A	A4	Not aromatic	Selects against aromatic and larger hydrophobic	These positions select against aromatics and larger hydrophobic residues. Often surface accessible they likely interact badly with the solvent/prefer to be buried and disrupt the structure when a larger hydrophobic group is added
+A	A5	Small aliphatic	Strong selection, tolerates glycine & serine	Highly selective, these positions only tolerate glycine and serine. They are often buried, although not as strongly as A1/2
+A	AP	Permissive	Permissive positions	Very depleted in beta strands compared to other subtypes. They are very surface accessible
+A	AO	Outlier	Outlier	
+C	C1	Unique	Highly selective, cysteine only functions such as disulphide bonds	FoldX and chemical environment results suggest disulphide bonds generally go here, although not exclusively (33% of C1 positions vs 8% in C2). The subtype likely also contains other positions where only C functions, such as ion conjugation, and potentially includes similar aromatic interactions to C2 where the interaction is highly important. The subtype is least selected against aromatics - maybe because the aromatic/sulphur interaction partially makes up for the disulphide bond, or also fulfils some of the other functions
+C	C2	Aliphatic	Selective against hydrophilic amino acids, much more buried, includes cysteine/aromatic interactions.	This subtypes appears to use cysteine's hydrophobicity as well as the sulphur/aromatic interaction that allows cysteine to create stabilising interactions with aromatics (Orabi & English 2016). The characteristic aromatic interaction pattern occurs in the subtypes mean profile and somewhat in the chemical environment, although the enrichment for aromatic neighbours is weaker than when it was an exclusive group (likely because it is swamped by residues without the interaction). In some sense this subtype could be manually split into two, although that is generally not identified algorithmically (apart from a single lucky run of kmeans). These positions tend to be more strongly buried than C1 positions, although both generally are
+C	CP	Permissive	Permissive positions	Generally weakly conserved and with low structural impact
+C	CO	Outlier	Outlier	
+D	D1	Negative	Selects for negative charge	Often appear to have a specific charge related role
+D	D2	Negative	Selects for negative charge or polarity	Generally tolerates some polarity as well as negative charge. Often surface accessible
+D	D3	Not proline	Anything but proline	Tolerates any substitution other than proline
+D	DP	Permissive	Permissive positions	Reasonably common for D and mostly surface accessible
+D	DO	Outlier	Outlier	
+E	E1	Negative	(Weak) selection for negative charge	As with D1, E1 positions often seem to have a recognisable role utilising the charge properties of glutamate, although in many cases it is less obvious too
+E	E2	Not proline	Anything but proline	Tolerates any substitution apart from proline
+E	E3	Negative	Selects against aromatics and larger hydrophobic residues	Selects against aromatics and larger hydrophobic residues
+E	EP	Permissive	Permissive positions	Generally very surface accessible
+E	EO	Outlier	Outlier	
+F	F1	Large aliphatic	Strong selection against charge & polarity	Strong selection against charge and polarity, generally buried
+F	F2	Aromatic	Strong selection against non-aromatics	Seems to utilise specific aromatic properties as well as hydrophobicity. They occur relatively frequently in groups
+F	F3	Unique	Tolerates Cysteine, isoleucine, leucine, serine valine and tyrosine?	Tolerates Cysteine, isoleucine, leucine, serine valine and tyrosine
+F	FP	Permissive	Permissive positions	Phenylalanine positions are rarely permissive
+F	FO	Outlier	Outlier	
+G	G1	Small aliphatic	Strong selection against all	Strong overall selection, often near to other glycine residues and often appears at the ends of helices/sheets or in tight turns, like an extreme version of the 'anything but proline' positions
+G	G2	Small aliphatic	Selects for smaller hydrophobic residues	Selects for smaller hydrophobic residues
+G	G3	Small aliphatic	Selects against larger hydrophobic/aromatics	Selects against larger hydrophobic/aromatics
+G	G4	Negative	Anything but proline or isoleucine	Anything but proline or isoleucine
+G	G5	Unique	Selects against polarity, but sometimes only weakly	Selects against polarity, but sometimes only weakly
+G	G6	Unique	Largely permissive, on average	Largely permissive, on average
+G	G7	Aliphatic	Strong selection against aspartate and lysine, with weaker selection against other charge/polarity	Strong selection against aspartate and lysine, with weaker selection against other charge/polarity
+G	GP	Permissive	Permissive positions	
+G	GO	Outlier	Outlier	
+H	H1	Aromatic	Overall strong selection, most tolerant of tyrosine, glutamine and asparagine	Overall strong selection, most tolerant of tyrosine, glutamine and asparagine. The cluster appears somewhat under-split, looking at the actual position profiles
+H	HP	Permissive	Permissive positions	Generally much more accessible than H1 positions
+H	HO	Outlier	Outlier	
+I	I1	Aliphatic	Selects for hydrophobicity	Selects for hydrophobicity
+I	I2	Large aliphatic	Selects for larger hydrophobic residues	Selects for larger hydrophobic residues
+I	I3	Not proline	Strong selection against proline, weaker selection against leucine and lysine (?)	Strong selection against proline, weaker selection against leucine and lysine, which is odd
+I	IP	Permissive	Permissive positions	Less buried than other isoleucines
+I	IO	Outlier	Outlier	
+K	K1	Positive	Weak selection for polarity, most selective for positive charge	Weak selection for polarity
+K	K2	Positive	Strong selection against aspartate, slightly weaker selection against glutamate, proline, glycine and aromatics	Strong selection against aspartate, weak selection against glutamate, proline, glycine and aromatics. Some trend towards nucleic acid binding, so potentially these are substitutions that specifically disrupt this and other similar roles
+K	K3	Not proline	Anything but proline	Anything but proline
+K	K4	Unique	Strongly selects against threonine & glutamine	Selects against threonine & glutamine, majority of these positions are in CXCR4
+K	K5	Positive	Strong selection against glutamate, weak selection against aspartate	Strong selection against glutamate, weak selection against aspartate
+K	KP	Permissive	Permissive positions	Very surface accessible, but this is generally true for K positions
+K	KO	Outlier	Outlier	
+L	L1	Large aliphatic	Selects against charge and polarity	Selects against charge and polarity
+L	L2	Large aliphatic	Only tolerates methionine and isoleucine	Only tolerates methionine and isoleucine (larger non-aromatic hydrophobics), but less conserved on average than L1 or L3
+L	L3	Aliphatic	Selects for hydrophobic residues	Selects for hydrophobic residues
+L	L4	Aliphatic	Strong selection against lysine, weaker against other charge	Strong selection against lysine, weaker against other charge. More often surface accessible than L1/2/3
+L	L5	Large aliphatic	Selection against negative charge (much weaker against positive)	Selection against negative charge (much weaker against positive)
+L	L6	Not proline	Anything but proline	Anything but proline
+L	L7	Negative	Weak selection against isoleucine, proline, tyrosine & tryptophan	Weak selection against isoleucine, proline, tyrosine & tryptophan (larger/branched residues)
+L	L8	Unique	Strong selection against arginine	Strong selection against arginine
+L	LP	Permissive	Permissive positions	Often surface accessible
+L	LO	Outlier	Outlier	
+M	M1	Large aliphatic	Tolerates leucine, isoleucine, valine and threonine (longer aliphatic chains?). Strongly intolerant to negative charge and proline	Tolerates leucine, isoleucine, valine and threonine (longer aliphatic chains?). Strongly intolerant to negative charge and proline
+M	M2	Not proline	Strong selection against proline, weak selection against negative charge	Strong selection against proline, weak selection against negative charge
+M	MP	Permissive	Permissive positions	
+M	MO	Outlier	Outlier	
+N	N1	Negative	Moderately selective against everything, weakest against serine and threonine	Moderately selective against everything, weakest against serine and threonine, range of surface accessibility
+N	N2	Not proline	Anything but proline	Anything but proline, much more surface accessible
+N	NP	Permissive	Permissive positions	Very surface accessible in the main dataset
+N	NO	Outlier	Outlier	
+P	P1	Unique	Selects moderately against everything	Selects moderately against everything, somewhat buried but not all
+P	P2	Not aromatic	Tolerates serine, threonine, glutamine, leucine and alanine	Tolerates serine, threonine, glutamine, leucine and alanine. More surface accessible
+P	P3	Not aromatic	Strong selection against aromatic, weaker against other large hydrophobic residues	Strong selection against aromatic, weaker against other large hydrophobic residues, surface accessible. They tend to be in a position that could clash or on the protein surface. Sometimes they seem to avoid a clash with a sharp turn
+P	P4	Aliphatic	Selects against charge and polarity	Selects against charge and polarity, mostly buried
+P	PP	Permissive	Permissive positions	Very surface accessible in the main dataset
+P	PO	Outlier	Outlier	
+Q	Q1	Negative	Generally selective, most tolerant to polarity or charge, strongest against aromatics	Generally selective, most tolerant to polarity or charge, strongest against aromatics
+Q	Q2	Not proline	Anything but proline	Anything but proline
+Q	Q3	Negative	Weak selection against hydrophobic residues	Weak selection against hydrophobic residues
+Q	Q4	Positive	Strong selection against negative charge	Strong selection against negative charge
+Q	Q5	Unique	Improves on average, apart from lysine	Improves on average, apart from lysine
+Q	QP	Permissive	Permissive positions	
+R	R1	Positive	Intolerant of everything apart from lysine	Intolerant of everything apart from lysine
+R	R2	Not proline	Anything but proline	Anything but proline
+R	R3	Positive	Selects against negative charge and proline	Selects against negative charge and proline
+R	R4	Not aromatic	Weak selection	Weak selection
+R	R5	Positive	Selects against negative charge, aromatics and proline	Selects against negative charge, aromatics and proline
+R	RP	Permissive	Permissive positions	
+R	RO	Outlier	Outlier	
+S	S1	Small aliphatic	Only tolerates threonine, alanine and glycine	Only tolerates threonine, generally the most buried subtype with the strongest decrease in hydrophobic solvation when mutated
+S	S2	Not proline	Anything but proline	Anything but proline, generally more surface accessible
+S	S3	Aliphatic	Selects against negative charge	Selects against negative charge, wide range of surface accessibility
+S	S4	Unique	Weak selection against polar	Weak selection against polar, very surface accessible
+S	S5	Unique	Anything but alanine	Anything but alanine, very surface accessible
+S	SP	Permissive	Permissive positions	
+S	SO	Outlier	Outlier	
+T	T1	Not aromatic	Only tolerates serine	Only tolerates serine, generally buried
+T	T2	Not proline	Anything but proline	Anything but proline
+T	T3	Not aromatic	Selects against aromatics and (less so) negative charge	Selects against aromatics and (less so) negative charge
+T	T4	Large aliphatic	Selects against negative charge, glycine and proline	Selects against negative charge, glycine and proline
+T	T5	Negative	Weak selection against cysteine only	Weak selection against cysteine only, very surface accessible
+T	T6	Not aromatic	Strong selection against asparagine, weaker selection against other positive charge, negative charge, aromatics and cysteine	Strong selection against asparagine, weaker selection against other positive charge, negative charge, aromatics and cysteine
+T	TP	Permissive	Permissive positions	
+T	TO	Outlier	Outlier	
+V	V1	Aliphatic	Selects for hydrophobic residues and threonine	Selects for hydrophobic residues and threonine, strongly buried
+V	V2	Large aliphatic	Only tolerates isoleucine	Only tolerates isoleucine, buried
+V	V3	Large aliphatic	Selects against charged (apart from glutamate) and some polar, particularly histidine	Selects against charged (apart from glutamate) and some polar, particularly histidine, less buried
+V	V4	Unique	Similar to V3 but selects against glutamate instead of aspartate and particularly disfavours glutamine	Similar to V3 but selects against glutamate instead of aspartate and particularly disfavours glutamine, also more surface accessible
+V	V5	Not proline	Anything but proline	Anything but proline, somewhat buried
+V	VP	Permissive	Permissive positions	
+V	VO	Outlier	Outlier	
+W	W1	Aromatic	Tolerates phenylalanine and tyrosine, and is less intolerant other large residues.	Tolerates phenylalanine and tyrosine as well as being less intolerant of methionine, leucine, isoleucine and histidine (all also reasonably large)
+W	W2	Unique	Tolerates cysteine, glycine, leucine, arginine and serine (no clear pattern?). Less intolerant of other aromatics	Tolerates cysteine, glycine, leucine, arginine and serine (no clear pattern?). Less intolerant of other aromatics
+W	WP	Permissive	Permissive positions	
+W	WO	Outlier	Outlier	
+Y	Y1	Aromatic	Tolerates aromatics, particularly intolerant of charge (other than aspartate) and glycine (?)	Tolerates phenylalanine and histidine, the other two amino acids with a single aromatic ring. The intolerance of tryptophan potentially means they are in spaces where it is too bulky. The requirement for an aromatic ring suggest pi interactions or similar
+Y	Y2	Large aliphatic	Intolerant of charged and polar residues, most tolerates phenylalanine, histidine and hydrophobic residues	Tolerant of all aromatic and hydrophobic substitutions
+Y	Y3	Aromatic	Generally selective, somewhat tolerates phenylalanine and histidine	Generally selective, somewhat tolerates phenylalanine and histidine
+Y	Y4	Not proline	Anything but proline	Anything but proline
+Y	YP	Permissive	Permissive positions	
+Y	YO	Outlier	Outlier	

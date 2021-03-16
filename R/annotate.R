@@ -119,3 +119,21 @@ any_less_than <- function(x, threshold) {
     return(FALSE)
   }
 }
+
+#' Describe amino acid positional subtypes
+#'
+#' @param x \link{deep_mutational_scan}
+describe_clusters <- function(x) {
+  if (!x$annotated) {
+    warning("deep_mutational_scan is not annotated. Annotating using annotate_dms().")
+    x <- annotate_dms(x)
+  }
+
+  df <- x$data
+  df$gene <- x$gene
+  df$study <- x$study
+  df <- dplyr::left_join(df[c("study", "gene", "position", "wt", "cluster")],
+                         dplyr::rename(deepscanscape::subtypes, global_cluster_freq = .data$prop),
+                         by = c("wt", "cluster"))
+  return(df)
+}

@@ -85,3 +85,24 @@
 #'   \item{umap2}{Second UMAP dimension of dimensionality reduction of A-Y}
 #' }
 "deep_mutational_scans"
+
+#' Amino acid positional subtypes from the deep mutational landscape
+#'
+#' A dataset containing groups, descriptions and notes about each amino acid subtype identified in the deep mutational
+#' landscape. Groups were determined by ER profile correlation and descriptions/notes from manual assessment of subtype
+#' position properties (ER, FoldX predicitons, conservation, etc.).
+#'
+#' @name subtypes
+#' @docType data
+#' @source \href{https://www.biorxiv.org/content/10.1101/2020.05.26.116756v1}{Dunham and Beltrao (2020)}
+#' @keywords data
+#' @format A data frame with 119 rows and 5 columns
+#' \describe{
+#'   \item{wt}{Wild type amino acid}
+#'   \item{cluster}{Amino acid subtype}
+#'   \item{prop}{Proportion of amino acid positions in the original dataset that are classified into this cluster}
+#'   \item{group}{Subtype group}
+#'   \item{description}{Description of the subtype}
+#'   \item{notes}{Additional notes about positions of this subtype}
+#' }
+"subtypes"
