@@ -12,7 +12,7 @@ recluster_dms(
 )
 }
 \arguments{
-\item{x}{data frame or list of \link{deep_mutational_scan} objects to recluster}
+\item{x}{data frame or list of \code{\link{deep_mutational_scan}} objects to recluster}
 
 \item{keep_clustering}{logical. Keep the outputs of \link[stats]{hclust} and \link[dynamicTreeCut]{cutreeHybrid} for
 downstream analysis}

@@ -17,16 +17,19 @@
 \method{dim}{deep_mutational_scan}(x)
 }
 \arguments{
-\item{x, object}{\link{deep_mutational_scan} object}
+\item{x, object}{\code{\link{deep_mutational_scan}} object.}
 
-\item{...}{Additional arguments}
+\item{...}{Additional arguments.}
 
-\item{indent.str}{Indent string for \link[utils]{str}}
+\item{indent.str}{Indent string for \link[utils]{str}.}
 
-\item{nest.lev}{Nest level for \link[utils]{str}}
+\item{nest.lev}{Nest level for \link[utils]{str}.}
 }
 \description{
-General S3 Methods for Deep Mutational Scans
+\code{\link{deep_mutational_scan}} S3 objects support most generics that make sense for the data structure. Mostly
+these operate on the underlying list object, although specific \code{format}, \code{print}, \code{str} and \code{dim}
+methods are provides to make working with the object more convenient. The \code{dim} method provides a direct
+short-cut to the main data frame.
 }
 \section{Functions}{
 \itemize{

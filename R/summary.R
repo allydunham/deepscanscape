@@ -3,7 +3,7 @@
 # TODO more summary stats?
 #' Summarise Deep Mutational Scans
 #'
-#' @param object,x A \link{deep_mutational_scan} object.
+#' @param object,x A \code{\link{deep_mutational_scan}} object.
 #' @param ... Additional arguments
 #' @return deep_mutational_scan_summary object containing:
 #'   \describe{

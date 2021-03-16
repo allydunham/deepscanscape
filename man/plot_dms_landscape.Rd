@@ -12,7 +12,7 @@ but it is generally better to do this beforehand as it an expensive operation.}
 
 \item{name}{Name of this dataset. When NULL a name is generated from the object data}
 
-\item{feature}{Feature from the \link{deep_mutational_scans} dataset to map positions against}
+\item{feature}{Feature from the \code{\link{deep_mutational_scan}} dataset to map positions against}
 }
 \description{
 Plot a new study on the deep mutational landscape

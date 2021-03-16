@@ -15,26 +15,43 @@ deep_mutational_scan(
 )
 }
 \arguments{
-\item{df}{A data frame to parse}
+\item{df}{A data frame to parse.}
 
-\item{scheme}{Original data scheme (see \code{\link{parse_dms_data}})}
+\item{scheme}{Original data scheme (see \code{\link{parse_dms_data}}).}
 
 \item{trans}{Function to transform scores onto the standard scale. Accepts a string corresponding to known transforms
 or a custom function (\code{\link{transform_dms}}).}
 
-\item{na_value}{Value to set missense NA scores to (see \code{\link{impute_dms}})}
+\item{na_value}{Value to set missense NA scores to (see \code{\link{impute_dms}}).}
 
-\item{annotate}{Annotate the dataset with mutational landscape data (PCA, UMAP and amino acid subtypes)}
+\item{annotate}{Annotate the dataset with mutational landscape data (PCA, UMAP and amino acid subtypes).}
 
-\item{study}{Source of the deep mutational scan}
+\item{study}{Source of the deep mutational scan.}
 
-\item{gene}{Gene scanned}
+\item{gene}{Gene scanned.}
 }
 \value{
-A deep mutational scan S3 object
+A deep_mutational_scan S3 object, which broadly behaves as a list containing the following fields:
+  \itemize{
+    \item data: \code{\link[tibble]{tibble}} containing positions ER scores and other positional data
+    \item study: source study
+    \item gene: gene scanned
+    \item annotated: logical indicating if the data has been annotated with PCs, UMAP coordinates and clusters
+    \item impute_mask: numeric matrix indicating imputed ER scores, corresponding to the
+    rows/ER columns of \code{data} (see \code{\link{impute_dms}} for details)
+    \item cluster: \code{\link[tibble]{tibble}} containing further details on how clusters were assigned during
+    annotation, corresponding to the rows of \code{data}
+  }
+  The class is used like a list apart from [ accesses the main data frame (see \link{dms_extract} for details).
 }
 \description{
 Store deep mutational scanning data in a standardised format, alongside
-metadata describing the state of the data. The primary data is contained in
-a tibble
+metadata describing the state of the data.
+}
+\examples{
+path <- system.file("extdata", "urn_mavedb_00000036-a-1_scores.csv",
+                    package = "deepscanscape")
+csv <- read.csv(path, skip = 4)
+dms <- deep_mutational_scan(csv, scheme = "mave", trans = "vamp",
+                            gene = "LDLRAP1", study = "urn:mavedb:00000036")
 }

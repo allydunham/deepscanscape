@@ -11,16 +11,18 @@
 \method{[}{deep_mutational_scan}(x, i, j, ...) <- value
 }
 \arguments{
-\item{x}{\link{deep_mutational_scan} object}
+\item{x}{\code{\link{deep_mutational_scan}} object.}
 
-\item{i, j, ...}{Indices to access}
+\item{i, j, ...}{Indices to access.}
 
-\item{drop}{Coerce result to lowest possible dimension}
+\item{drop}{Coerce result to lowest possible dimension.}
 
-\item{value}{Value to set}
+\item{value}{Value to set.}
 }
 \description{
-Extracting and replacing deep mutational scanning data
+Extracting and replacing data from \code{\link{deep_mutational_scan}} objects uses a mixture of list and data frame
+syntax. $ and [[ extract values from the main data fields (e.g. the gene or where the data is annotated) and [
+provides a shortcut to access the main data table, which can otherwise be accessed via \code{x$data}.
 }
 \section{Functions}{
 \itemize{
@@ -29,3 +31,30 @@ Extracting and replacing deep mutational scanning data
 \item \code{[<-.deep_mutational_scan}: Assign
 }}
 
+\examples{
+# Setup object
+path <- system.file("extdata", "urn_mavedb_00000036-a-1_scores.csv",
+                    package = "deepscanscape")
+csv <- read.csv(path, skip = 4)
+dms <- deep_mutational_scan(csv, scheme = "mave", trans = "vamp",
+                            gene = "LDLRAP1", study = "urn:mavedb:00000036")
+
+# Extract meta data:
+dms$study
+dms$impute_mask
+
+dms[["gene"]]
+
+# Replace meta data
+dms$gene <- "new_gene"
+dms$impute_mask <- NA
+
+# Quickly access data columns:
+dms["A"]
+dms[c(1,2,3), "C"]
+dms[c("position", "wt", "A", "D")]
+
+# Quickly modify data columns
+dms["position"] <- dms["position"] + 1
+
+}

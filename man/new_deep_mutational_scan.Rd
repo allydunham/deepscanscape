@@ -9,9 +9,12 @@ new_deep_mutational_scan(df, study, gene)
 \arguments{
 \item{df}{A data frame in the required format (position, wt, A-Y, additional data...).}
 
-\item{study}{The source study}
+\item{study}{The source study.}
 
-\item{gene}{The studied gene}
+\item{gene}{The studied gene.}
+}
+\value{
+A deep_mutational_scan S3 object (see \code{\link{deep_mutational_scan}})
 }
 \description{
 Create a new raw deep_mutational_scan object. This is expected to have no annotations and no imputation but have

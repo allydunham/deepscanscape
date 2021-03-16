@@ -3,7 +3,7 @@
 # TODO add more parameters to clustering?
 #' Recluster DMS data with a combined dataset
 #'
-#' @param x data frame or list of \link{deep_mutational_scan} objects to recluster
+#' @param x data frame or list of \code{\link{deep_mutational_scan}} objects to recluster
 #' @param keep_clustering logical. Keep the outputs of \link[stats]{hclust} and \link[dynamicTreeCut]{cutreeHybrid} for
 #' downstream analysis
 #' @param deep_split Named vector of deepSplit parameters to pass to \link[dynamicTreeCut]{cutreeHybrid}. Must be a

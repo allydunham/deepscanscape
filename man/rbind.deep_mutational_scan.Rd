@@ -7,8 +7,12 @@
 \method{rbind}{deep_mutational_scan}(...)
 }
 \arguments{
-\item{...}{\link{deep_mutational_scan} objects to combine}
+\item{...}{\code{\link{deep_mutational_scan}} objects to combine.}
+}
+\value{
+A \code{\link[tibble]{tibble}} whose rows contain positional data from all the provided scans.
 }
 \description{
-Combine deep mutational scan data
+Combine multiple \code{\link{deep_mutational_scan}} objects into a single \code{\link[tibble]{tibble}}, including
+columns giving the study and gene of each position.
 }

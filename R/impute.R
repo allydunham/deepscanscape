@@ -22,7 +22,7 @@ impute_dms <- function(x, na_value="impute") {
   mask$mask[is.na(mask$score) & mask$wt != mask$mut] <- 2
   mask <- tidyr::pivot_wider(mask[c("position", "wt", "mut", "mask")],
                              names_from = .data$mut, values_from = .data$mask)[amino_acids]
-  x$impute_mask <- as.matrix(mask)
+  mask <- as.matrix(mask)
 
   df$score[df$wt == df$mut & is.na(df$score)] <- 0
 

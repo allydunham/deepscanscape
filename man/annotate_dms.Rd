@@ -7,7 +7,7 @@
 annotate_dms(x)
 }
 \arguments{
-\item{x}{\link{deep_mutational_scan} to annotate}
+\item{x}{\code{\link{deep_mutational_scan}} to annotate}
 }
 \description{
 Annotate positions based on the deep mutational landscape

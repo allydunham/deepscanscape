@@ -16,7 +16,7 @@ theme_deepscanscape <- function() {
 
 #' Plot a deep mutational scan dataset as a heatmap
 #'
-#' @param x \link{deep_mutational_scan} to analyse
+#' @param x \code{\link{deep_mutational_scan}} to analyse
 #' @export
 plot_dms_heatmap <- function(x) {
   df <- tidyr::pivot_longer(x$data[c("position", "wt", amino_acids)],
@@ -46,7 +46,7 @@ plot_dms_heatmap <- function(x) {
 #' @param x \link{deep_mutational_scan} to analyse. Unannotated datasets will be annotated using \link{annotate_dms},
 #'   but it is generally better to do this beforehand as it an expensive operation.
 #' @param name Name of this dataset. When NULL a name is generated from the object data
-#' @param feature Feature from the \link{deep_mutational_scans} dataset to map positions against
+#' @param feature Feature from the \code{\link{deep_mutational_scan}} dataset to map positions against
 #' @export
 plot_dms_landscape <- function(x, name = NULL, feature = NULL) {
   if (!x$annotated) {
@@ -125,7 +125,7 @@ plot_dms_landscape <- function(x, name = NULL, feature = NULL) {
 
 #' Plot amino acid subtype frequencies
 #'
-#' @param x \link{deep_mutational_scan} or data frame containing multiple deep mutational scans.
+#' @param x \code{\link{deep_mutational_scan}} or data frame containing multiple deep mutational scans.
 plot_dms_cluster_frequencies <- function(x) {
   if ("deep_mutational_scan" %in% class(x)) {
     if (!x$annotated) {

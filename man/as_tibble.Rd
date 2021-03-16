@@ -5,7 +5,7 @@
 \alias{as_tibble.deep_mutational_scan}
 \alias{as.data.frame.deep_mutational_scan}
 \alias{as.list.deep_mutational_scan}
-\title{Convert deep_mutational_scans to data frames}
+\title{Convert deep_mutational_scan objects}
 \usage{
 \method{as_tibble}{deep_mutational_scan}(x, ..., full = FALSE)
 
@@ -14,14 +14,18 @@
 \method{as.list}{deep_mutational_scan}(x, ...)
 }
 \arguments{
-\item{x}{\link{deep_mutational_scan} object}
+\item{x}{\code{\link{deep_mutational_scan}} object.}
 
-\item{...}{Ignored}
+\item{...}{Ignored.}
 
-\item{full}{Include columns containing metadata (study, gene)}
+\item{full}{Include columns containing metadata (study, gene).}
+}
+\value{
+A \code{\link[tibble]{tibble}}, \code{\link[base]{data.frame}} or \code{\link[base]{list}}
 }
 \description{
-Convert deep_mutational_scans to data frames
+Conveniently convert \code{\link{deep_mutational_scan}} objects to a \code{\link[tibble]{tibble}} or
+\code{\link[base]{data.frame}} or \code{\link[base]{list}}, with the option to add gene and study columns.
 }
 \section{Methods (by class)}{
 \itemize{

@@ -11,13 +11,16 @@
 \method{plot}{deep_mutational_scan}(x, ...)
 }
 \arguments{
-\item{object, x}{\link{deep_mutational_scan} to produce a
-summary plot for.}
+\item{object, x}{\code{\link{deep_mutational_scan}} to produce a summary plot for.}
 
-\item{...}{Additional parameters}
+\item{...}{Additional parameters.}
+}
+\value{
+A \code{\link[ggplot2]{ggplot2}} object for autoplot or nothing for plot, which prints the object directly.
 }
 \description{
-Summary plot for Deep Mutational Scans
+Produce a summary plot for a \code{\link{deep_mutational_scan}} object, showing a heatmap with the ER score for
+each substitution at each position.
 }
 \section{Functions}{
 \itemize{

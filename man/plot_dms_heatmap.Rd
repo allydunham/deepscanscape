@@ -7,7 +7,7 @@
 plot_dms_heatmap(x)
 }
 \arguments{
-\item{x}{\link{deep_mutational_scan} to analyse}
+\item{x}{\code{\link{deep_mutational_scan}} to analyse}
 }
 \description{
 Plot a deep mutational scan dataset as a heatmap

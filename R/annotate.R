@@ -2,9 +2,10 @@
 # TODO test annotation functions
 
 # TODO add more parameters
+# TODO support combined dms datasets?
 #' Annotate positions based on the deep mutational landscape
 #'
-#' @param x \link{deep_mutational_scan} to annotate
+#' @param x \code{\link{deep_mutational_scan}} to annotate
 #'
 #' @export
 annotate_dms <- function(x) {

@@ -14,7 +14,7 @@
 \method{print}{deep_mutational_scan_summary}(x, ...)
 }
 \arguments{
-\item{object, x}{A \link{deep_mutational_scan} object.}
+\item{object, x}{A \code{\link{deep_mutational_scan}} object.}
 
 \item{...}{Additional arguments}
 }

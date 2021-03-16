@@ -7,7 +7,7 @@
 plot_dms_cluster_frequencies(x)
 }
 \arguments{
-\item{x}{\link{deep_mutational_scan} or data frame containing multiple deep mutational scans.}
+\item{x}{\code{\link{deep_mutational_scan}} or data frame containing multiple deep mutational scans.}
 }
 \description{
 Plot amino acid subtype frequencies

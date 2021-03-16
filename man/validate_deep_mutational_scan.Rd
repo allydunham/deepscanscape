@@ -7,8 +7,28 @@
 validate_deep_mutational_scan(x)
 }
 \arguments{
-\item{x}{\link{deep_mutational_scan} object}
+\item{x}{\code{\link{deep_mutational_scan}} object.}
+}
+\value{
+The input is returned unaltered, since the main purpose of the function is to raise an error if the
+  object is erroneous.
 }
 \description{
-Validate deep_mutational_scan objects
+Check properties of deep_mutational_scan object adhere to various baseline expectations, which would lead to
+downstream errors if not caught.
+}
+\details{
+The following assumptions are currently checked:
+\itemize{
+  \item Correct class set
+  \item Correct fields present
+  \item \code{data} is a tibble
+  \item \code{annotated} is logical
+  \item \code{impute_matrix} is a tibble or NA
+  \item \code{cluster} is a tibble or NA
+  \item \code{data} contains the correct columns
+  \item \code{data} contains no duplicate rows
+  \item \code{impute_matrix} contains the correct type of values
+  \item Annotated objects contain the correct \code{data} and \code{cluster} columns
+}
 }
