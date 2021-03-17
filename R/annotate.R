@@ -28,12 +28,12 @@
 #'   \item notes: Notes on the cluster assignment
 #' }
 #' @export
-annotate_dms <- function(x) {
+annotate <- function(x) {
   if (is.deep_mutational_scan(x)) {
-    return(annotate_dms_deep_scan(x))
+    return(annotate_dms(x))
   } else if (is.data.frame(x)) {
     x <- tibble::as_tibble(x)
-    return(annotate_dms_tibble(x))
+    return(annotate_df(x))
   } else {
     stop("Unrecognised input: x must be a deep_mutational_scan or data frame containing data from multiple scans")
   }
@@ -41,16 +41,16 @@ annotate_dms <- function(x) {
 
 #' Annotate a Deep Mutational Scan object
 #'
-#' Internal function called by \code{\link{annotate_dms}} when passed a \code{\link{deep_mutational_scan}}
+#' Internal function called by \code{\link{annotate}} when passed a \code{\link{deep_mutational_scan}}
 #'
 #' @param x \code{\link{deep_mutational_scan}}
-annotate_dms_deep_scan <- function(x) {
+annotate_dms <- function(x) {
   if (!is.deep_mutational_scan(x)) {
     stop("Unrecognised data.\nCreate a standardised dataset using deep_mutational_scan()")
   }
 
   if (any(is.na(x[amino_acids]))) {
-    stop("NA fitness scores present\nUse impute_dms to remove these")
+    stop("NA fitness scores present\nUse impute to remove these")
   }
 
   if (x$annotated) {
@@ -112,10 +112,10 @@ annotate_dms_deep_scan <- function(x) {
 
 #' Annotate a Deep Mutational Scan object
 #'
-#' Internal function called by \code{\link{annotate_dms}} when passed a \code{\link[tibble]{tibble}}
+#' Internal function called by \code{\link{annotate}} when passed a \code{\link[tibble]{tibble}}
 #'
 #' @param x \code{\link[tibble]{tibble}}
-annotate_dms_tibble <- function(x) {
+annotate_df <- function(x) {
   x <- validate_combined_dms(x)[c("study", "gene", "position", "wt", amino_acids)]
 
   # Map onto PCAs
@@ -223,7 +223,7 @@ describe_clusters <- function(x) {
   if (is.deep_mutational_scan(x)) {
     if (!x$annotated) {
       warning("deep_mutational_scan is not annotated. Annotating using annotate_dms().")
-      x <- annotate_dms(x)
+      x <- annotate(x)
     }
 
     df <- x$data

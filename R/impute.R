@@ -7,7 +7,7 @@
 #' substitution (e.g A -> C) in the combined dataset
 #'
 #' @export
-impute_dms <- function(x, na_value="impute") {
+impute <- function(x, na_value="impute") {
   if (!is.deep_mutational_scan(x)) {
     stop("Unrecognised data.\nCreate a standardised dataset using deep_mutational_scan()")
   }

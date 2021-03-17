@@ -48,15 +48,15 @@ plot_dms_heatmap <- function(x) {
 # TODO Update to support combined data
 #' Plot a new study on the deep mutational landscape
 #'
-#' @param x \link{deep_mutational_scan} to analyse. Unannotated datasets will be annotated using \link{annotate_dms},
+#' @param x \link{deep_mutational_scan} to analyse. Unannotated datasets will be annotated using \link{annotate},
 #'   but it is generally better to do this beforehand as it an expensive operation.
 #' @param name Name of this dataset. When NULL a name is generated from the object data
 #' @param feature Feature from the \code{\link{deep_mutational_scan}} dataset to map positions against
 #' @export
-plot_dms_landscape <- function(x, name = NULL, feature = NULL) {
+plot_landscape <- function(x, name = NULL, feature = NULL) {
   if (!x$annotated) {
-    warning("deep_mutational_scan is not annotated. Annotating using annotate_dms().")
-    x <- annotate_dms(x)
+    warning("deep_mutational_scan is not annotated. Annotating using annotate().")
+    x <- annotate(x)
   }
 
   # Guess good
@@ -131,11 +131,11 @@ plot_dms_landscape <- function(x, name = NULL, feature = NULL) {
 #' Plot amino acid subtype frequencies
 #'
 #' @param x \code{\link{deep_mutational_scan}} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}.
-plot_dms_cluster_frequencies <- function(x) {
+plot_cluster_frequencies <- function(x) {
   if (is.deep_mutational_scan(x)) {
     if (!x$annotated) {
-      warning("deep_mutational_scan is not annotated. Annotating using annotate_dms().")
-      x <- annotate_dms(x)
+      warning("deep_mutational_scan is not annotated. Annotating using annotate().")
+      x <- annotate(x)
     }
     df <- x$data
   } else if (is.data.frame(x)) {

@@ -2,36 +2,13 @@
 % Please edit documentation in R/annotate.R
 \name{annotate_dms}
 \alias{annotate_dms}
-\title{Annotate positions based on the deep mutational landscape}
+\title{Annotate a Deep Mutational Scan object}
 \usage{
 annotate_dms(x)
 }
 \arguments{
-\item{x}{\code{\link{deep_mutational_scan}} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}
-to annotate}
-}
-\value{
-An annotated \code{\link{deep_mutational_scan}} if passed a \code{\link{deep_mutational_scan}} or a
-\code{\link[tibble]{tibble}} when passed a \link[=rbind.deep_mutational_scan]{combined DMS data frame}.
-This data frame contains the following added columns:
-\itemize{
-  \item cluster: the assigned amino acid subtype
-  \item PC1 - PC20: Principal Component coordinates
-  \item umap1/2: UMAP coordinates
-  \item base_cluster: The nearest primary cluster centroid (i.e. not outlier or permissive clusters)
-  \item permissive: The position is identified as permissive (|ER| < 0.4 for all amino acids)
-  \item small_margin: The distance to two clusters is very similar, so the assignment is low confidence and marked as
-  an outlier
-  \item high_distance: The position is distant from all cluster centroids and is marked an outlier.
-  \item dist1-8: The distance to each cluster of the WT amino acid
-  \item notes: Notes on the cluster assignment
-}
+\item{x}{\code{\link{deep_mutational_scan}}}
 }
 \description{
-Add PCA and UMAP transformed coordinates and amino acid subtypes based on analysis and clustering of the combined
-\link[=deep_mutational_scans]{deep mutational landscape dataset}.
-}
-\details{
-PCA and UMAP coordinates are assigned using the original models fit on the
-\link[=deep_mutational_scans]{deep mutational landscape dataset}.
+Internal function called by \code{\link{annotate}} when passed a \code{\link{deep_mutational_scan}}
 }

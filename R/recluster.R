@@ -11,7 +11,7 @@
 #' @param add_combined Combine the supplied data with the data contained in \link{deep_mutational_scans}
 #'
 #' @export
-recluster_dms <- function(x, keep_clustering = FALSE, deep_split=NULL, add_combined=TRUE) {
+recluster <- function(x, keep_clustering = FALSE, deep_split=NULL, add_combined=TRUE) {
   # Process deepSplit
   if (is.null(deep_split)) {
     deep_split <- c("A" =  0, "C" =  0, "D" =  1, "E" =  0, "F" =  1, "G" =  1, "H" =  0, "I" =  0, "K" =  1,
@@ -37,7 +37,7 @@ recluster_dms <- function(x, keep_clustering = FALSE, deep_split=NULL, add_combi
     df <- tibble::as_tibble(x, full = TRUE)
   } else if (is.data.frame(x)) {
     if (!all(c("study", "gene", "position", "wt", amino_acids) %in% names(x))) {
-      stop("x does not contain the required columns (see ?recluster_dms)")
+      stop("x does not contain the required columns (see ?recluster)")
     }
     df <- tibble::as_tibble(x)
   } else if (inherits(x, "list")) {
@@ -123,11 +123,11 @@ cosine_distance_matrix <- function(m) {
 
 #' Summarise a deep mutational scan recluster
 #'
-#' @param df reclustered data, as output by \link{recluster_dms}
+#' @param df reclustered data, as output by \link{recluster}
 #' @param aa Character vector of amino acids to summarise clusters from.
 #' @param square_tiles Force heatmap tiles to be square. It can be useful to disable this when summarising a large
 #'   number of clusters.
-plot_dms_recluster <- function(df, aa = NULL, square_tiles = TRUE) {
+plot_recluster <- function(df, aa = NULL, square_tiles = TRUE) {
   req_cols <- c("cluster", "study",  "gene", "position", "wt", amino_acids)
   if (!all(req_cols %in% names(df))) {
     stop("Incorrect columns in df, must include: ", stringr::str_c(req_cols, collapse = ", "))
@@ -205,3 +205,5 @@ plot_dms_recluster <- function(df, aa = NULL, square_tiles = TRUE) {
   }
   return(p)
 }
+
+# TODO correlation heatmap

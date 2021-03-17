@@ -17,12 +17,12 @@ deep_mutational_scan(
 \arguments{
 \item{df}{A data frame to parse.}
 
-\item{scheme}{Original data scheme (see \code{\link{parse_dms_data}}).}
+\item{scheme}{Original data scheme (see \code{\link{parse_deep_scan}}).}
 
 \item{trans}{Function to transform scores onto the standard scale. Accepts a string corresponding to known transforms
-or a custom function (\code{\link{transform_dms}}).}
+or a custom function (\code{\link{transform_er}}).}
 
-\item{na_value}{Value to set missense NA scores to (see \code{\link{impute_dms}}).}
+\item{na_value}{Value to set missense NA scores to (see \code{\link{impute}}).}
 
 \item{annotate}{Annotate the dataset with mutational landscape data (PCA, UMAP and amino acid subtypes).}
 
@@ -38,11 +38,14 @@ A deep_mutational_scan S3 object, which broadly behaves as a list containing the
     \item gene: gene scanned
     \item annotated: logical indicating if the data has been annotated with PCs, UMAP coordinates and clusters
     \item impute_mask: numeric matrix indicating imputed ER scores, corresponding to the
-    rows/ER columns of \code{data} (see \code{\link{impute_dms}} for details)
+    rows/ER columns of \code{data} (see \code{\link{impute}} for details)
     \item cluster: \code{\link[tibble]{tibble}} containing further details on how clusters were assigned during
     annotation, corresponding to the rows of \code{data}
   }
-  The class is used like a list apart from [ accesses the main data frame (see \link{dms_extract} for details).
+  The class is used like a list apart from [ accesses the main data frame (\link[=dms_extract]{details}).
+  The class is also associated with other common generics (see \link[=dms_s3]{basic functions},
+  \link[=dms_summary]{summary}, \link[=as_tibble]{data frames}, \link[=dms_plot]{plotting} and
+  \link[=rbind.deep_mutational_scan]{combining data}).
 }
 \description{
 Store deep mutational scanning data in a standardised format, alongside

@@ -12,7 +12,7 @@
 #' parsing MaveDB data)
 #'
 #' @export
-parse_dms_data <- function(x, scheme, position_offset=0, score_col=NULL) {
+parse_deep_scan <- function(x, scheme, position_offset=0, score_col=NULL) {
   methods <- c("mavedb" = parse_mavedb,
                "long" = parse_long,
                "wide" = parse_wide,

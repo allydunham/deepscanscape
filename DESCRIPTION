@@ -1,7 +1,7 @@
 Package: deepscanscape
 Type: Package
 Title: Annotate New Data Using Deep Mutational Landscapes
-Version: 0.0.0.9013
+Version: 0.0.0.9014
 Authors@R: person("Alistair", "Dunham", email = "ally@ebi.ac.uk", role = c("aut", "cre"))
 Description: Process and annotate new deep mutational scanning study data
     based on a deep mutational landscape derived from 28 previous studies.

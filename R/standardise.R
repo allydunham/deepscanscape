@@ -9,7 +9,7 @@
 #' those used in the combined dataset
 #'
 #' @export
-normalise_dms <- function(x, q=0.1) {
+normalise_er <- function(x, q=0.1) {
   q <- stats::quantile(x, q, na.rm = TRUE)
   return(x / -stats::median(x[x <= q], na.rm = TRUE))
 }
@@ -22,7 +22,7 @@ normalise_dms <- function(x, q=0.1) {
 #' @param base Log base of current scores (used for log transform)
 #'
 #' @export
-transform_dms <- function(x, trans, base=2) {
+transform_er <- function(x, trans, base=2) {
   methods <- c("vamp-Seq" = transform_vamp,
               "log" = transform_log,
               "unit" = transform_unit)

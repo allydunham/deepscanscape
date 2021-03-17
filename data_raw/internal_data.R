@@ -37,4 +37,5 @@ cluster_centers <- select(cluster_centers, PC2:PC20) %>%
   as.matrix() %>%
   magrittr::set_rownames(cluster_centers$cluster)
 
-usethis::use_data(dms_pca, median_scores, cluster_centers, aa_3_to_1, amino_acids, internal = TRUE, overwrite = TRUE)
+usethis::use_data(dms_pca, median_scores, cluster_centers, aa_3_to_1, amino_acids, internal = TRUE,
+                  overwrite = TRUE, compress = "xz")

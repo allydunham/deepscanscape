@@ -18,7 +18,6 @@ new_deep_mutational_scan <- function(df, study, gene) {
 }
 
 # TODO Use this check more widely?
-# TODO Export this?
 #' Validate deep_mutational_scan objects
 #'
 #' Check properties of deep_mutational_scan object adhere to various baseline expectations, which would lead to
@@ -116,10 +115,10 @@ validate_deep_mutational_scan <- function(x) {
 #' metadata describing the state of the data.
 #'
 #' @param df A data frame to parse.
-#' @param scheme Original data scheme (see \code{\link{parse_dms_data}}).
+#' @param scheme Original data scheme (see \code{\link{parse_deep_scan}}).
 #' @param trans Function to transform scores onto the standard scale. Accepts a string corresponding to known transforms
-#' or a custom function (\code{\link{transform_dms}}).
-#' @param na_value Value to set missense NA scores to (see \code{\link{impute_dms}}).
+#' or a custom function (\code{\link{transform_er}}).
+#' @param na_value Value to set missense NA scores to (see \code{\link{impute}}).
 #' @param annotate Annotate the dataset with mutational landscape data (PCA, UMAP and amino acid subtypes).
 #' @param study Source of the deep mutational scan.
 #' @param gene Gene scanned.
@@ -130,11 +129,14 @@ validate_deep_mutational_scan <- function(x) {
 #'     \item gene: gene scanned
 #'     \item annotated: logical indicating if the data has been annotated with PCs, UMAP coordinates and clusters
 #'     \item impute_mask: numeric matrix indicating imputed ER scores, corresponding to the
-#'     rows/ER columns of \code{data} (see \code{\link{impute_dms}} for details)
+#'     rows/ER columns of \code{data} (see \code{\link{impute}} for details)
 #'     \item cluster: \code{\link[tibble]{tibble}} containing further details on how clusters were assigned during
 #'     annotation, corresponding to the rows of \code{data}
 #'   }
-#'   The class is used like a list apart from [ accesses the main data frame (see \link{dms_extract} for details).
+#'   The class is used like a list apart from [ accesses the main data frame (\link[=dms_extract]{details}).
+#'   The class is also associated with other common generics (see \link[=dms_s3]{basic functions},
+#'   \link[=dms_summary]{summary}, \link[=as_tibble]{data frames}, \link[=dms_plot]{plotting} and
+#'   \link[=rbind.deep_mutational_scan]{combining data}).
 #' @examples
 #' path <- system.file("extdata", "urn_mavedb_00000036-a-1_scores.csv",
 #'                     package = "deepscanscape")
@@ -146,7 +148,7 @@ deep_mutational_scan <- function(df, scheme=NULL, trans=NULL, na_value="impute",
                                  annotate=TRUE, study=NA, gene=NA) {
   # Parse scheme
   if (!is.null(scheme)) {
-    df <- parse_dms_data(df, scheme)
+    df <- parse_deep_scan(df, scheme)
   } else {
     df <- tibble::as_tibble(df)
     if (!all(c("position", "wt", "mut", "score") %in% names(df))) {
@@ -157,11 +159,11 @@ deep_mutational_scan <- function(df, scheme=NULL, trans=NULL, na_value="impute",
 
   # Transform
   if (!is.null(trans)) {
-    df$score <- transform_dms(df$score, trans)
+    df$score <- transform_er(df$score, trans)
   }
 
   # Normalise
-  df$score <- normalise_dms(df$score)
+  df$score <- normalise_er(df$score)
 
   # Format tibble
   df <- df[df$mut %in% amino_acids, ]
@@ -175,12 +177,12 @@ deep_mutational_scan <- function(df, scheme=NULL, trans=NULL, na_value="impute",
   # Impute
   # TODO note what happens when not doing this
   if (!(is.na(na_value) | is.null(na_value))) {
-    out <- impute_dms(out)
+    out <- impute(out)
   }
 
   # Annotate
   if (annotate) {
-    out <- annotate_dms(out)
+    out <- annotate(out)
   }
 
   return(validate_deep_mutational_scan(out))
@@ -426,7 +428,7 @@ validate_combined_dms <- function(x, annotated = FALSE) {
   }
 
   if (any(is.na(x[amino_acids]))) {
-    stop("NA ER scores present\nUse impute_dms() to remove these before combining data")
+    stop("NA ER scores present\nUse impute() to remove these before combining data")
   }
 
   cols <- c("study", "gene", "position", "wt", amino_acids)
