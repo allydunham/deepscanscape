@@ -114,6 +114,7 @@ cluster_df <- function(tbl, deep_split = 0) {
 #' Calculate the cosine distance between all rows of a matrix.
 #'
 #' @param m Numeric matrix
+#' @keywords internal
 cosine_distance_matrix <- function(m) {
   # TODO - document this properly. Rounding is required to account for floating point precision
   cosine <- tcrossprod(m) / sqrt(tcrossprod(rowSums(m^2)))
@@ -127,6 +128,7 @@ cosine_distance_matrix <- function(m) {
 #' @param aa Character vector of amino acids to summarise clusters from.
 #' @param square_tiles Force heatmap tiles to be square. It can be useful to disable this when summarising a large
 #'   number of clusters.
+#' @export
 plot_recluster <- function(df, aa = NULL, square_tiles = TRUE) {
   req_cols <- c("cluster", "study",  "gene", "position", "wt", amino_acids)
   if (!all(req_cols %in% names(df))) {

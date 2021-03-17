@@ -12,3 +12,4 @@ calculate_margin(x)
 \description{
 Calculate the margin by which each element is largest than the smallest
 }
+\keyword{internal}

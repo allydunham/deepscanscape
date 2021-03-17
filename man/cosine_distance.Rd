@@ -12,3 +12,4 @@ cosine_distance(x, y)
 \description{
 Calculate Cosine distance between rows of two matrices
 }
+\keyword{internal}

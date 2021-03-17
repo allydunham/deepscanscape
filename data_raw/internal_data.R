@@ -20,6 +20,12 @@ aa_3_to_1 <- c(ala = "A", arg = "R", asn = "N", asp = "D", cys = "C", gln = "Q",
 #                Y = "tyr", V = "val", U = "sec", O = "pyl", B = "asx", J = "xle",
 #                Z = "glx", X = "xaa", `*` = "ter")
 
+# FoldX column names
+foldx_terms <- c("total_energy", "backbone_hbond", "sidechain_hbond", "van_der_waals", "electrostatics",
+                 "solvation_polar", "solvation_hydrophobic", "van_der_waals_clashes", "entropy_sidechain",
+                 "entropy_mainchain", "cis_bond", "torsional_clash", "backbone_clash", "helix_dipole",
+                 "disulfide", "electrostatic_kon", "partial_covalent_bonds", "energy_ionisation")
+
 # Median DMS Scores
 median_scores <- read_tsv('data_raw/raw_mutational_scans.tsv') %>%
   filter(!mut == '*', !is.na(score)) %>%
@@ -37,5 +43,5 @@ cluster_centers <- select(cluster_centers, PC2:PC20) %>%
   as.matrix() %>%
   magrittr::set_rownames(cluster_centers$cluster)
 
-usethis::use_data(dms_pca, median_scores, cluster_centers, aa_3_to_1, amino_acids, internal = TRUE,
-                  overwrite = TRUE, compress = "xz")
+usethis::use_data(dms_pca, median_scores, cluster_centers, aa_3_to_1, amino_acids, foldx_terms,
+                  internal = TRUE, overwrite = TRUE, compress = "xz", version = 3)

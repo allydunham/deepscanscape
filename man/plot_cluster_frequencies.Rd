@@ -9,6 +9,16 @@ plot_cluster_frequencies(x)
 \arguments{
 \item{x}{\code{\link{deep_mutational_scan}} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}.}
 }
+\value{
+A \code{\link[ggplot2]{ggplot2}} plot.
+}
 \description{
-Plot amino acid subtype frequencies
+Plot the frequency each cluster occurs in an annotated deep mutational scan dataset, in order to identify data that
+strays from the expected frequencies. For example large proportions of outliers could suggest abnormal data or many
+permissive positions a weakly conserved protein.
+}
+\examples{
+dms <- annotate(deepscanscape::deep_scan)
+plot_cluster_frequencies(dms)
+
 }

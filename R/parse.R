@@ -32,6 +32,7 @@ parse_deep_scan <- function(x, scheme, position_offset=0, score_col=NULL) {
 }
 
 # Parse data in the MaveDB format (called from parse_dms_data)
+# @keywords internal
 parse_mavedb <- function(x, score_col, ...) {
   if (is.null(score_col)) {
     score_col <- "score"

@@ -32,12 +32,7 @@ provides a shortcut to access the main data table, which can otherwise be access
 }}
 
 \examples{
-# Setup object
-path <- system.file("extdata", "urn_mavedb_00000036-a-1_scores.csv",
-                    package = "deepscanscape")
-csv <- read.csv(path, skip = 4)
-dms <- deep_mutational_scan(csv, scheme = "mave", trans = "vamp",
-                            gene = "LDLRAP1", study = "urn:mavedb:00000036")
+dms <- deepscanscape::deep_scan
 
 # Extract meta data:
 dms$study

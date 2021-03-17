@@ -7,8 +7,9 @@
 check_permissive(x)
 }
 \arguments{
-\item{x}{Vector of ER scores}
+\item{x}{Vector of ER scores#}
 }
 \description{
 Check if ER scores qualifies as permissive
 }
+\keyword{internal}

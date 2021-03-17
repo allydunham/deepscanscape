@@ -12,3 +12,4 @@ annotate_dms(x)
 \description{
 Internal function called by \code{\link{annotate}} when passed a \code{\link{deep_mutational_scan}}
 }
+\keyword{internal}

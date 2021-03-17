@@ -106,3 +106,23 @@
 #'   \item{notes}{Additional notes about positions of this subtype}
 #' }
 "subtypes"
+
+# TODO Update citation/name when I choose the final study
+#' Example deep_mutational_scan
+#'
+#' A \code{\link{deep_mutational_scan}} containing data from XXX. This dataset is primarily used to illustrate use of
+#' the package functions.
+#'
+#' @name deep_scan
+#' @docType data
+#' @keywords data
+#' @format A deep_mutational_scan with 306 positions
+#' \describe{
+#'   \item{data}{Positional data}
+#'   \item{study}{Name/ID of the source study}
+#'   \item{gene}{Gene scanned}
+#'   \item{annotated}{Logical indicating if the scan has been annotated with deep landscape data}
+#'   \item{impute_mask}{Numeric matrix showing which ER scores were imputed}
+#'   \item{cluster}{Tibble detailing amino acid subtype assignment, or NA}
+#' }
+"deep_scan"

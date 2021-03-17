@@ -7,10 +7,14 @@
 clamp(x, lower = -Inf, upper = Inf)
 }
 \arguments{
-\item{x}{Numeric vector to clamp}
+\item{x}{Numeric vector to clamp.}
 
-\item{upper, lower}{Limits to clamp to}
+\item{upper, lower}{Limits to clamp to.}
+}
+\value{
+Numeric vector with the same values as x, except those outside the limits are changed to be at the limit.
 }
 \description{
-Clamp values to limits
+Clamp numeric vectors to be within specified upper and/or lower bounds.
 }
+\keyword{internal}

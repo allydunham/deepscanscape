@@ -27,7 +27,7 @@
 #'
 #' @section Visualisation Functions:
 #' \itemize{
-#'   \item \code{\link{plot_dms_heatmap}} - Plot heatmaps show fitness scores across a protein
+#'   \item \code{\link{plot_er_heatmap}} - Plot heatmaps show fitness scores across a protein
 #'   \item \code{\link{plot_landscape}} - Project a new dataset onto the deep mutational landscape, including
 #'   visualising various biophysical properties.
 #'   \item \code{\link{plot_cluster_frequencies}} - Plot the frequencies of amino acid subtypes in a new dataset
@@ -48,5 +48,6 @@ NULL
 # TODO - Add to documentation - values, description, details, authour etc.
 # TODO - Add progress bars to longer opperations?
 # TODO - consistency of cluster/subtype
-# TODO - better example datasets
+# TODO - better example datasets - create a list of several DMS datasets
 # TODO - update citations over whole package
+# TODO - note data frame much more fragile - possible to abuse functions by constructing your own

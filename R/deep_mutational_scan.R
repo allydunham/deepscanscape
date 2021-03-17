@@ -209,12 +209,7 @@ is.deep_mutational_scan <- function(x) { # nolint
 #' @param drop Coerce result to lowest possible dimension.
 #' @param value Value to set.
 #' @examples
-#' # Setup object
-#' path <- system.file("extdata", "urn_mavedb_00000036-a-1_scores.csv",
-#'                     package = "deepscanscape")
-#' csv <- read.csv(path, skip = 4)
-#' dms <- deep_mutational_scan(csv, scheme = "mave", trans = "vamp",
-#'                             gene = "LDLRAP1", study = "urn:mavedb:00000036")
+#' dms <- deepscanscape::deep_scan
 #'
 #' # Extract meta data:
 #' dms$study
@@ -376,7 +371,7 @@ as.list.deep_mutational_scan <- function(x, ...) {
 #' @name dms_plot
 #' @importFrom ggplot2 autoplot
 autoplot.deep_mutational_scan <- function(object, ...){ # nolint
-  plot_dms_heatmap(object)
+  plot_er_heatmap(object)
 }
 
 #' @describeIn dms_plot S3 plot method

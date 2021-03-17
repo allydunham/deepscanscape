@@ -14,3 +14,4 @@ calculate_cluster_distances(wt, pca)
 \description{
 Calculate distance to each cluster of the amino acid
 }
+\keyword{internal}

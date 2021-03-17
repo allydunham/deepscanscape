@@ -2,6 +2,7 @@
 # TODO test annotation functions
 
 # TODO add more parameters
+# TODO change outlier to ambiguous for margin calls - and document the letters used
 #' Annotate positions based on the deep mutational landscape
 #'
 #' Add PCA and UMAP transformed coordinates and amino acid subtypes based on analysis and clustering of the combined
@@ -32,7 +33,6 @@ annotate <- function(x) {
   if (is.deep_mutational_scan(x)) {
     return(annotate_dms(x))
   } else if (is.data.frame(x)) {
-    x <- tibble::as_tibble(x)
     return(annotate_df(x))
   } else {
     stop("Unrecognised input: x must be a deep_mutational_scan or data frame containing data from multiple scans")
@@ -44,6 +44,7 @@ annotate <- function(x) {
 #' Internal function called by \code{\link{annotate}} when passed a \code{\link{deep_mutational_scan}}
 #'
 #' @param x \code{\link{deep_mutational_scan}}
+#' @keywords internal
 annotate_dms <- function(x) {
   if (!is.deep_mutational_scan(x)) {
     stop("Unrecognised data.\nCreate a standardised dataset using deep_mutational_scan()")
@@ -115,6 +116,7 @@ annotate_dms <- function(x) {
 #' Internal function called by \code{\link{annotate}} when passed a \code{\link[tibble]{tibble}}
 #'
 #' @param x \code{\link[tibble]{tibble}}
+#' @keywords internal
 annotate_df <- function(x) {
   x <- validate_combined_dms(x)[c("study", "gene", "position", "wt", amino_acids)]
 
@@ -173,6 +175,7 @@ annotate_df <- function(x) {
 #'
 #' @param wt Wild type amino acid
 #' @param pca PCA values for PC2 to PC20
+#' @keywords internal
 calculate_cluster_distances <- function(wt, pca) {
   clus <- cluster_centers[stringr::str_starts(rownames(cluster_centers), wt), , drop = FALSE]
   m <- matrix(pca, nrow = nrow(clus), ncol = 19, byrow = TRUE)
@@ -182,16 +185,19 @@ calculate_cluster_distances <- function(wt, pca) {
   return(d)
 }
 
+# TODO update to use the much faster crossprod implementation
 #' Calculate Cosine distance between rows of two matrices
 #'
 #' @param x,y Numeric matrices
+#' @keywords internal
 cosine_distance <- function(x, y) {
   return(acos(rowSums(x * y) / (sqrt(rowSums(x^2) * rowSums(y^2)))) / pi)
 }
 
 #' Check if ER scores qualifies as permissive
 #'
-#' @param x Vector of ER scores
+#' @param x Vector of ER scores#
+#' @keywords internal
 check_permissive <- function(x) {
   return(all(abs(x) < 0.4))
 }
@@ -199,6 +205,7 @@ check_permissive <- function(x) {
 #' Calculate the margin by which each element is largest than the smallest
 #'
 #' @param x Numeric vector
+#' @keywords internal
 calculate_margin <- function(x) {
   i <- which.min(x)
   return(x - x[i])
@@ -208,6 +215,7 @@ calculate_margin <- function(x) {
 #'
 #' @param x Numeric vector
 #' @param threshold Threshold below which TRUE is returned
+#' @keywords internal
 any_less_than <- function(x, threshold) {
   if (any(x > 0, na.rm = TRUE)) {
     return(min(x[x > 0], na.rm = TRUE) < threshold)
@@ -219,6 +227,7 @@ any_less_than <- function(x, threshold) {
 #' Describe amino acid positional subtypes
 #'
 #' @param x \link{deep_mutational_scan} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}
+#' @keywords internal
 describe_clusters <- function(x) {
   if (is.deep_mutational_scan(x)) {
     if (!x$annotated) {

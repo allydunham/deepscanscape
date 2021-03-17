@@ -12,3 +12,4 @@ describe_clusters(x)
 \description{
 Describe amino acid positional subtypes
 }
+\keyword{internal}

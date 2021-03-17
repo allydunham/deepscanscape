@@ -14,3 +14,4 @@ any_less_than(x, threshold)
 \description{
 Check if any non-zero values are below a threshold
 }
+\keyword{internal}

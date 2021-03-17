@@ -12,3 +12,4 @@ cosine_distance_matrix(m)
 \description{
 Calculate the cosine distance between all rows of a matrix.
 }
+\keyword{internal}

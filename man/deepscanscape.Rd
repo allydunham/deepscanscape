@@ -37,7 +37,7 @@ proteins they are most similar to.
 \section{Visualisation Functions}{
 
 \itemize{
-  \item \code{\link{plot_dms_heatmap}} - Plot heatmaps show fitness scores across a protein
+  \item \code{\link{plot_er_heatmap}} - Plot heatmaps show fitness scores across a protein
   \item \code{\link{plot_landscape}} - Project a new dataset onto the deep mutational landscape, including
   visualising various biophysical properties.
   \item \code{\link{plot_cluster_frequencies}} - Plot the frequencies of amino acid subtypes in a new dataset

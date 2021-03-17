@@ -40,6 +40,7 @@ transform_er <- function(x, trans, base=2) {
 }
 
 # Transform data pro
+# @keywords internal
 transform_vamp <- function(x, ...) {
   y <- 1 + (x - 1) / -min(x - 1, na.rm = TRUE)
   return(log2(y + min(y[y > 0], na.rm = TRUE)))

@@ -12,3 +12,4 @@ annotate_df(x)
 \description{
 Internal function called by \code{\link{annotate}} when passed a \code{\link[tibble]{tibble}}
 }
+\keyword{internal}

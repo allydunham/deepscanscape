@@ -4,16 +4,46 @@
 \alias{plot_landscape}
 \title{Plot a new study on the deep mutational landscape}
 \usage{
-plot_landscape(x, name = NULL, feature = NULL)
+plot_landscape(x, name = c("study", "gene"), feature = NULL)
 }
 \arguments{
-\item{x}{\link{deep_mutational_scan} to analyse. Unannotated datasets will be annotated using \link{annotate},
-but it is generally better to do this beforehand as it an expensive operation.}
+\item{x}{\code{\link{deep_mutational_scan}} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}.}
 
-\item{name}{Name of this dataset. When NULL a name is generated from the object data}
+\item{name}{Prefer to identify datasets by study or gene}
 
-\item{feature}{Feature from the \code{\link{deep_mutational_scan}} dataset to map positions against}
+\item{feature}{String name of a numeric feature from the \code{\link{deep_mutational_scan}} dataset to project onto
+the background landscape.}
+}
+\value{
+A \code{\link[ggplot2]{ggplot2}} plot.
 }
 \description{
-Plot a new study on the deep mutational landscape
+Project new data onto the deep mutational landscape derived from the combined data, viewed in UMAP space. This view
+allows you to determine if new data follows the expected distribution and compare it with the average properties for
+positions in the same regions of the landscape. This can give insights into the likely properties of positions in the
+new protein.
+}
+\details{
+Points represent positions from the new protein(s), positioned based on predicted UMAP coordinates from the
+combined landscape model. These are plotted on top of the whole combined landscape, which is represented as grey
+points when no feature is used and hexbins when one is. These bins are coloured based on the mean value of the
+chosen feature for all points that fall within the hexagon. If the chosen feature is a FoldX Gibbs Free Energy
+prediction values are initially clamped to -5 <= x <= 5 because larger values lead to difficult to read scales and
+are generally thought to represent program quirks rather than real biology.
+
+The input data is annotated using \code{\link{annotate}} if it is not already, based on the \code{annotated} flag
+for deep_mutational_scans and the presence of the required \code{umap1/2} columns for data frames. It is better to
+save the results of \code{annotate} if doing multiple downstream analyses because can be a relatively slow
+operation.
+}
+\examples{
+dms <- deepscanscape::deep_scan
+
+# Plot point positions
+plot_landscape(dms, name = "gene")
+
+# Plot against mean conservation
+dms <- annotate(dms)
+plot_landscape(dms, feature = "mean_sift")
+
 }

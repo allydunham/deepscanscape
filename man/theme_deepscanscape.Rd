@@ -7,5 +7,7 @@
 theme_deepscanscape()
 }
 \description{
-Default deepscanscape GGPlot2 theme
+A GGPlot2 theme based on \code{\link[ggpubr]{theme_pubclean}}, with a generally minimalist style. This theme
+changes the legend to be on the right, has a central title and subtitle, and removes facet strip and legend
+key backgrounds.
 }
