@@ -2,13 +2,13 @@
 
 #' Impute missing deep mutational scan data
 #'
-#' @param x link{deep_mutational_scan} to impute data from
+#' @param x \code{\link{deep_mutational_scan}} to impute data from
 #' @param na_value Value to set missense NA values to. Setting this to "impute" sets scores to the median score for that
 #' substitution (e.g A -> C) in the combined dataset
 #'
 #' @export
 impute_dms <- function(x, na_value="impute") {
-  if (!"deep_mutational_scan" %in% class(x)) {
+  if (!is.deep_mutational_scan(x)) {
     stop("Unrecognised data.\nCreate a standardised dataset using deep_mutational_scan()")
   }
 

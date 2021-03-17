@@ -7,7 +7,7 @@
 describe_clusters(x)
 }
 \arguments{
-\item{x}{\link{deep_mutational_scan}}
+\item{x}{\link{deep_mutational_scan} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}}
 }
 \description{
 Describe amino acid positional subtypes

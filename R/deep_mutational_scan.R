@@ -43,8 +43,8 @@ new_deep_mutational_scan <- function(df, study, gene) {
 #'   object is erroneous.
 validate_deep_mutational_scan <- function(x) {
   # Check fundamental structure
-  if (!"deep_mutational_scan" %in% class(x)) {
-    stop("deep_mutational_scan not listed in class()")
+  if (!is.deep_mutational_scan(x)) {
+    stop("Not a deep_mutational_scan (check class(x))")
   }
 
   if (!all(c("data", "study", "gene", "annotated", "impute_mask", "cluster") %in% names(x))) {
@@ -361,20 +361,6 @@ as.list.deep_mutational_scan <- function(x, ...) {
   return(x)
 }
 
-# TODO support passing a list of scans
-#' Combine deep mutational scan data
-#'
-#' Combine multiple \code{\link{deep_mutational_scan}} objects into a single \code{\link[tibble]{tibble}}, including
-#' columns giving the study and gene of each position.
-#'
-#' @param ... \code{\link{deep_mutational_scan}} objects to combine.
-#' @return A \code{\link[tibble]{tibble}} whose rows contain positional data from all the provided scans.
-#'
-#' @export
-rbind.deep_mutational_scan <- function(...) {
-  dplyr::bind_rows(lapply(list(...), as_tibble, full = TRUE))
-}
-
 #' Summary plot for Deep Mutational Scans
 #'
 #' Produce a summary plot for a \code{\link{deep_mutational_scan}} object, showing a heatmap with the ER score for
@@ -396,4 +382,70 @@ autoplot.deep_mutational_scan <- function(object, ...){ # nolint
 #' @importFrom graphics plot
 plot.deep_mutational_scan <- function(x, ...) {
   print(autoplot(x, ...))
+}
+
+# TODO Move the combined stuff to own file
+# TODO support these in all applicable functions
+# TODO support passing a list of scans
+#' Combine deep mutational scan data
+#'
+#' Combine multiple \code{\link{deep_mutational_scan}} objects into a single \code{\link[tibble]{tibble}}, including
+#' columns giving the study and gene of each position.
+#'
+#' @param ... \code{\link{deep_mutational_scan}} objects to combine.
+#' @return A \code{\link[tibble]{tibble}} whose rows contain positional data from all the provided scans.
+#'
+#' @export
+rbind.deep_mutational_scan <- function(...) {
+  df <- dplyr::bind_rows(lapply(list(...), as_tibble, full = TRUE))
+  return(validate_combined_dms(df))
+}
+
+# TODO - check if scores are distributed properly or such?
+#' Check a data frame is a combined mutational scan dataset
+#'
+#' Validate a data frame to determine if it sufficiently resembles a combined deep mutational scan dataset, as produced
+#' by \code{\link{rbind.deep_mutational_scan}}. A error is raised if the data is incorrect, otherwise it is returned
+#' as a \code{\link[tibble]{tibble}}.
+#'
+#' The following tests are performed:
+#' \itemize{
+#'   \item x is a \code{\link{data.frame}}
+#'   \item There are no NA ER scores
+#'   \item The required columns are present
+#'   \item The expected additional columns are present for annotated data
+#' }
+#'
+#' @param x Data frame to check.
+#' @param annotated logical indicating the data be annotated with PCA, UMAP and Cluster information.
+#' @return x converted to a \code{\link[tibble]{tibble}}
+#' @export
+validate_combined_dms <- function(x, annotated = FALSE) {
+  if (!is.data.frame(x)) {
+    stop("Combined mutational scan datasets must inherit from data.frame")
+  }
+
+  if (any(is.na(x[amino_acids]))) {
+    stop("NA ER scores present\nUse impute_dms() to remove these before combining data")
+  }
+
+  cols <- c("study", "gene", "position", "wt", amino_acids)
+  if (!all(cols %in% names(x))) {
+    stop("Data frame does not contain required columns. Must contain: ", stringr::str_c(cols, collapse = ", "))
+  }
+
+  if (annotated) {
+    cols <- c("cluster", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6",
+              "PC7", "PC8", "PC9", "PC10", "PC11", "PC12", "PC13", "PC14",
+              "PC15", "PC16", "PC17", "PC18", "PC19", "PC20", "umap1", "umap2",
+              "base_cluster", "permissive", "small_margin", "high_distance",
+              "dist1", "dist2", "dist3", "dist4", "dist5", "dist6", "dist7",
+              "dist8", "notes")
+    if (!all(cols %in% names(x))) {
+      stop("Data frame does not contain the required columns. Annotated data must contain: ",
+           stringr::str_c(cols, collapse = ", "))
+    }
+  }
+
+  return(tibble::as_tibble(x))
 }

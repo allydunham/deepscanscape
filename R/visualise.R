@@ -19,6 +19,10 @@ theme_deepscanscape <- function() {
 #' @param x \code{\link{deep_mutational_scan}} to analyse
 #' @export
 plot_dms_heatmap <- function(x) {
+  if (!is.deep_mutational_scan(x)) {
+    stop("x is not a deep_mutational_scan()")
+  }
+
   df <- tidyr::pivot_longer(x$data[c("position", "wt", amino_acids)],
                             cols = .data$A:.data$Y, names_to = "mut", values_to = "er")
   means <- dplyr::summarise(dplyr::group_by(df, .data$position, , .data$wt),
@@ -41,6 +45,7 @@ plot_dms_heatmap <- function(x) {
                    axis.ticks.y = ggplot2::element_blank())
 }
 
+# TODO Update to support combined data
 #' Plot a new study on the deep mutational landscape
 #'
 #' @param x \link{deep_mutational_scan} to analyse. Unannotated datasets will be annotated using \link{annotate_dms},
@@ -125,20 +130,16 @@ plot_dms_landscape <- function(x, name = NULL, feature = NULL) {
 
 #' Plot amino acid subtype frequencies
 #'
-#' @param x \code{\link{deep_mutational_scan}} or data frame containing multiple deep mutational scans.
+#' @param x \code{\link{deep_mutational_scan}} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}.
 plot_dms_cluster_frequencies <- function(x) {
-  if ("deep_mutational_scan" %in% class(x)) {
+  if (is.deep_mutational_scan(x)) {
     if (!x$annotated) {
       warning("deep_mutational_scan is not annotated. Annotating using annotate_dms().")
       x <- annotate_dms(x)
     }
     df <- x$data
-  } else if ("data.frame" %in% class(x)) {
-    df <- tibble::as_tibble(x)
-    # TODO document what happens with dataframe
-    if (!all(c("cluster", "wt") %in% names(df))) {
-      stop("Data frame does not contain cluster or wt column")
-    }
+  } else if (is.data.frame(x)) {
+    df <- validate_combined_dms(x, annotated = TRUE)
   }
 
   overview <- dplyr::summarise(dplyr::group_by(df, .data$wt, .data$cluster), n = dplyr::n(), .groups = "drop_last")

@@ -7,7 +7,7 @@
 impute_dms(x, na_value = "impute")
 }
 \arguments{
-\item{x}{link{deep_mutational_scan} to impute data from}
+\item{x}{\code{\link{deep_mutational_scan}} to impute data from}
 
 \item{na_value}{Value to set missense NA values to. Setting this to "impute" sets scores to the median score for that
 substitution (e.g A -> C) in the combined dataset}
