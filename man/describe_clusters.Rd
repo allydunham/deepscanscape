@@ -4,12 +4,31 @@
 \alias{describe_clusters}
 \title{Describe amino acid positional subtypes}
 \usage{
-describe_clusters(x)
+describe_clusters(x, full = FALSE)
 }
 \arguments{
 \item{x}{\link{deep_mutational_scan} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}}
+
+\item{full}{Logical. Include average statistics from the \code{\link{deep_mutational_scans}} dataset in
+addition to summary descriptions and notes.}
+}
+\value{
+A \code{\link[tibble]{tibble}}, with each row detailing a row of the input data and columns matching
+those in the \code{\link{subtypes}} dataset.
 }
 \description{
-Describe amino acid positional subtypes
+Add descriptions and frequencies from the cluster assigned to each position in an annotated deep_mutational_scan
+dataset. These were determined through analysis of the larger \code{\link{deep_mutational_scans}} dataset. Numerical
+summary statistics based on the same dataset can also be added, which give the mean characteristics of the subtype.
+They include results from SIFT4G, FoldX, Naccess and mean ER fitness score profiles.
 }
-\keyword{internal}
+\examples{
+dms <- deepscanscape::deep_scan
+
+# Basic description
+describe_clusters(dms)
+
+# More details
+describe_clusters(dms, full = TRUE)
+
+}

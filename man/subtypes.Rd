@@ -13,6 +13,47 @@ A data frame with 119 rows and 5 columns
   \item{group}{Subtype group}
   \item{description}{Description of the subtype}
   \item{notes}{Additional notes about positions of this subtype}
+  \item{A}{Normalised fitness score when mutating to alanine}
+  \item{C}{Normalised fitness score when mutating to cysteine}
+  \item{D}{Normalised fitness score when mutating to aspartate}
+  \item{E}{Normalised fitness score when mutating to glutamate}
+  \item{F}{Normalised fitness score when mutating to phenylalanine}
+  \item{G}{Normalised fitness score when mutating to glycine}
+  \item{H}{Normalised fitness score when mutating to histidine}
+  \item{I}{Normalised fitness score when mutating to isoleucine}
+  \item{K}{Normalised fitness score when mutating to lysine}
+  \item{L}{Normalised fitness score when mutating to leucine}
+  \item{M}{Normalised fitness score when mutating to methionine}
+  \item{N}{Normalised fitness score when mutating to asparagine}
+  \item{P}{Normalised fitness score when mutating to proline}
+  \item{Q}{Normalised fitness score when mutating to glutamine}
+  \item{R}{Normalised fitness score when mutating to arginine}
+  \item{S}{Normalised fitness score when mutating to serine}
+  \item{T}{Normalised fitness score when mutating to threonine}
+  \item{V}{Normalised fitness score when mutating to valine}
+  \item{W}{Normalised fitness score when mutating to tryptophan}
+  \item{Y}{Normalised fitness score when mutating to tyrosine}
+  \item{mean_score}{Mean normalised ER fitness score}
+  \item{mean_sift}{Mean SIFT4G score for positions of this cluster}
+  \item{total_energy}{Mean FoldX total ddG for mutations to position of this cluster}
+  \item{backbone_hbond}{Mean FoldX backbone_hbond term}
+  \item{sidechain_hbond}{Mean FoldX sidechain_hbond term}
+  \item{van_der_waals}{Mean FoldX van_der_waals term}
+  \item{electrostatics}{Mean FoldX electrostatics term}
+  \item{solvation_polar}{Mean FoldX solvation_polar term}
+  \item{solvation_hydrophobic}{Mean FoldX solvation_hydrophobic term}
+  \item{van_der_waals_clashes}{Mean FoldX van_der_waals_clashes term}
+  \item{entropy_sidechain}{Mean FoldX entropy_sidechain term}
+  \item{entropy_mainchain}{Mean FoldX entropy_mainchain term}
+  \item{cis_bond}{Mean FoldX cis_bond term}
+  \item{torsional_clash}{Mean FoldX torsional_clash term}
+  \item{backbone_clash}{Mean FoldX backbone_clash term}
+  \item{helix_dipole}{Mean FoldX helix_dipole term}
+  \item{disulfide}{Mean FoldX disulfide term}
+  \item{electrostatic_kon}{Mean FoldX electrostatic_kon term}
+  \item{partial_covalent_bonds}{Mean FoldX partial_covalent_bonds term}
+  \item{energy_ionisation}{Mean FoldX energy_ionisation term}
+  \item{all_atom_rel}{Mean relative surface accessibility}
 }
 }
 \source{

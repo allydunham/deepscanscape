@@ -13,18 +13,18 @@ to annotate}
 \value{
 An annotated \code{\link{deep_mutational_scan}} if passed a \code{\link{deep_mutational_scan}} or a
 \code{\link[tibble]{tibble}} when passed a \link[=rbind.deep_mutational_scan]{combined DMS data frame}.
-This data frame contains the following added columns:
+This data frame (or the cluster element of the annotated scan) contains the following added columns:
 \itemize{
-  \item cluster: the assigned amino acid subtype
-  \item PC1 - PC20: Principal Component coordinates
-  \item umap1/2: UMAP coordinates
-  \item base_cluster: The nearest primary cluster centroid (i.e. not outlier or permissive clusters)
-  \item permissive: The position is identified as permissive (|ER| < 0.4 for all amino acids)
-  \item small_margin: The distance to two clusters is very similar, so the assignment is low confidence and marked as
-  an outlier
+  \item cluster: the assigned amino acid subtype.
+  \item PC1 - PC20: Principal Component coordinates.
+  \item umap1/2: UMAP coordinates.
+  \item base_cluster: The nearest primary cluster centroid (i.e. not outlier or permissive clusters).
+  \item permissive: The position is identified as permissive (|ER| < 0.4 for all amino acids).
+  \item ambiguous: The distance to two clusters is very similar, so the assignment is low confidence and marked as
+  an ambiguous.
   \item high_distance: The position is distant from all cluster centroids and is marked an outlier.
-  \item dist1-8: The distance to each cluster of the WT amino acid
-  \item notes: Notes on the cluster assignment
+  \item dist1-8: The distance to each cluster of the WT amino acid.
+  \item notes: Notes on the cluster assignment.
 }
 }
 \description{
@@ -33,5 +33,16 @@ Add PCA and UMAP transformed coordinates and amino acid subtypes based on analys
 }
 \details{
 PCA and UMAP coordinates are assigned using the original models fit on the
-\link[=deep_mutational_scans]{deep mutational landscape dataset}.
+\link[=deep_mutational_scans]{deep mutational landscape dataset}. The PCA coordinates are then used to assign
+each position to an amino acid cluster. These are marked X1-8 for the main described clusters of amino acid X, XP
+for the permissive cluster (|ER| < 0.4 for all positions), XO for outliers and XA when assignment is ambiguous.
+
+Clusters are initially assigned based on cosine distance to cluster centroids. Positions that are a similar distance
+from multiple centroids (difference < 0.03) are marked as ambiguous, those that are > 0.45 away from all clusters
+marked as outliers and those with all |ER| scores < 0.4 marked as permissive. The first two thresholds were
+determined by benchmarking assignment on positions in the original dataset and the latter is the the threshold used
+for permissive clusters in the original dataset.
+}
+\examples{
+dms <- annotate(deepscanscape::deep_scan)
 }

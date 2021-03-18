@@ -108,20 +108,6 @@ cluster_df <- function(tbl, deep_split = 0) {
   return(list(tbl = tbl, hclust = hc, treeCut = clus))
 }
 
-# TODO export these functions? maybe useful if people want to tinker with clustering
-#' Cosine distance matrix
-#'
-#' Calculate the cosine distance between all rows of a matrix.
-#'
-#' @param m Numeric matrix
-#' @keywords internal
-cosine_distance_matrix <- function(m) {
-  # TODO - document this properly. Rounding is required to account for floating point precision
-  cosine <- tcrossprod(m) / sqrt(tcrossprod(rowSums(m^2)))
-  cosine <- acos(round(cosine, digits = 8)) / pi
-  return(cosine)
-}
-
 #' Summarise a deep mutational scan recluster
 #'
 #' @param df reclustered data, as output by \link{recluster}

@@ -2,14 +2,18 @@
 % Please edit documentation in R/annotate.R
 \name{annotate_df}
 \alias{annotate_df}
-\title{Annotate a Deep Mutational Scan object}
+\title{Assign PCA, UMAP and clusters to a data frame of positional ER scores}
 \usage{
-annotate_df(x)
+annotate_df(df)
 }
 \arguments{
-\item{x}{\code{\link[tibble]{tibble}}}
+\item{df}{Data frame}
+}
+\value{
+A list containing two data frames, the first covering PCA and UMAP assignment and the second
+cluster assignment
 }
 \description{
-Internal function called by \code{\link{annotate}} when passed a \code{\link[tibble]{tibble}}
+Internal function called by \code{\link{annotate}} to perform the mechanics of annotations
 }
 \keyword{internal}

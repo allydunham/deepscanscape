@@ -98,7 +98,7 @@ validate_deep_mutational_scan <- function(x) {
       stop("Cluster annotation missing")
     }
 
-    headers <- c("cluster", "base_cluster", "permissive", "small_margin", "high_distance",
+    headers <- c("cluster", "base_cluster", "permissive", "ambiguous", "high_distance",
                  "dist1", "dist2", "dist3", "dist4", "dist5", "dist6", "dist7", "dist8", "notes")
     missing_headers <- headers[which(!headers %in% names(x$cluster))]
     if (length(missing_headers) > 0) {

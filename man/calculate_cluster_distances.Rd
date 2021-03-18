@@ -7,11 +7,18 @@
 calculate_cluster_distances(wt, pca)
 }
 \arguments{
-\item{wt}{Wild type amino acid}
+\item{wt}{Wild type amino acid for each position}
 
-\item{pca}{PCA values for PC2 to PC20}
+\item{pca}{Numeric matrix of PCA values for PC2 to PC20}
+}
+\value{
+Matrix of cosine distances to the centroids of clusters 1 to 8 for the WT amino acid. When the wild type
+amino acid has fewer than 8 clusters NA values occur in the additional columns
 }
 \description{
-Calculate distance to each cluster of the amino acid
+Calculate the distances to each cluster of that amino acid for each row of the input PCA matrix
+}
+\details{
+Internal function called by \code{\link{annotate_df}}.
 }
 \keyword{internal}

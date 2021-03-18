@@ -243,18 +243,18 @@ plot_cluster_frequencies <- function(x) {
   overview$cluster_num <- stringr::str_sub(overview$cluster, start = 2)
 
   max_cluster <- max(as.integer(stringr::str_subset(overview$cluster_num, "[0-9]+")))
-  overview$cluster_num <- factor(overview$cluster_num, levels = c("O", "P", seq_len(max_cluster)))
+  overview$cluster_num <- factor(overview$cluster_num, levels = c("O", "A", "P", rev(seq_len(max_cluster))))
 
   counts <- dplyr::summarise(dplyr::group_by(overview, .data$wt), n = sum(.data$n), .groups = "drop")
   sec_axis <- ggplot2::dup_axis(name = "", labels = counts$n)
 
-  if (max_cluster <= 7) {
-    pal <- "Set1"
+  if (max_cluster <= 8) {
+    fill_scale <- ggplot2::scale_fill_manual(values = c("1" = "#e41a1c", "2" = "#377eb8", "3" = "#4daf4a",
+                                                        "4" = "#984ea3", "5" = "#ff7f00", "6" = "#ffff33",
+                                                        "7" = "#42b7ce", "8" = "#f781bf",
+                                                        "P" = "#adadad", "A" = "#a65628", "O" = "#666666"))
   } else {
-    if (max_cluster > 10) {
-      warning(">10 clusters for at least one amino acid, colours may not be ideal")
-    }
-    pal <- "Set3"
+    fill_scale <- ggplot2::scale_fill_brewer(name = "Subtype")
   }
 
   ggplot2::ggplot(overview, ggplot2::aes(x = as.integer(.data$wt), y = .data$prop, fill = .data$cluster_num)) +
@@ -264,7 +264,7 @@ plot_cluster_frequencies <- function(x) {
     ggplot2::geom_col(position = "stack") +
     ggplot2::labs(x = "WT Amino Acid", y = "Percentage of Positions") +
     ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE)) +
-    ggplot2::scale_fill_brewer(name = "Subtype", type = "qual", palette = pal) +
+    fill_scale +
     theme_deepscanscape() +
     ggplot2::theme(panel.grid.major.y = ggplot2::element_blank(),
                    axis.ticks.y = ggplot2::element_blank())

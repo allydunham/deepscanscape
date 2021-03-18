@@ -1,234 +1,208 @@
 # Annotate positions based on the overall dataset
 # TODO test annotation functions
 
-# TODO add more parameters
-# TODO change outlier to ambiguous for margin calls - and document the letters used
 #' Annotate positions based on the deep mutational landscape
 #'
 #' Add PCA and UMAP transformed coordinates and amino acid subtypes based on analysis and clustering of the combined
 #' \link[=deep_mutational_scans]{deep mutational landscape dataset}.
 #'
 #' PCA and UMAP coordinates are assigned using the original models fit on the
-#' \link[=deep_mutational_scans]{deep mutational landscape dataset}.
+#' \link[=deep_mutational_scans]{deep mutational landscape dataset}. The PCA coordinates are then used to assign
+#' each position to an amino acid cluster. These are marked X1-8 for the main described clusters of amino acid X, XP
+#' for the permissive cluster (|ER| < 0.4 for all positions), XO for outliers and XA when assignment is ambiguous.
+#'
+#' Clusters are initially assigned based on cosine distance to cluster centroids. Positions that are a similar distance
+#' from multiple centroids (difference < 0.03) are marked as ambiguous, those that are > 0.45 away from all clusters
+#' marked as outliers and those with all |ER| scores < 0.4 marked as permissive. The first two thresholds were
+#' determined by benchmarking assignment on positions in the original dataset and the latter is the the threshold used
+#' for permissive clusters in the original dataset.
 #'
 #' @param x \code{\link{deep_mutational_scan}} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}
 #' to annotate
 #' @return An annotated \code{\link{deep_mutational_scan}} if passed a \code{\link{deep_mutational_scan}} or a
 #' \code{\link[tibble]{tibble}} when passed a \link[=rbind.deep_mutational_scan]{combined DMS data frame}.
-#' This data frame contains the following added columns:
+#' This data frame (or the cluster element of the annotated scan) contains the following added columns:
 #' \itemize{
-#'   \item cluster: the assigned amino acid subtype
-#'   \item PC1 - PC20: Principal Component coordinates
-#'   \item umap1/2: UMAP coordinates
-#'   \item base_cluster: The nearest primary cluster centroid (i.e. not outlier or permissive clusters)
-#'   \item permissive: The position is identified as permissive (|ER| < 0.4 for all amino acids)
-#'   \item small_margin: The distance to two clusters is very similar, so the assignment is low confidence and marked as
-#'   an outlier
+#'   \item cluster: the assigned amino acid subtype.
+#'   \item PC1 - PC20: Principal Component coordinates.
+#'   \item umap1/2: UMAP coordinates.
+#'   \item base_cluster: The nearest primary cluster centroid (i.e. not outlier or permissive clusters).
+#'   \item permissive: The position is identified as permissive (|ER| < 0.4 for all amino acids).
+#'   \item ambiguous: The distance to two clusters is very similar, so the assignment is low confidence and marked as
+#'   an ambiguous.
 #'   \item high_distance: The position is distant from all cluster centroids and is marked an outlier.
-#'   \item dist1-8: The distance to each cluster of the WT amino acid
-#'   \item notes: Notes on the cluster assignment
+#'   \item dist1-8: The distance to each cluster of the WT amino acid.
+#'   \item notes: Notes on the cluster assignment.
 #' }
+#' @examples
+#' dms <- annotate(deepscanscape::deep_scan)
 #' @export
 annotate <- function(x) {
   if (is.deep_mutational_scan(x)) {
-    return(annotate_dms(x))
+    if (any(is.na(x[amino_acids]))) {
+      stop("NA fitness scores present\nUse impute to remove these")
+    }
+
+    if (x$annotated) {
+      warning("deep_mutational_scan already annotated. Clearing annotation and reapplying")
+      x$cluster <- NA
+      x$data <- dplyr::select(x$data, -.data$cluster)
+      x$annotated <- FALSE
+    }
+
+    df <- x$data[c("position", "wt", amino_acids)]
+    cluster <- annotate_df(df)
+
+    x$cluster <- cluster$cluster
+    x$data$cluster <- cluster$cluster$cluster
+    x$data <- dplyr::bind_cols(x$data, cluster$coords)
+    x$data <- dplyr::select(x$data, .data$position, .data$wt, .data$cluster, dplyr::everything())
+    x$annotated <- TRUE
+
   } else if (is.data.frame(x)) {
-    return(annotate_df(x))
+    df <- validate_combined_dms(x)[c("study", "gene", "position", "wt", amino_acids)]
+    cluster <- annotate_df(df)
+    x <- dplyr::bind_cols(x, cluster$coords)
+    x <- dplyr::bind_cols(x, cluster$cluster)
+    x <- dplyr::select(x, .data$study, .data$wt, .data$position, .data$wt, .data$cluster, dplyr::everything())
+
   } else {
     stop("Unrecognised input: x must be a deep_mutational_scan or data frame containing data from multiple scans")
   }
-}
 
-#' Annotate a Deep Mutational Scan object
-#'
-#' Internal function called by \code{\link{annotate}} when passed a \code{\link{deep_mutational_scan}}
-#'
-#' @param x \code{\link{deep_mutational_scan}}
-#' @keywords internal
-annotate_dms <- function(x) {
-  if (!is.deep_mutational_scan(x)) {
-    stop("Unrecognised data.\nCreate a standardised dataset using deep_mutational_scan()")
-  }
-
-  if (any(is.na(x[amino_acids]))) {
-    stop("NA fitness scores present\nUse impute to remove these")
-  }
-
-  if (x$annotated) {
-    stop("dataset already annotated")
-  }
-
-  # Map onto PCAs
-  pca <- stats::predict(dms_pca, newdata = as.matrix(x[amino_acids]))
-  x$data <- dplyr::bind_cols(x$data, tibble::as_tibble(pca))
-
-  # Map onto UMAP space
-  model <- uwot::load_uwot(system.file("extdata", "dms_umap", package = "deepscanscape"))
-  umap <- uwot::umap_transform(as.matrix(x[amino_acids]), model = model)
-  x[c("umap1", "umap2")] <- umap
-
-  # Assign subtypes
-  calc_dist <- function(i) {
-    calculate_cluster_distances(x$data$wt[i], pca[i, -1])
-  }
-
-  cluster_dists <- t(sapply(seq_len(nrow(x$data)), calc_dist))
-  colnames(cluster_dists) <- stringr::str_c("dist", 1:8)
-  closest <- apply(cluster_dists, 1, which.min)
-  cluster <- tibble::tibble(wt = x$data$wt, cluster = stringr::str_c(.data$wt, closest), base_cluster = .data$cluster)
-
-  # Permissive positions
-  cluster$permissive <- apply(x$data[, amino_acids], 1, check_permissive)
-
-  # Identify low confidence  positions
-  margin <- t(apply(cluster_dists, 1, calculate_margin))
-  cluster$small_margin <- apply(margin, 1, any_less_than, threshold = 0.03)
-
-  check_distance <- function(x) {
-    min(x, na.rm = TRUE) > 0.45
-  }
-  cluster$high_distance <- apply(cluster_dists, 1, check_distance)
-
-  # Resolve cluster assignment
-  outlier_ind <- cluster$small_margin | cluster$high_distance
-  cluster$cluster[outlier_ind] <- stringr::str_c(cluster$wt[outlier_ind], "O")
-  cluster$cluster[cluster$permissive] <- stringr::str_c(cluster$wt[cluster$permissive], "P")
-  cluster <- dplyr::bind_cols(cluster, as.data.frame(cluster_dists))
-  cluster <- dplyr::select(cluster, -.data$wt)
-
-  # Add cluster notes
-  cluster$notes <- rep(NA, nrow(cluster))
-  cluster$notes[cluster$small_margin] <- "Top cluster is only nearer by a small margin"
-  cluster$notes[cluster$high_distance] <- "Not close to any cluster center"
-  cluster$notes[cluster$small_margin & cluster$high_distance] <- "Both distant and only nearer one by a small margin"
-  cluster$notes[cluster$permissive] <- "No mutation with |ER| > 0.4"
-
-  # Tidy object
-  x$cluster <- cluster
-  x$data$cluster <- cluster$cluster
-  x$data <- dplyr::select(x$data, .data$cluster, .data$position, .data$wt, dplyr::everything())
-  x$annotated <- TRUE
   return(x)
 }
 
-#' Annotate a Deep Mutational Scan object
+#' Assign PCA, UMAP and clusters to a data frame of positional ER scores
 #'
-#' Internal function called by \code{\link{annotate}} when passed a \code{\link[tibble]{tibble}}
+#' Internal function called by \code{\link{annotate}} to perform the mechanics of annotations
 #'
-#' @param x \code{\link[tibble]{tibble}}
+#' @param df Data frame
+#' @return A list containing two data frames, the first covering PCA and UMAP assignment and the second
+#' cluster assignment
 #' @keywords internal
-annotate_df <- function(x) {
-  x <- validate_combined_dms(x)[c("study", "gene", "position", "wt", amino_acids)]
-
+annotate_df <- function(df) {
   # Map onto PCAs
-  pca <- stats::predict(dms_pca, newdata = as.matrix(x[amino_acids]))
-  x <- dplyr::bind_cols(x, tibble::as_tibble(pca))
+  pca <- stats::predict(dms_pca, newdata = as.matrix(df[amino_acids]))
+  coords <- tibble::as_tibble(pca)
 
   # Map onto UMAP space
   model <- uwot::load_uwot(system.file("extdata", "dms_umap", package = "deepscanscape"))
-  umap <- uwot::umap_transform(as.matrix(x[amino_acids]), model = model)
-  x[c("umap1", "umap2")] <- umap
+  umap <- uwot::umap_transform(as.matrix(df[amino_acids]), model = model)
+  coords[c("umap1", "umap2")] <- umap
 
-  # Assign subtypes
-  calc_dist <- function(i) {
-    calculate_cluster_distances(x$wt[i], pca[i, -1])
-  }
+  # Assign clusters
+  distance <- calculate_cluster_distances(df$wt, pca[, -1])
+  closest <- apply(distance, 1, which.min)
 
-  cluster_dists <- t(sapply(seq_len(nrow(x)), calc_dist))
-  colnames(cluster_dists) <- stringr::str_c("dist", 1:8)
-  closest <- apply(cluster_dists, 1, which.min)
-  cluster <- tibble::tibble(wt = x$wt, cluster = stringr::str_c(.data$wt, closest), base_cluster = .data$cluster)
+  cluster <- tibble::tibble(wt = df$wt, cluster = stringr::str_c(.data$wt, closest), base_cluster = .data$cluster)
+  cluster$permissive <- permissive_positions(df[, amino_acids])
+  cluster$ambiguous <- ambiguous_assignment(distance)
+  cluster$high_distance <- outlier_positions(distance)
 
-  # Permissive positions
-  cluster$permissive <- apply(x[, amino_acids], 1, check_permissive)
-
-  # Identify low confidence  positions
-  margin <- t(apply(cluster_dists, 1, calculate_margin))
-  cluster$small_margin <- apply(margin, 1, any_less_than, threshold = 0.03)
-
-  check_distance <- function(x) {
-    min(x, na.rm = TRUE) > 0.45
-  }
-  cluster$high_distance <- apply(cluster_dists, 1, check_distance)
-
-  # Resolve cluster assignment
-  outlier_ind <- cluster$small_margin | cluster$high_distance
-  cluster$cluster[outlier_ind] <- stringr::str_c(cluster$wt[outlier_ind], "O")
+  cluster$cluster[cluster$ambiguous] <- stringr::str_c(cluster$wt[cluster$ambiguous], "A")
+  cluster$cluster[cluster$high_distance] <- stringr::str_c(cluster$wt[cluster$high_distance], "O")
   cluster$cluster[cluster$permissive] <- stringr::str_c(cluster$wt[cluster$permissive], "P")
-  cluster <- dplyr::bind_cols(cluster, as.data.frame(cluster_dists))
-  cluster <- dplyr::select(cluster, -.data$wt)
 
-  # Add cluster notes
-  cluster$notes <- rep(NA, nrow(cluster))
-  cluster$notes[cluster$small_margin] <- "Top cluster is only nearer by a small margin"
-  cluster$notes[cluster$high_distance] <- "Not close to any cluster center"
-  cluster$notes[cluster$small_margin & cluster$high_distance] <- "Both distant and only nearer one by a small margin"
-  cluster$notes[cluster$permissive] <- "No mutation with |ER| > 0.4"
+  cluster <- dplyr::bind_cols(df[c("position")], cluster, as.data.frame(distance))
+  cluster$notes <- cluster_notes(cluster$permissive, cluster$ambiguous, cluster$high_distance)
 
-  # Tidy table
-  x <- dplyr::bind_cols(x, cluster)
-  x <- dplyr::select(x, .data$study, .data$gene, .data$position, .data$wt, .data$cluster, dplyr::everything())
-  return(x)
+  return(list(coords = coords, cluster = cluster))
 }
 
 #' Calculate distance to each cluster of the amino acid
 #'
-#' @param wt Wild type amino acid
-#' @param pca PCA values for PC2 to PC20
+#' Calculate the distances to each cluster of that amino acid for each row of the input PCA matrix
+#'
+#' Internal function called by \code{\link{annotate_df}}.
+#'
+#' @param wt Wild type amino acid for each position
+#' @param pca Numeric matrix of PCA values for PC2 to PC20
+#' @return Matrix of cosine distances to the centroids of clusters 1 to 8 for the WT amino acid. When the wild type
+#' amino acid has fewer than 8 clusters NA values occur in the additional columns
 #' @keywords internal
 calculate_cluster_distances <- function(wt, pca) {
-  clus <- cluster_centers[stringr::str_starts(rownames(cluster_centers), wt), , drop = FALSE]
-  m <- matrix(pca, nrow = nrow(clus), ncol = 19, byrow = TRUE)
-  d <- cosine_distance(m, clus)
-  names(d) <- NULL
-  length(d) <- 8 # Maximum number of clusters for one AA in the dataset
-  return(d)
-}
+  dists <- matrix(nrow = length(wt), ncol = 8)
+  colnames(dists) <- stringr::str_c("dist", 1:8)
 
-# TODO update to use the much faster crossprod implementation
-#' Calculate Cosine distance between rows of two matrices
-#'
-#' @param x,y Numeric matrices
-#' @keywords internal
-cosine_distance <- function(x, y) {
-  return(acos(rowSums(x * y) / (sqrt(rowSums(x^2) * rowSums(y^2)))) / pi)
-}
-
-#' Check if ER scores qualifies as permissive
-#'
-#' @param x Vector of ER scores#
-#' @keywords internal
-check_permissive <- function(x) {
-  return(all(abs(x) < 0.4))
-}
-
-#' Calculate the margin by which each element is largest than the smallest
-#'
-#' @param x Numeric vector
-#' @keywords internal
-calculate_margin <- function(x) {
-  i <- which.min(x)
-  return(x - x[i])
-}
-
-#' Check if any non-zero values are below a threshold
-#'
-#' @param x Numeric vector
-#' @param threshold Threshold below which TRUE is returned
-#' @keywords internal
-any_less_than <- function(x, threshold) {
-  if (any(x > 0, na.rm = TRUE)) {
-    return(min(x[x > 0], na.rm = TRUE) < threshold)
-  } else {
-    return(FALSE)
+  for (aa in amino_acids) {
+    c <- cluster_centers[stringr::str_starts(rownames(cluster_centers), aa), , drop = FALSE]
+    dists[wt == aa, seq_len(nrow(c))] <- cosine_distance_matrix(pca[wt == aa, ], c)
   }
+
+  return(dists)
+}
+
+#' Identify ambiguous cluster assignment
+#'
+#' Identify positions where the difference between the minimum distance to a cluster and the distance any other is
+#' less than 0.03, which indicates ambiguous assignment.
+#'
+#' Internal function called by \code{\link{annotate_df}}.
+#'
+#' @param x Numeric matrix of distances
+#' @return Logical vector corresponding to results on each row
+#' @keywords internal
+ambiguous_assignment <- function(x) {
+  rowSums((x - apply(x, 1, min, na.rm = TRUE)) < 0.03, na.rm = TRUE) > 1
+}
+
+#' Identify outlier positions
+#'
+#' Identify positions where the distance to all clusters is > 0.45, indicating a likely outlier.
+#'
+#' Internal function called by \code{\link{annotate_df}}.
+#'
+#' @param x Numeric matrix of distances
+#' @return Logical vector corresponding to results on each row
+#' @keywords internal
+outlier_positions <- function(x) {
+  apply(x, 1, min, na.rm = TRUE) > 0.45
+}
+
+#' Generate cluster notes message
+#'
+#' Create a standard note for cluster assignments, explaining why O, P or A cluster status is assigned.
+#'
+#' Internal function called by \code{\link{annotate_df}}.
+#'
+#' @param permissive Logical showing which positions are permissive
+#' @param ambiguous Logical showing which positions are ambiguous
+#' @param high_distance Logical showing which positions are outliers due to distance from all centroids.
+#' @return Character vector
+#' @keywords internal
+cluster_notes <- function(permissive, ambiguous, high_distance) {
+  notes <- rep(NA, length(permissive))
+  notes[ambiguous] <- "Top cluster is only nearer by a small margin, making assignment ambiguous"
+  notes[high_distance] <- "Not close to any cluster center"
+  notes[ambiguous & high_distance] <- "Both distant and only nearer one by a small margin"
+  notes[permissive] <- "No mutation with |ER| > 0.4"
+  return(notes)
 }
 
 #' Describe amino acid positional subtypes
 #'
+#' Add descriptions and frequencies from the cluster assigned to each position in an annotated deep_mutational_scan
+#' dataset. These were determined through analysis of the larger \code{\link{deep_mutational_scans}} dataset. Numerical
+#' summary statistics based on the same dataset can also be added, which give the mean characteristics of the subtype.
+#' They include results from SIFT4G, FoldX, Naccess and mean ER fitness score profiles.
+#'
 #' @param x \link{deep_mutational_scan} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}
-#' @keywords internal
-describe_clusters <- function(x) {
+#' @param full Logical. Include average statistics from the \code{\link{deep_mutational_scans}} dataset in
+#' addition to summary descriptions and notes.
+#' @return A \code{\link[tibble]{tibble}}, with each row detailing a row of the input data and columns matching
+#' those in the \code{\link{subtypes}} dataset.
+#' @examples
+#' dms <- deepscanscape::deep_scan
+#'
+#' # Basic description
+#' describe_clusters(dms)
+#'
+#' # More details
+#' describe_clusters(dms, full = TRUE)
+#'
+#' @export
+describe_clusters <- function(x, full = FALSE) {
   if (is.deep_mutational_scan(x)) {
     if (!x$annotated) {
       warning("deep_mutational_scan is not annotated. Annotating using annotate_dms().")
@@ -243,8 +217,12 @@ describe_clusters <- function(x) {
   } else {
     stop("Unrecognised input: x must be a deep_mutational_scan or a data frame")
   }
-  df <- dplyr::left_join(df[c("study", "gene", "position", "wt", "cluster")],
-                         dplyr::rename(deepscanscape::subtypes, global_cluster_freq = .data$prop),
-                         by = c("wt", "cluster"))
+
+  extra <- dplyr::rename(deepscanscape::subtypes, global_cluster_freq = .data$prop)
+  if (!full) {
+    extra <- extra[c("wt", "cluster", "global_cluster_freq", "group", "description", "notes")]
+  }
+
+  df <- dplyr::left_join(df[c("study", "gene", "position", "wt", "cluster")], extra, by = c("wt", "cluster"))
   return(df)
 }
