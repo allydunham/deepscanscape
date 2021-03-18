@@ -1,0 +1,18 @@
+---
+title: "DeepScanScape Report"
+output: html_document
+params:
+  studies: null
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# DeepScanScape
+
+Parameters passed to the report
+
+```{r}
+print(params)
+```
