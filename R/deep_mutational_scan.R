@@ -138,11 +138,11 @@ validate_deep_mutational_scan <- function(x) {
 #'   \link[=dms_summary]{summary}, \link[=as_tibble]{data frames}, \link[=dms_plot]{plotting} and
 #'   \link[=rbind.deep_mutational_scan]{combining data}).
 #' @examples
-#' path <- system.file("extdata", "urn_mavedb_00000036-a-1_scores.csv",
+#' path <- system.file("extdata", "urn_mavedb_00000011_a_1_scores.csv",
 #'                     package = "deepscanscape")
 #' csv <- read.csv(path, skip = 4)
-#' dms <- deep_mutational_scan(csv, scheme = "mave", trans = "vamp",
-#'                             gene = "LDLRAP1", study = "urn:mavedb:00000036")
+#' dms <- deep_mutational_scan(csv, scheme = 'mave', trans = NULL, na_value = 'impute',
+#'                             annotate = FALSE, gene = 'Hsp90', study = 'Hietpas et al. (2011)')
 #' @export
 deep_mutational_scan <- function(df, scheme=NULL, trans=NULL, na_value="impute",
                                  annotate=TRUE, study=NA, gene=NA) {
@@ -209,7 +209,7 @@ is.deep_mutational_scan <- function(x) { # nolint
 #' @param drop Coerce result to lowest possible dimension.
 #' @param value Value to set.
 #' @examples
-#' dms <- deepscanscape::deep_scan
+#' dms <- deepscanscape::deep_scans$p53
 #'
 #' # Extract meta data:
 #' dms$study
@@ -383,20 +383,22 @@ plot.deep_mutational_scan <- function(x, ...) {
 
 # TODO Move the combined stuff to own file
 # TODO support these in all applicable functions
-# TODO support passing a list of scans
 #' Combine deep mutational scan data
 #'
 #' Combine multiple \code{\link{deep_mutational_scan}} objects into a single \code{\link[tibble]{tibble}}, including
 #' columns giving the study and gene of each position.
 #'
-#' @param ... \code{\link{deep_mutational_scan}} objects to combine.
+#' @param ... \code{\link{deep_mutational_scan}} objects to combine or lists of such objects.
 #' @return A \code{\link[tibble]{tibble}} whose rows contain positional data from all the provided scans.
 #'
 #' @export
 rbind.deep_mutational_scan <- function(...) {
-  df <- dplyr::bind_rows(lapply(list(...), as_tibble, full = TRUE))
+  scans <- rlang::flatten(list(...))
+  df <- dplyr::bind_rows(lapply(scans, as_tibble, full = TRUE))
   return(validate_combined_dms(df))
 }
+
+
 
 # TODO - check if scores are distributed properly or such?
 #' Check a data frame is a combined mutational scan dataset

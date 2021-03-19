@@ -15,7 +15,7 @@ downstream analysis}
 \item{deep_split}{Named vector of deepSplit parameters to pass to \link[dynamicTreeCut]{cutreeHybrid}. Must be a
 numeric vector with a named entry for each amino acid or a single integer to apply to all amino acids}
 
-\item{add_combined}{Combine the supplied data with the data contained in \link{deep_mutational_scans}}
+\item{add_combined}{Combine the supplied data with the \link{deep_landscape} dataset.}
 }
 \description{
 Recluster DMS data with a combined dataset

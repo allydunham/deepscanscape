@@ -32,7 +32,7 @@ provides a shortcut to access the main data table, which can otherwise be access
 }}
 
 \examples{
-dms <- deepscanscape::deep_scan
+dms <- deepscanscape::deep_scans$p53
 
 # Extract meta data:
 dms$study

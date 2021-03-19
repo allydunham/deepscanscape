@@ -11,5 +11,5 @@ x <- select(x, -starts_with('log10_sift'), -all_atom_abs, -side_chain_abs, -side
             -polar_rel, -starts_with('within_10_0'), -starts_with('angstroms_to_'),
             -starts_with('ss_'))
 
-deep_mutational_scans <- x
-usethis::use_data(deep_mutational_scans, overwrite = TRUE, compress = 'xz', version = 3)
+deep_landscape <- x
+usethis::use_data(deep_landscape, overwrite = TRUE, compress = 'xz', version = 3)

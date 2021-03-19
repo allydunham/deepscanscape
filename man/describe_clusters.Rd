@@ -9,7 +9,7 @@ describe_clusters(x, full = FALSE)
 \arguments{
 \item{x}{\link{deep_mutational_scan} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}}
 
-\item{full}{Logical. Include average statistics from the \code{\link{deep_mutational_scans}} dataset in
+\item{full}{Logical. Include average statistics from the \code{\link{deep_landscape}} dataset in
 addition to summary descriptions and notes.}
 }
 \value{
@@ -18,12 +18,12 @@ those in the \code{\link{subtypes}} dataset.
 }
 \description{
 Add descriptions and frequencies from the cluster assigned to each position in an annotated deep_mutational_scan
-dataset. These were determined through analysis of the larger \code{\link{deep_mutational_scans}} dataset. Numerical
+dataset. These were determined through analysis of the larger \code{\link{deep_landscape}} dataset. Numerical
 summary statistics based on the same dataset can also be added, which give the mean characteristics of the subtype.
 They include results from SIFT4G, FoldX, Naccess and mean ER fitness score profiles.
 }
 \examples{
-dms <- deepscanscape::deep_scan
+dms <- deepscanscape::deep_scans$p53
 
 # Basic description
 describe_clusters(dms)

@@ -29,11 +29,11 @@ This data frame (or the cluster element of the annotated scan) contains the foll
 }
 \description{
 Add PCA and UMAP transformed coordinates and amino acid subtypes based on analysis and clustering of the combined
-\link[=deep_mutational_scans]{deep mutational landscape dataset}.
+\link[=deep_landscape]{deep mutational landscape dataset}.
 }
 \details{
 PCA and UMAP coordinates are assigned using the original models fit on the
-\link[=deep_mutational_scans]{deep mutational landscape dataset}. The PCA coordinates are then used to assign
+\link[=deep_landscape]{deep mutational landscape dataset}. The PCA coordinates are then used to assign
 each position to an amino acid cluster. These are marked X1-8 for the main described clusters of amino acid X, XP
 for the permissive cluster (|ER| < 0.4 for all positions), XO for outliers and XA when assignment is ambiguous.
 
@@ -44,5 +44,5 @@ determined by benchmarking assignment on positions in the original dataset and t
 for permissive clusters in the original dataset.
 }
 \examples{
-dms <- annotate(deepscanscape::deep_scan)
+dms <- annotate(deepscanscape::deep_scans$p53)
 }

@@ -11,7 +11,7 @@ plot_landscape(x, name = c("study", "gene"), feature = NULL)
 
 \item{name}{Prefer to identify datasets by study or gene}
 
-\item{feature}{String name of a numeric feature from the \code{\link{deep_mutational_scan}} dataset to project onto
+\item{feature}{String name of a numeric feature from the \code{\link{deep_landscape}} dataset to project onto
 the background landscape.}
 }
 \value{
@@ -32,12 +32,12 @@ prediction values are initially clamped to -5 <= x <= 5 because larger values le
 are generally thought to represent program quirks rather than real biology.
 
 The input data is annotated using \code{\link{annotate}} if it is not already, based on the \code{annotated} flag
-for deep_mutational_scans and the presence of the required \code{umap1/2} columns for data frames. It is better to
-save the results of \code{annotate} if doing multiple downstream analyses because can be a relatively slow
+for deep_mutational_scan objects and the presence of the required \code{umap1/2} columns for data frames. It is
+better to save the results of \code{annotate} if doing multiple downstream analyses because can be a relatively slow
 operation.
 }
 \examples{
-dms <- deepscanscape::deep_scan
+dms <- deepscanscape::deep_scans$p53
 
 # Plot point positions
 plot_landscape(dms, name = "gene")

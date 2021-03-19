@@ -1,10 +1,10 @@
-#' Standardised deep mutational scanning studies results
+#' Deep Mutational Landscape data from 28 standardised deep mutational scans
 #'
 #' A dataset containing combined results from 28 deep mutational scanning
 #' studies. The fitness scores are transformed into the same format and
 #' normalised.
 #'
-#' @name deep_mutational_scans
+#' @name deep_landscape
 #' @docType data
 #' @source \href{https://www.biorxiv.org/content/10.1101/2020.05.26.116756v1}{Dunham and Beltrao (2020)}
 #' @keywords data
@@ -84,7 +84,7 @@
 #'   \item{umap1}{First UMAP dimension of dimensionality reduction of A-Y}
 #'   \item{umap2}{Second UMAP dimension of dimensionality reduction of A-Y}
 #' }
-"deep_mutational_scans"
+"deep_landscape"
 
 #' Amino acid positional subtypes from the deep mutational landscape
 #'
@@ -148,22 +148,18 @@
 #' }
 "subtypes"
 
-# TODO Update citation/name when I choose the final study
-#' Example deep_mutational_scan
+#' Example deep_mutational_scan objects
 #'
-#' A \code{\link{deep_mutational_scan}} containing data from XXX. This dataset is primarily used to illustrate use of
-#' the package functions.
+#' A list of \code{\link{deep_mutational_scan}} objects. This dataset is primarily used to illustrate use of
+#' the package functions. The studies were sourced from \url{https://www.mavedb.org}{MaveDB}.
 #'
-#' @name deep_scan
+#' @name deep_scans
 #' @docType data
 #' @keywords data
-#' @format A deep_mutational_scan with 306 positions
+#' @format A list of \code{\link{deep_mutational_scan}} objects
 #' \describe{
-#'   \item{data}{Positional data}
-#'   \item{study}{Name/ID of the source study}
-#'   \item{gene}{Gene scanned}
-#'   \item{annotated}{Logical indicating if the scan has been annotated with deep landscape data}
-#'   \item{impute_mask}{Numeric matrix showing which ER scores were imputed}
-#'   \item{cluster}{Tibble detailing amino acid subtype assignment, or NA}
+#'   \item{hsp90}{HSP90 scan by Hietpas et al. (2011, doi: 10.1073/pnas.1016024108, MaveDB: urn:mavedb:00000011-a-1)}
+#'   \item{gpa}{GpA scan by Elazar et al. (2016, doi: 10.7554/eLife.12125, MaveDB:  urn:mavedb:00000051-c-1)}
+#'   \item{p53}{p53 scan by Kotler et al. (2018, doi: 10.1016/j.molcel.2018.06.012 , MaveDB: urn:mavedb:00000059-c-1)}
 #' }
-"deep_scan"
+"deep_scans"

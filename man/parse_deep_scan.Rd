@@ -4,7 +4,13 @@
 \alias{parse_deep_scan}
 \title{Parse deep mutational scanning data}
 \usage{
-parse_deep_scan(x, scheme, position_offset = 0, score_col = NULL)
+parse_deep_scan(
+  x,
+  scheme = c("mavedb", "long", "wide", "sequence"),
+  position_offset = 0,
+  duplicates = c("warn", "mean", "median", "error"),
+  ...
+)
 }
 \arguments{
 \item{x}{A tibble or an object that can be converted to one}
@@ -14,8 +20,9 @@ substring.}
 
 \item{position_offset}{Offset all positions by this amount}
 
-\item{score_col}{Name of column containing fitness scores (used for when
-parsing MaveDB data)}
+\item{duplicates}{How to handle duplicate scores for a single mutation}
+
+\item{...}{Arguments passed to the chosen parsing function}
 }
 \description{
 Parse deep mutational scanning data

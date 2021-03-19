@@ -8,7 +8,7 @@
 #' downstream analysis
 #' @param deep_split Named vector of deepSplit parameters to pass to \link[dynamicTreeCut]{cutreeHybrid}. Must be a
 #' numeric vector with a named entry for each amino acid or a single integer to apply to all amino acids
-#' @param add_combined Combine the supplied data with the data contained in \link{deep_mutational_scans}
+#' @param add_combined Combine the supplied data with the \link{deep_landscape} dataset.
 #'
 #' @export
 recluster <- function(x, keep_clustering = FALSE, deep_split=NULL, add_combined=TRUE) {
@@ -51,7 +51,7 @@ recluster <- function(x, keep_clustering = FALSE, deep_split=NULL, add_combined=
 
   df <- df[c("study", "gene", "position", "wt", amino_acids)]
   if (add_combined) {
-    comb <- dplyr::select(deepscanscape::deep_mutational_scans, .data$study, .data$gene,
+    comb <- dplyr::select(deepscanscape::deep_landscape, .data$study, .data$gene,
                           .data$position, .data$wt, dplyr::one_of(amino_acids))
     df <- dplyr::bind_rows(df, comb)
   }

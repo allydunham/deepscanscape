@@ -52,9 +52,9 @@ Store deep mutational scanning data in a standardised format, alongside
 metadata describing the state of the data.
 }
 \examples{
-path <- system.file("extdata", "urn_mavedb_00000036-a-1_scores.csv",
+path <- system.file("extdata", "urn_mavedb_00000011_a_1_scores.csv",
                     package = "deepscanscape")
 csv <- read.csv(path, skip = 4)
-dms <- deep_mutational_scan(csv, scheme = "mave", trans = "vamp",
-                            gene = "LDLRAP1", study = "urn:mavedb:00000036")
+dms <- deep_mutational_scan(csv, scheme = 'mave', trans = NULL, na_value = 'impute',
+                            annotate = FALSE, gene = 'Hsp90', study = 'Hietpas et al. (2011)')
 }

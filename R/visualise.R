@@ -27,7 +27,7 @@ theme_deepscanscape <- function() {
 #' @param x \code{\link{deep_mutational_scan}}.
 #' @return A \code{\link[ggplot2]{ggplot2}} plot.
 #' @examples
-#' dms <- deepscanscape::deep_scan
+#' dms <- deepscanscape::deep_scans$p53
 #' plot_er_heatmap(dms)
 #'
 #' # Or equivalently
@@ -77,17 +77,17 @@ plot_er_heatmap <- function(x) {
 #' are generally thought to represent program quirks rather than real biology.
 #'
 #' The input data is annotated using \code{\link{annotate}} if it is not already, based on the \code{annotated} flag
-#' for deep_mutational_scans and the presence of the required \code{umap1/2} columns for data frames. It is better to
-#' save the results of \code{annotate} if doing multiple downstream analyses because can be a relatively slow
+#' for deep_mutational_scan objects and the presence of the required \code{umap1/2} columns for data frames. It is
+#' better to save the results of \code{annotate} if doing multiple downstream analyses because can be a relatively slow
 #' operation.
 #'
 #' @param x \code{\link{deep_mutational_scan}} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}.
 #' @param name Prefer to identify datasets by study or gene
-#' @param feature String name of a numeric feature from the \code{\link{deep_mutational_scan}} dataset to project onto
+#' @param feature String name of a numeric feature from the \code{\link{deep_landscape}} dataset to project onto
 #' the background landscape.
 #' @return A \code{\link[ggplot2]{ggplot2}} plot.
 #' @examples
-#' dms <- deepscanscape::deep_scan
+#' dms <- deepscanscape::deep_scans$p53
 #'
 #' # Plot point positions
 #' plot_landscape(dms, name = "gene")
@@ -101,13 +101,13 @@ plot_er_heatmap <- function(x) {
 plot_landscape <- function(x, name = c("study", "gene"), feature = NULL) {
   if (is.deep_mutational_scan(x)) {
     if (!x$annotated) {
-      warning("deep_mutational_scan is not annotated. Annotating using annotate().")
+      warning("deep_mutational_scan is not annotated. Annotating using annotate().", immediate. = TRUE)
       x <- annotate(x)
     }
     df <- tibble::as_tibble(x, full = TRUE)
   } else if (is.data.frame(x)) {
     if (!all(c("umap1", "umap2") %in% names(x))) {
-      warning("data frame is not annotated. Annotating using annotate().")
+      warning("data frame is not annotated. Annotating using annotate().", immediate. = TRUE)
       x <- annotate(x)
     }
     df <- validate_combined_dms(x)
@@ -128,7 +128,7 @@ plot_landscape <- function(x, name = c("study", "gene"), feature = NULL) {
 
   if (is.null(feature)) {
     p <- ggplot2::ggplot(mapping = ggplot2::aes(x = .data$umap1, y = .data$umap2)) +
-      ggplot2::geom_point(data = deepscanscape::deep_mutational_scans, mapping = ggplot2::aes(fill = "Background"),
+      ggplot2::geom_point(data = deepscanscape::deep_landscape, mapping = ggplot2::aes(fill = "Background"),
                           shape = 21, colour = "grey") +
       ggplot2::geom_point(data = df, mapping = ggplot2::aes(colour = .data$name)) +
       col_scale +
@@ -136,15 +136,15 @@ plot_landscape <- function(x, name = c("study", "gene"), feature = NULL) {
       ggplot2::labs(x = "UMAP1", y = "UMAP2") +
       theme_deepscanscape()
   } else {
-    if (!feature %in% names(deepscanscape::deep_mutational_scans)) {
-      stop("Feature must be a variable in the deep_mutational_scans dataset")
+    if (!feature %in% names(deepscanscape::deep_landscape)) {
+      stop("Feature must be a variable in the deep_landscape dataset")
     }
 
-    if (typeof(deepscanscape::deep_mutational_scans[[feature]]) == "character") {
+    if (typeof(deepscanscape::deep_landscape[[feature]]) == "character") {
       stop("Features must be numeric variables (e.g. 'mean_sift' or 'entropy_sidechain')")
     }
 
-    comb_df <- deepscanscape::deep_mutational_scans[!is.na(deepscanscape::deep_mutational_scans[[feature]]), ]
+    comb_df <- deepscanscape::deep_landscape[!is.na(deepscanscape::deep_landscape[[feature]]), ]
     fill_scale <- get_feature_scale(feature)
 
     if (feature %in% foldx_terms) {
@@ -221,7 +221,7 @@ get_feature_scale <- function(feature, type = c("fill", "colour")) {
 #' @param x \code{\link{deep_mutational_scan}} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}.
 #' @return A \code{\link[ggplot2]{ggplot2}} plot.
 #' @examples
-#' dms <- annotate(deepscanscape::deep_scan)
+#' dms <- annotate(deepscanscape::deep_scans$p53)
 #' plot_cluster_frequencies(dms)
 #'
 #' @export
@@ -229,7 +229,7 @@ get_feature_scale <- function(feature, type = c("fill", "colour")) {
 plot_cluster_frequencies <- function(x) {
   if (is.deep_mutational_scan(x)) {
     if (!x$annotated) {
-      warning("deep_mutational_scan is not annotated. Annotating using annotate().")
+      warning("deep_mutational_scan is not annotated. Annotating using annotate().", immediate. = TRUE)
       x <- annotate(x)
     }
     df <- x$data

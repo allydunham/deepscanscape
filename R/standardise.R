@@ -19,37 +19,31 @@ normalise_er <- function(x, q=0.1) {
 #' @param x Vector of fitness scores
 #' @param trans Transform to apply (see description). Accepts either a
 #' string or function
-#' @param base Log base of current scores (used for log transform)
 #'
 #' @export
-transform_er <- function(x, trans, base=2) {
-  methods <- c("vamp-Seq" = transform_vamp,
-              "log" = transform_log,
-              "unit" = transform_unit)
-
+transform_er <- function(x, trans = c("log2", "vamp-seq", "unit")) {
   if (is.character(trans)) {
-    ind <- pmatch(stringr::str_to_lower(trans), names(methods))
-    if (is.na(ind)) {
-      stop(paste0("Unrecognised transform \"", trans, "\"\n",
-                  "Recognised options: ", paste(methods, collapse = ", ")))
-    }
-    trans <- methods[[ind]]
+    trans <- match.arg(trans)
+    methods <- c("vamp-Seq" = transform_vamp, "unit" = transform_unit, "log2" = log2)
+    f <- methods[[trans]]
+  } else if (is.function(trans)) {
+    f <- trans
+  } else {
+    stop("Unrecognised transformation. Pass a supported string or a function")
   }
 
-  return(trans(x, base))
+  return(f(x))
 }
 
-# Transform data pro
-# @keywords internal
+#' Transform VAMP-seq data
+#' @keywords internal
 transform_vamp <- function(x, ...) {
   y <- 1 + (x - 1) / -min(x - 1, na.rm = TRUE)
   return(log2(y + min(y[y > 0], na.rm = TRUE)))
 }
 
-transform_log <- function(x, base=2, ...) {
-  stop("Not implemented yet")
-}
-
+#' Transform unit scaled data
+#' @keywords internal
 transform_unit <- function(x, ...) {
   stop("Not implemented yet")
 }

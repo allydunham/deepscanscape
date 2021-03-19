@@ -18,7 +18,7 @@ The wild type amino acid at each position is marked by outlining the correspondi
 This is also the default plot method for \code{\link{deep_mutational_scan}} objects.
 }
 \examples{
-dms <- deepscanscape::deep_scan
+dms <- deepscanscape::deep_scans$p53
 plot_er_heatmap(dms)
 
 # Or equivalently

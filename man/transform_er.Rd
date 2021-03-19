@@ -4,15 +4,13 @@
 \alias{transform_er}
 \title{Standardise DMS data}
 \usage{
-transform_er(x, trans, base = 2)
+transform_er(x, trans = c("log2", "vamp-seq", "unit"))
 }
 \arguments{
 \item{x}{Vector of fitness scores}
 
 \item{trans}{Transform to apply (see description). Accepts either a
 string or function}
-
-\item{base}{Log base of current scores (used for log transform)}
 }
 \description{
 Standardise DMS data

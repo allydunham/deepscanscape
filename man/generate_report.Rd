@@ -7,7 +7,7 @@
 generate_report(..., output_path = "deepscanscape_report.html")
 }
 \arguments{
-\item{...}{\code{\link{deep_mutational_scan}} objects to report.}
+\item{...}{\code{\link{deep_landscape}} objects to report.}
 
 \item{output_path}{Path to write report to.}
 }
@@ -17,7 +17,7 @@ Path to the generated report.
 \description{
 Perform a full analysis on new deep mutational scan data and summarise the results as an HTML report. The
 report provides an overview of the new data and then compares the properties of the new data to the datasets
-included in the \code{\link{deep_mutational_scans}} dataset. This helps to identify unusual properties, map the
+included in the \code{\link{deep_landscape}} dataset. This helps to identify unusual properties, map the
 features of the protein on the common mutational landscape and assign each position to an amino acid subtype, which
 informs on its properties.
 }

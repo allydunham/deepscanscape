@@ -18,7 +18,7 @@ strays from the expected frequencies. For example large proportions of outliers 
 permissive positions a weakly conserved protein.
 }
 \examples{
-dms <- annotate(deepscanscape::deep_scan)
+dms <- annotate(deepscanscape::deep_scans$p53)
 plot_cluster_frequencies(dms)
 
 }

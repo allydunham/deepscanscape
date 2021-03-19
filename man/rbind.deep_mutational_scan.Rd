@@ -7,7 +7,7 @@
 \method{rbind}{deep_mutational_scan}(...)
 }
 \arguments{
-\item{...}{\code{\link{deep_mutational_scan}} objects to combine.}
+\item{...}{\code{\link{deep_mutational_scan}} objects to combine or lists of such objects.}
 }
 \value{
 A \code{\link[tibble]{tibble}} whose rows contain positional data from all the provided scans.

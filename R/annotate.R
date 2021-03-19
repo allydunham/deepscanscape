@@ -4,10 +4,10 @@
 #' Annotate positions based on the deep mutational landscape
 #'
 #' Add PCA and UMAP transformed coordinates and amino acid subtypes based on analysis and clustering of the combined
-#' \link[=deep_mutational_scans]{deep mutational landscape dataset}.
+#' \link[=deep_landscape]{deep mutational landscape dataset}.
 #'
 #' PCA and UMAP coordinates are assigned using the original models fit on the
-#' \link[=deep_mutational_scans]{deep mutational landscape dataset}. The PCA coordinates are then used to assign
+#' \link[=deep_landscape]{deep mutational landscape dataset}. The PCA coordinates are then used to assign
 #' each position to an amino acid cluster. These are marked X1-8 for the main described clusters of amino acid X, XP
 #' for the permissive cluster (|ER| < 0.4 for all positions), XO for outliers and XA when assignment is ambiguous.
 #'
@@ -35,7 +35,7 @@
 #'   \item notes: Notes on the cluster assignment.
 #' }
 #' @examples
-#' dms <- annotate(deepscanscape::deep_scan)
+#' dms <- annotate(deepscanscape::deep_scans$p53)
 #' @export
 annotate <- function(x) {
   if (is.deep_mutational_scan(x)) {
@@ -44,7 +44,7 @@ annotate <- function(x) {
     }
 
     if (x$annotated) {
-      warning("deep_mutational_scan already annotated. Clearing annotation and reapplying")
+      warning("deep_mutational_scan already annotated. Clearing annotation and reapplying", immediate. = TRUE)
       x$cluster <- NA
       x$data <- dplyr::select(x$data, -.data$cluster)
       x$annotated <- FALSE
@@ -63,7 +63,7 @@ annotate <- function(x) {
     df <- validate_combined_dms(x)[c("study", "gene", "position", "wt", amino_acids)]
     cluster <- annotate_df(df)
     x <- dplyr::bind_cols(x, cluster$coords)
-    x <- dplyr::bind_cols(x, cluster$cluster)
+    x <- dplyr::bind_cols(x, dplyr::select(cluster$cluster, -.data$position, -.data$wt))
     x <- dplyr::select(x, .data$study, .data$wt, .data$position, .data$wt, .data$cluster, dplyr::everything())
 
   } else {
@@ -125,9 +125,9 @@ calculate_cluster_distances <- function(wt, pca) {
   dists <- matrix(nrow = length(wt), ncol = 8)
   colnames(dists) <- stringr::str_c("dist", 1:8)
 
-  for (aa in amino_acids) {
+  for (aa in unique(wt)) {
     c <- cluster_centers[stringr::str_starts(rownames(cluster_centers), aa), , drop = FALSE]
-    dists[wt == aa, seq_len(nrow(c))] <- cosine_distance_matrix(pca[wt == aa, ], c)
+    dists[wt == aa, seq_len(nrow(c))] <- cosine_distance_matrix(pca[wt == aa, , drop = FALSE], c)
   }
 
   return(dists)
@@ -183,17 +183,17 @@ cluster_notes <- function(permissive, ambiguous, high_distance) {
 #' Describe amino acid positional subtypes
 #'
 #' Add descriptions and frequencies from the cluster assigned to each position in an annotated deep_mutational_scan
-#' dataset. These were determined through analysis of the larger \code{\link{deep_mutational_scans}} dataset. Numerical
+#' dataset. These were determined through analysis of the larger \code{\link{deep_landscape}} dataset. Numerical
 #' summary statistics based on the same dataset can also be added, which give the mean characteristics of the subtype.
 #' They include results from SIFT4G, FoldX, Naccess and mean ER fitness score profiles.
 #'
 #' @param x \link{deep_mutational_scan} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}
-#' @param full Logical. Include average statistics from the \code{\link{deep_mutational_scans}} dataset in
+#' @param full Logical. Include average statistics from the \code{\link{deep_landscape}} dataset in
 #' addition to summary descriptions and notes.
 #' @return A \code{\link[tibble]{tibble}}, with each row detailing a row of the input data and columns matching
 #' those in the \code{\link{subtypes}} dataset.
 #' @examples
-#' dms <- deepscanscape::deep_scan
+#' dms <- deepscanscape::deep_scans$p53
 #'
 #' # Basic description
 #' describe_clusters(dms)
@@ -205,7 +205,7 @@ cluster_notes <- function(permissive, ambiguous, high_distance) {
 describe_clusters <- function(x, full = FALSE) {
   if (is.deep_mutational_scan(x)) {
     if (!x$annotated) {
-      warning("deep_mutational_scan is not annotated. Annotating using annotate_dms().")
+      warning("deep_mutational_scan is not annotated. Annotating using annotate_dms().", immediate. = TRUE)
       x <- annotate(x)
     }
 
