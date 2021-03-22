@@ -4,19 +4,19 @@
 \alias{new_deep_mutational_scan}
 \title{Internal deep_mutational_scan constructor}
 \usage{
-new_deep_mutational_scan(df, study, gene)
+new_deep_mutational_scan(df, meta)
 }
 \arguments{
-\item{df}{A data frame in the required format (position, wt, A-Y, additional data...).}
+\item{df}{A data frame in the required format (name, position, wt, A-Y, additional data...).}
 
-\item{study}{The source study.}
-
-\item{gene}{The studied gene.}
+\item{meta}{A data frame detailing the metadata for each study. Each row should contain the name, study, gene,
+source, description and positions entries, covering each unique name in df.}
 }
 \value{
 A deep_mutational_scan S3 object (see \code{\link{deep_mutational_scan}})
 }
 \description{
-Create a new raw deep_mutational_scan object. This is expected to have no annotations and no imputation but have
-had scores transformed and normalised onto the standard scale.
+Create a new raw deep_mutational_scan object, containing data from one or more studies.
+This is expected to have no annotations and no imputation but have had all scores transformed and
+normalised onto the standard scale.
 }

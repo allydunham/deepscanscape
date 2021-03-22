@@ -19,6 +19,6 @@ amino acid has fewer than 8 clusters NA values occur in the additional columns
 Calculate the distances to each cluster of that amino acid for each row of the input PCA matrix
 }
 \details{
-Internal function called by \code{\link{annotate_df}}.
+Internal function called by \code{\link{annotate}}.
 }
 \keyword{internal}

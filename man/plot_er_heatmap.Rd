@@ -7,7 +7,7 @@
 plot_er_heatmap(x)
 }
 \arguments{
-\item{x}{\code{\link{deep_mutational_scan}}.}
+\item{x}{A single study \code{\link{deep_mutational_scan}}.}
 }
 \value{
 A \code{\link[ggplot2]{ggplot2}} plot.
@@ -23,5 +23,9 @@ plot_er_heatmap(dms)
 
 # Or equivalently
 plot(dms)
+
+# For multi_study scans
+comb_dms <- bind_scans(dms, annotate_missing = TRUE)
+plot_er_heatmap(dms)
 
 }

@@ -7,7 +7,7 @@
 plot_cluster_frequencies(x)
 }
 \arguments{
-\item{x}{\code{\link{deep_mutational_scan}} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}.}
+\item{x}{\code{\link{deep_mutational_scan}}.}
 }
 \value{
 A \code{\link[ggplot2]{ggplot2}} plot.
@@ -20,5 +20,9 @@ permissive positions a weakly conserved protein.
 \examples{
 dms <- annotate(deepscanscape::deep_scans$p53)
 plot_cluster_frequencies(dms)
+
+# Plot multiple studies
+comb_dms <- bind_scans(dms, annotate_missing = TRUE)
+plot_cluster_frequencies(comb_dms)
 
 }

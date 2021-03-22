@@ -7,21 +7,22 @@
 #' @param ... Additional arguments
 #' @return deep_mutational_scan_summary object containing:
 #'   \describe{
-#'     \item{study}{The source study}
-#'     \item{gene}{The gene scanned}
+#'     \item{studies}{The number of studies scanned}
 #'     \item{annotated}{Logical showing whether the dataset has been annotated with deep mutational landscape data}
+#'     \item{imputed}{Named vector summarising the number of imputed scores}
+#'     \item{multi_study}{Logical showing whether the dataset contains multiple studies}
 #'     \item{positions}{Number of positions with data}
 #'     \item{er}{Named vector containing summary statistics to ER scores}
-#'     \item{imputed}{Named vector summarising the number of imputed scores}
 #'     \item{clusters}{Named vector summarising cluster annotations}
 #'   }
 #' @name dms_summary
 #' @export
 summary.deep_mutational_scan <- function(object, ...) {
-  out <- as.list(object)[c("study", "gene", "annotated")]
+  out <- as.list(object)[c("meta", "annotated", "imputed", "multi_study")]
 
   # Basic overview
   out$positions <- dim(object)[1]
+  out$studies <- nrow(object$meta)
 
   # ER values
   er <- as.vector(as.matrix(object$data[amino_acids]))
@@ -29,9 +30,10 @@ summary.deep_mutational_scan <- function(object, ...) {
   out$er <- c(Min = q[1], `1st Q.` = q[2], Mean = mean(er), Median = stats::median(er), `3rd Q.` = q[4], Max = q[5])
 
   # Imputation
-  out$imputed <- c(Mutant = sum(object$impute_mask == 2, na.rm = TRUE),
-                   WildType = sum(object$impute_mask == 1, na.rm = TRUE),
-                   `Mean per position` = mean(rowSums(object$impute_mask > 0)))
+  impute_mask <- as.matrix(dplyr::select(object$data, dplyr::starts_with("impute")))
+  out$imputed <- c(Mutant = sum(impute_mask == 2, na.rm = TRUE),
+                   WildType = sum(impute_mask == 1, na.rm = TRUE),
+                   `Mean per position` = mean(rowSums(impute_mask > 0)))
 
   if (out$annotated) {
     # TODO move things like detecting permissive / outliers into utility function?
@@ -48,9 +50,13 @@ summary.deep_mutational_scan <- function(object, ...) {
 #' @describeIn dms_summary S3 format method
 #' @export
 format.deep_mutational_scan_summary <- function(x, ...) { # nolint
+  stusdy_str <- stringr::str_c(x$meta$study, " - ", x$meta$gene, " (", x$meta$positions,
+                               " positions, name: ", x$meta$name, ")")
   out <- c(
-    stringr::str_c("Deep mutational scan of", x$gene, "from", x$study, sep = " "),
-    stringr::str_c(x$positions, " positions"),
+    stringr::str_c("Deep mutational scan dataset of", x$positions, "positions from", x$studies,
+                   ifelse(x$studies == 1, "study", "studies"), sep = " "),
+    "",
+    stusdy_str,
     "",
     "ER Scores:",
     utils::capture.output(print(x$er)),

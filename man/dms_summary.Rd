@@ -21,12 +21,12 @@
 \value{
 deep_mutational_scan_summary object containing:
   \describe{
-    \item{study}{The source study}
-    \item{gene}{The gene scanned}
+    \item{studies}{The number of studies scanned}
     \item{annotated}{Logical showing whether the dataset has been annotated with deep mutational landscape data}
+    \item{imputed}{Named vector summarising the number of imputed scores}
+    \item{multi_study}{Logical showing whether the dataset contains multiple studies}
     \item{positions}{Number of positions with data}
     \item{er}{Named vector containing summary statistics to ER scores}
-    \item{imputed}{Named vector summarising the number of imputed scores}
     \item{clusters}{Named vector summarising cluster annotations}
   }
 }

@@ -7,7 +7,7 @@
 plot_landscape(x, name = c("study", "gene"), feature = NULL)
 }
 \arguments{
-\item{x}{\code{\link{deep_mutational_scan}} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}.}
+\item{x}{\code{\link{deep_mutational_scan}}.}
 
 \item{name}{Prefer to identify datasets by study or gene}
 
@@ -45,5 +45,9 @@ plot_landscape(dms, name = "gene")
 # Plot against mean conservation
 dms <- annotate(dms)
 plot_landscape(dms, feature = "mean_sift")
+
+# Plot multiple studies
+comb_dms <- bind_scans(dms, annotate_missing = TRUE)
+plot_landscape(comb_dms, feature = "total_energy")
 
 }

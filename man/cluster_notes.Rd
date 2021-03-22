@@ -20,6 +20,6 @@ Character vector
 Create a standard note for cluster assignments, explaining why O, P or A cluster status is assigned.
 }
 \details{
-Internal function called by \code{\link{annotate_df}}.
+Internal function called by \code{\link{annotate}}.
 }
 \keyword{internal}

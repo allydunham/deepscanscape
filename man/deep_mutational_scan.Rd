@@ -6,16 +6,21 @@
 \usage{
 deep_mutational_scan(
   df,
+  name,
   scheme = NULL,
   trans = NULL,
   na_value = "impute",
-  annotate = TRUE,
+  annotate = FALSE,
   study = NA,
-  gene = NA
+  gene = NA,
+  source = NA,
+  description = NA
 )
 }
 \arguments{
 \item{df}{A data frame to parse.}
+
+\item{name}{Name of the deep mutational scan.}
 
 \item{scheme}{Original data scheme (see \code{\link{parse_deep_scan}}).}
 
@@ -26,35 +31,44 @@ or a custom function (\code{\link{transform_er}}).}
 
 \item{annotate}{Annotate the dataset with mutational landscape data (PCA, UMAP and amino acid subtypes).}
 
-\item{study}{Source of the deep mutational scan.}
+\item{study}{Study in which the scan was performed.}
 
 \item{gene}{Gene scanned.}
+
+\item{source}{Source of study. This is for reference only and is not used internally.}
+
+\item{description}{Description of study, containing any miscellaneous details. This is for reference only and is
+not used internally.}
 }
 \value{
-A deep_mutational_scan S3 object, which broadly behaves as a list containing the following fields:
+A deep_mutational_scan S3 object, containing the following fields:
   \itemize{
-    \item data: \code{\link[tibble]{tibble}} containing positions ER scores and other positional data
-    \item study: source study
-    \item gene: gene scanned
+    \item data: wide format \code{\link[tibble]{tibble}} containing ER scores and other positional data
+    \item meta: Tibble containing meta data about each study in the dataset
+    \item imputed: logical indicating the dataset has been completed via imputation(see \code{\link{impute}}
+    for details)
     \item annotated: logical indicating if the data has been annotated with PCs, UMAP coordinates and clusters
-    \item impute_mask: numeric matrix indicating imputed ER scores, corresponding to the
-    rows/ER columns of \code{data} (see \code{\link{impute}} for details)
-    \item cluster: \code{\link[tibble]{tibble}} containing further details on how clusters were assigned during
-    annotation, corresponding to the rows of \code{data}
+    \item multi_study: logical indicating the dataset contains data from multiple studies
   }
-  The class is used like a list apart from [ accesses the main data frame (\link[=dms_extract]{details}).
+  The class is used like a list apart from [ accesses the main data tibble (see \link[=dms_extract]{details}).
   The class is also associated with other common generics (see \link[=dms_s3]{basic functions},
-  \link[=dms_summary]{summary}, \link[=as_tibble]{data frames}, \link[=dms_plot]{plotting} and
-  \link[=rbind.deep_mutational_scan]{combining data}).
+  \link[=dms_summary]{summary}, \link[=as_tibble]{data frames}, \link[=dms_plot]{plotting}. Multiple deep_mutational
+  scan objects can be combined using \link{bind_scans}).
 }
 \description{
 Store deep mutational scanning data in a standardised format, alongside
-metadata describing the state of the data.
+metadata describing the the data. This function creates a deep_mutational_scan
+S3 object. Several of these can be joined using \code{\link{bind_scans}} to create a
+combined dataset.
 }
 \examples{
+
+# Create a scan object
 path <- system.file("extdata", "urn_mavedb_00000011_a_1_scores.csv",
                     package = "deepscanscape")
 csv <- read.csv(path, skip = 4)
-dms <- deep_mutational_scan(csv, scheme = 'mave', trans = NULL, na_value = 'impute',
-                            annotate = FALSE, gene = 'Hsp90', study = 'Hietpas et al. (2011)')
+dms <- deep_mutational_scan(csv, name = "Hietpas Hsp90", scheme = "mave", trans = NULL,
+                            na_value = "impute", annotate = FALSE, gene = "Hsp90",
+                            study = "Hietpas et al. (2011)", source = "",
+                            description = "Scan of 9 hsp90 positions")
 }

@@ -17,6 +17,6 @@ Identify positions where the difference between the minimum distance to a cluste
 less than 0.03, which indicates ambiguous assignment.
 }
 \details{
-Internal function called by \code{\link{annotate_df}}.
+Internal function called by \code{\link{annotate}}.
 }
 \keyword{internal}

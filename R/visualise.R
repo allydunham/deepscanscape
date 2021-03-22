@@ -24,7 +24,7 @@ theme_deepscanscape <- function() {
 #' The wild type amino acid at each position is marked by outlining the corresponding heatmap tile.
 #' This is also the default plot method for \code{\link{deep_mutational_scan}} objects.
 #'
-#' @param x \code{\link{deep_mutational_scan}}.
+#' @param x A single study \code{\link{deep_mutational_scan}}.
 #' @return A \code{\link[ggplot2]{ggplot2}} plot.
 #' @examples
 #' dms <- deepscanscape::deep_scans$p53
@@ -33,32 +33,42 @@ theme_deepscanscape <- function() {
 #' # Or equivalently
 #' plot(dms)
 #'
+#' # For multi_study scans
+#' comb_dms <- bind_scans(dms, annotate_missing = TRUE)
+#' plot_er_heatmap(dms)
+#'
 #' @export
 plot_er_heatmap <- function(x) {
   if (!is.deep_mutational_scan(x)) {
     stop("x is not a deep_mutational_scan()")
   }
 
-  df <- tidyr::pivot_longer(x$data[c("position", "wt", amino_acids)],
+  df <- tidyr::pivot_longer(x$data[c("name", "position", "wt", amino_acids)],
                             cols = .data$A:.data$Y, names_to = "mut", values_to = "er")
-  means <- dplyr::summarise(dplyr::group_by(df, .data$position, , .data$wt),
+  means <- dplyr::summarise(dplyr::group_by(df, .data$name, .data$position, .data$wt),
                             er = mean(.data$er), mut = "Mean", .groups = "drop")
   df <- dplyr::bind_rows(df, means)
   df$mut <- factor(df$mut, levels = c(amino_acids, "", "Mean"))
 
   limit <- rep(max(abs(df$er)), 2) * c(-1, 1)
-  ggplot2::ggplot(mapping = ggplot2::aes(x = .data$position, y = as.integer(.data$mut), fill = .data$er)) +
+  p <- ggplot2::ggplot(mapping = ggplot2::aes(x = .data$position, y = as.integer(.data$mut), fill = .data$er)) +
     ggplot2::geom_tile(data = df[df$wt != df$mut, ]) +
     ggplot2::geom_tile(data = df[df$wt == df$mut, ], mapping = ggplot2::aes(colour = "WT")) +
     ggplot2::scale_fill_distiller(name = "ER", limits = limit, type = "div", palette = "RdBu", direction = 1) +
     ggplot2::scale_colour_manual(name = "", values = c(WT = "black")) +
     ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(fill = "white"))) +
     ggplot2::scale_y_continuous(breaks = 1:22, labels = c(amino_acids, "", "Mean")) +
-    ggplot2::labs(title = x$gene, x = "Position", y = "") +
-    ggplot2::xlim(min(df$position), max(df$position)) +
+    ggplot2::labs(x = "Position", y = "") +
     theme_deepscanscape() +
     ggplot2::theme(panel.grid.major.y = ggplot2::element_blank(),
                    axis.ticks.y = ggplot2::element_blank())
+
+  if (x$multi_study) {
+    p <- p + ggplot2::facet_wrap(~name, scales = "free", ncol = 1)
+  } else {
+    p <- p + ggplot2::labs(title = x$gene)
+  }
+  return(p)
 }
 
 # TODO special density feature for point density?
@@ -81,7 +91,7 @@ plot_er_heatmap <- function(x) {
 #' better to save the results of \code{annotate} if doing multiple downstream analyses because can be a relatively slow
 #' operation.
 #'
-#' @param x \code{\link{deep_mutational_scan}} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}.
+#' @param x \code{\link{deep_mutational_scan}}.
 #' @param name Prefer to identify datasets by study or gene
 #' @param feature String name of a numeric feature from the \code{\link{deep_landscape}} dataset to project onto
 #' the background landscape.
@@ -96,28 +106,22 @@ plot_er_heatmap <- function(x) {
 #' dms <- annotate(dms)
 #' plot_landscape(dms, feature = "mean_sift")
 #'
+#' # Plot multiple studies
+#' comb_dms <- bind_scans(dms, annotate_missing = TRUE)
+#' plot_landscape(comb_dms, feature = "total_energy")
+#'
 #' @export
-# TODO add examples with multiple studies when more example datasets available
 plot_landscape <- function(x, name = c("study", "gene"), feature = NULL) {
-  if (is.deep_mutational_scan(x)) {
-    if (!x$annotated) {
-      warning("deep_mutational_scan is not annotated. Annotating using annotate().", immediate. = TRUE)
-      x <- annotate(x)
-    }
-    df <- tibble::as_tibble(x, full = TRUE)
-  } else if (is.data.frame(x)) {
-    if (!all(c("umap1", "umap2") %in% names(x))) {
-      warning("data frame is not annotated. Annotating using annotate().", immediate. = TRUE)
-      x <- annotate(x)
-    }
-    df <- validate_combined_dms(x)
+  if (!is.deep_mutational_scan(x)) {
+    stop("x is not a deep_mutational_scan")
   }
 
-  name <- match.arg(name)
-  df$name <- df[[name]]
-  df$name[is.na(df$name)] <- df[[grep(name, c("study", "gene"), value = TRUE, invert = TRUE)]][is.na(df$name)]
+  if (!x$annotated) {
+    warning("deep_mutational_scan is not annotated. Annotating using annotate().", immediate. = TRUE)
+    x <- annotate(x)
+  }
 
-  n_studies <- length(unique(df$name))
+  n_studies <- nrow(x$meta)
   if (n_studies == 1) {
     col_scale <- ggplot2::scale_colour_manual(name = "", values = "black")
   } else if (n_studies <= 8) {
@@ -130,11 +134,12 @@ plot_landscape <- function(x, name = c("study", "gene"), feature = NULL) {
     p <- ggplot2::ggplot(mapping = ggplot2::aes(x = .data$umap1, y = .data$umap2)) +
       ggplot2::geom_point(data = deepscanscape::deep_landscape, mapping = ggplot2::aes(fill = "Background"),
                           shape = 21, colour = "grey") +
-      ggplot2::geom_point(data = df, mapping = ggplot2::aes(colour = .data$name)) +
+      ggplot2::geom_point(data = x$data, mapping = ggplot2::aes(colour = .data$name)) +
       col_scale +
       ggplot2::scale_fill_manual(name = "", values = c(Background = "grey")) +
       ggplot2::labs(x = "UMAP1", y = "UMAP2") +
       theme_deepscanscape()
+
   } else {
     if (!feature %in% names(deepscanscape::deep_landscape)) {
       stop("Feature must be a variable in the deep_landscape dataset")
@@ -153,8 +158,8 @@ plot_landscape <- function(x, name = c("study", "gene"), feature = NULL) {
 
     p <- ggplot2::ggplot(mapping = ggplot2::aes(x = .data$umap1, y = .data$umap2)) +
       ggplot2::stat_summary_hex(data = comb_df, fun = mean, bins = 40, mapping = ggplot2::aes(z = .data[[feature]])) +
-      ggplot2::geom_point(data = df, shape = 19, colour = "black") +
-      ggplot2::geom_point(data = df, mapping = ggplot2::aes(colour = .data$name), shape = 16) +
+      ggplot2::geom_point(data = x$data, shape = 19, colour = "black") +
+      ggplot2::geom_point(data = x$data, mapping = ggplot2::aes(colour = .data$name), shape = 16) +
       fill_scale +
       col_scale +
       ggplot2::labs(x = "UMAP1", y = "UMAP2") +
@@ -218,26 +223,28 @@ get_feature_scale <- function(feature, type = c("fill", "colour")) {
 #' strays from the expected frequencies. For example large proportions of outliers could suggest abnormal data or many
 #' permissive positions a weakly conserved protein.
 #'
-#' @param x \code{\link{deep_mutational_scan}} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}.
+#' @param x \code{\link{deep_mutational_scan}}.
 #' @return A \code{\link[ggplot2]{ggplot2}} plot.
 #' @examples
 #' dms <- annotate(deepscanscape::deep_scans$p53)
 #' plot_cluster_frequencies(dms)
 #'
+#' # Plot multiple studies
+#' comb_dms <- bind_scans(dms, annotate_missing = TRUE)
+#' plot_cluster_frequencies(comb_dms)
+#'
 #' @export
-# TODO - add examples using multiple datasets when examples available
 plot_cluster_frequencies <- function(x) {
-  if (is.deep_mutational_scan(x)) {
-    if (!x$annotated) {
-      warning("deep_mutational_scan is not annotated. Annotating using annotate().", immediate. = TRUE)
-      x <- annotate(x)
-    }
-    df <- x$data
-  } else if (is.data.frame(x)) {
-    df <- validate_combined_dms(x, annotated = TRUE)
+  if (!is.deep_mutational_scan(x)) {
+    stop("x is not a deep_mutational_scan")
   }
 
-  overview <- dplyr::summarise(dplyr::group_by(df, .data$wt, .data$cluster), n = dplyr::n(), .groups = "drop_last")
+  if (!x$annotated) {
+    warning("deep_mutational_scan is not annotated. Annotating using annotate().", immediate. = TRUE)
+    x <- annotate(x)
+  }
+
+  overview <- dplyr::summarise(dplyr::group_by(x$data, .data$wt, .data$cluster), n = dplyr::n(), .groups = "drop_last")
   overview <- dplyr::ungroup(dplyr::mutate(overview, prop = .data$n / sum(.data$n)))
   overview$wt <- factor(overview$wt, levels = sort(unique(overview$wt), decreasing = TRUE))
   overview$cluster_num <- stringr::str_sub(overview$cluster, start = 2)

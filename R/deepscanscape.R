@@ -11,7 +11,7 @@
 #' \itemize{
 #'   \item \code{\link{deep_mutational_scan}} - Construct standardised deep mutational scan datasets. This creates an
 #'   S3 object with various generics.
-#'   \item \code{\link{rbind.deep_mutational_scan}} - Combined deep mutational scan datasets
+#'   \item \code{\link{bind_scans}} - Combined deep mutational scan datasets
 #'   \item \code{\link{parse_deep_scan}} - Parse common deep scan data formats
 #'   \item \code{\link{transform_er}} - Transform ER scores from common score types to a standardised scale
 #'   \item \code{\link{normalise_er}} - Normalise ER scores

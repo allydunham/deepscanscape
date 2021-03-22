@@ -16,6 +16,6 @@ Logical vector corresponding to results on each row
 Identify positions where the distance to all clusters is > 0.45, indicating a likely outlier.
 }
 \details{
-Internal function called by \code{\link{annotate_df}}.
+Internal function called by \code{\link{annotate}}.
 }
 \keyword{internal}

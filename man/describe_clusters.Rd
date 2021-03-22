@@ -7,7 +7,7 @@
 describe_clusters(x, full = FALSE)
 }
 \arguments{
-\item{x}{\link{deep_mutational_scan} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}}
+\item{x}{\link{deep_mutational_scan}.}
 
 \item{full}{Logical. Include average statistics from the \code{\link{deep_landscape}} dataset in
 addition to summary descriptions and notes.}

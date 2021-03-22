@@ -23,12 +23,15 @@ The following assumptions are currently checked:
   \item Correct class set
   \item Correct fields present
   \item \code{data} is a tibble
+  \item \code{imputed} is logical
   \item \code{annotated} is logical
-  \item \code{impute_matrix} is a tibble or NA
-  \item \code{cluster} is a tibble or NA
+  \item \code{multi_study} is logical
   \item \code{data} contains the correct columns
   \item \code{data} contains no duplicate rows
-  \item \code{impute_matrix} contains the correct type of values
-  \item Annotated objects contain the correct \code{data} and \code{cluster} columns
+  \item \code{meta} list is correctly structured
+  \item \code{meta} list contains values for each unique name
+  \item The correct additional columns are present when the object is annotated or imputed
+  \item No NA scores remain for imputed objects
+  \item Objects listed as multi_study contain data from multiple studies
 }
 }

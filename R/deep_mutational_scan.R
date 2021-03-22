@@ -3,16 +3,17 @@
 
 #' Internal deep_mutational_scan constructor
 #'
-#' Create a new raw deep_mutational_scan object. This is expected to have no annotations and no imputation but have
-#' had scores transformed and normalised onto the standard scale.
+#' Create a new raw deep_mutational_scan object, containing data from one or more studies.
+#' This is expected to have no annotations and no imputation but have had all scores transformed and
+#' normalised onto the standard scale.
 #'
-#' @param df A data frame in the required format (position, wt, A-Y, additional data...).
-#' @param study The source study.
-#' @param gene The studied gene.
+#' @param df A data frame in the required format (name, position, wt, A-Y, additional data...).
+#' @param meta A data frame detailing the metadata for each study. Each row should contain the name, study, gene,
+#' source, description and positions entries, covering each unique name in df.
 #' @return A deep_mutational_scan S3 object (see \code{\link{deep_mutational_scan}})
-new_deep_mutational_scan <- function(df, study, gene) {
-  out <- list(data = tibble::as_tibble(df), study = study, gene = gene,
-              annotated = FALSE, impute_mask = NA, cluster = NA)
+new_deep_mutational_scan <- function(df, meta) {
+  out <- list(data = tibble::as_tibble(df), meta = meta, annotated = FALSE,
+              imputed = FALSE, multi_study = nrow(meta) > 1)
   class(out) <- c("deep_mutational_scan")
   return(out)
 }
@@ -28,124 +29,151 @@ new_deep_mutational_scan <- function(df, study, gene) {
 #'   \item Correct class set
 #'   \item Correct fields present
 #'   \item \code{data} is a tibble
+#'   \item \code{imputed} is logical
 #'   \item \code{annotated} is logical
-#'   \item \code{impute_matrix} is a tibble or NA
-#'   \item \code{cluster} is a tibble or NA
+#'   \item \code{multi_study} is logical
 #'   \item \code{data} contains the correct columns
 #'   \item \code{data} contains no duplicate rows
-#'   \item \code{impute_matrix} contains the correct type of values
-#'   \item Annotated objects contain the correct \code{data} and \code{cluster} columns
+#'   \item \code{meta} list is correctly structured
+#'   \item \code{meta} list contains values for each unique name
+#'   \item The correct additional columns are present when the object is annotated or imputed
+#'   \item No NA scores remain for imputed objects
+#'   \item Objects listed as multi_study contain data from multiple studies
 #' }
 #'
 #' @param x \code{\link{deep_mutational_scan}} object.
 #' @return The input is returned unaltered, since the main purpose of the function is to raise an error if the
 #'   object is erroneous.
-validate_deep_mutational_scan <- function(x) {
+validate_deep_mutational_scan <- function(x) { # nolint
   # Check fundamental structure
   if (!is.deep_mutational_scan(x)) {
     stop("Not a deep_mutational_scan (check class(x))")
   }
 
-  if (!all(c("data", "study", "gene", "annotated", "impute_mask", "cluster") %in% names(x))) {
-    stop("Missing field(s). The object must contain 'data', 'study', 'gene', 'annotated' & 'impute_mask'")
+  if (!all(c("data", "meta", "annotated", "imputed") %in% names(x))) {
+    stop("Missing field(s). The object must contain 'data', 'meta', 'annotated' & 'imputed'")
   }
 
   # Check field types
   if (!tibble::is_tibble(x$data)) {
-    stop("Invalid 'data'. Must be a tibble")
+    stop("Invalid 'data' object. Must be a tibble")
+  }
+
+  if (!tibble::is_tibble(x$meta)) {
+    stop("Invalid 'meta' object. Must be a tibble")
+  }
+
+  if (!is.logical(x$imputed)) {
+    stop("Invalid 'imputed' value (", x$imputed, "). Must be TRUE/FALSE")
   }
 
   if (!is.logical(x$annotated)) {
     stop("Invalid 'annotated' value (", x$annotated, "). Must be TRUE/FALSE")
   }
 
-  if (!((is.matrix(x$impute_mask) & is.numeric(x$impute_mask)) | identical(x$impute_mask, NA))) {
-    stop("Invalid 'impute_mask'. Must be a logical matrix or NA")
-  }
-
-  if (!(identical(x$cluster, NA) | tibble::is_tibble(x$cluster))) {
-    stop("Invalid 'cluster'. Must be a tibble or NA")
+  if (!is.logical(x$multi_study)) {
+    stop("Invalid 'multi_study' value (", x$multi_study, "). Must be TRUE/FALSE")
   }
 
   # Check data object
   missing_headers <- c("position", "wt", amino_acids)[which(!c("position", "wt", amino_acids) %in% names(x$data))]
   if (length(missing_headers) > 0) {
-    stop("Missing data columns: ", paste(headers, sep = ", "))
+    stop("Missing data columns: ", paste(missing_headers, sep = ", "))
   }
 
-  if (nrow(x$data) != nrow(dplyr::distinct(x$data[c("position", "wt")]))) {
+  if (nrow(x$data) != nrow(dplyr::distinct(x$data[c("name", "position", "wt")]))) {
     stop("Data contains duplicated positions")
   }
 
   # TODO - Check scores fit right profile? (Maybe too fragile)
 
-  # Check impute_matrix
-  if (!identical(x$impute_mask, NA)) {
-    if (!all(unique(c(x$impute_mask)) %in% 0:2)) {
-      stop("Impute matrix contains incorrect values: must all be 0, 1 or 2")
+  # Check meta object
+  missing_headers <- c("name", "study", "gene", "source", "positions")
+  missing_headers <- missing_headers[which(!missing_headers %in% names(x$meta))]
+  if (length(missing_headers) > 0) {
+    stop("Missing meta columns: ", paste(missing_headers, sep = ", "))
+  }
+
+  if (!all(unique(x$data$name) %in% unique(x$meta$name))) {
+    stop("Names in meta and data don't match")
+  }
+
+  # Check imputation
+  if (x$imputed) {
+    if (any(is.na(x$data[amino_acids]))) {
+      stop("Scan is marked as imputed by has NA ER scores")
+    }
+
+    impute_headers <- paste0("impute_", amino_acids)
+    missing_headers <- missing_headers[which(!missing_headers %in% names(x$data))]
+    if (length(missing_headers) > 0) {
+      stop("Scan is marked as imputed by is missing data columns: ", paste(missing_headers, sep = ", "))
+    }
+
+    if (any(!as.matrix(x$data[impute_headers]) %in% c(0, 1, 2))) {
+      stop("Unexpected values in impute_X columns. All should be 0, 1 or 2")
     }
   }
 
   # Check annotation
   if (x$annotated) {
-    headers <- c("cluster", stringr::str_c("PC", seq_len(20)), "umap1", "umap2")
-    missing_headers <- headers[which(!headers %in% names(x$data))]
+    missing_headers <- c(paste0("PC", seq_len(20)), "umap1", "umap2", "cluster", "base_cluster", "permissive",
+                         "ambiguous", "high_distance", paste0("dist", seq_len(8)), "cluster_notes")
+    missing_headers <- missing_headers[which(!missing_headers %in% names(x$data))]
     if (length(missing_headers) > 0) {
-      stop("Missing annotation columns: ", paste(missing_headers, sep = ", "))
-    }
-
-    if (identical(x$cluster, NA)) {
-      stop("Cluster annotation missing")
-    }
-
-    headers <- c("cluster", "base_cluster", "permissive", "ambiguous", "high_distance",
-                 "dist1", "dist2", "dist3", "dist4", "dist5", "dist6", "dist7", "dist8", "notes")
-    missing_headers <- headers[which(!headers %in% names(x$cluster))]
-    if (length(missing_headers) > 0) {
-      stop("Missing cluster annotation columns: ", paste(missing_headers, sep = ", "))
+      stop("Scan is marked as annotated by is missing data columns: ", paste(missing_headers, sep = ", "))
     }
   }
 
   return(x)
 }
 
+# TODO - Document data tibble format
 #' Deep mutational scan data
 #'
 #' Store deep mutational scanning data in a standardised format, alongside
-#' metadata describing the state of the data.
+#' metadata describing the the data. This function creates a deep_mutational_scan
+#' S3 object. Several of these can be joined using \code{\link{bind_scans}} to create a
+#' combined dataset.
 #'
 #' @param df A data frame to parse.
+#' @param name Name of the deep mutational scan.
 #' @param scheme Original data scheme (see \code{\link{parse_deep_scan}}).
 #' @param trans Function to transform scores onto the standard scale. Accepts a string corresponding to known transforms
 #' or a custom function (\code{\link{transform_er}}).
 #' @param na_value Value to set missense NA scores to (see \code{\link{impute}}).
 #' @param annotate Annotate the dataset with mutational landscape data (PCA, UMAP and amino acid subtypes).
-#' @param study Source of the deep mutational scan.
+#' @param study Study in which the scan was performed.
 #' @param gene Gene scanned.
-#' @return A deep_mutational_scan S3 object, which broadly behaves as a list containing the following fields:
+#' @param source Source of study. This is for reference only and is not used internally.
+#' @param description Description of study, containing any miscellaneous details. This is for reference only and is
+#' not used internally.
+#' @return A deep_mutational_scan S3 object, containing the following fields:
 #'   \itemize{
-#'     \item data: \code{\link[tibble]{tibble}} containing positions ER scores and other positional data
-#'     \item study: source study
-#'     \item gene: gene scanned
+#'     \item data: wide format \code{\link[tibble]{tibble}} containing ER scores and other positional data
+#'     \item meta: Tibble containing meta data about each study in the dataset
+#'     \item imputed: logical indicating the dataset has been completed via imputation(see \code{\link{impute}}
+#'     for details)
 #'     \item annotated: logical indicating if the data has been annotated with PCs, UMAP coordinates and clusters
-#'     \item impute_mask: numeric matrix indicating imputed ER scores, corresponding to the
-#'     rows/ER columns of \code{data} (see \code{\link{impute}} for details)
-#'     \item cluster: \code{\link[tibble]{tibble}} containing further details on how clusters were assigned during
-#'     annotation, corresponding to the rows of \code{data}
+#'     \item multi_study: logical indicating the dataset contains data from multiple studies
 #'   }
-#'   The class is used like a list apart from [ accesses the main data frame (\link[=dms_extract]{details}).
+#'   The class is used like a list apart from [ accesses the main data tibble (see \link[=dms_extract]{details}).
 #'   The class is also associated with other common generics (see \link[=dms_s3]{basic functions},
-#'   \link[=dms_summary]{summary}, \link[=as_tibble]{data frames}, \link[=dms_plot]{plotting} and
-#'   \link[=rbind.deep_mutational_scan]{combining data}).
+#'   \link[=dms_summary]{summary}, \link[=as_tibble]{data frames}, \link[=dms_plot]{plotting}. Multiple deep_mutational
+#'   scan objects can be combined using \link{bind_scans}).
 #' @examples
+#'
+#' # Create a scan object
 #' path <- system.file("extdata", "urn_mavedb_00000011_a_1_scores.csv",
 #'                     package = "deepscanscape")
 #' csv <- read.csv(path, skip = 4)
-#' dms <- deep_mutational_scan(csv, scheme = 'mave', trans = NULL, na_value = 'impute',
-#'                             annotate = FALSE, gene = 'Hsp90', study = 'Hietpas et al. (2011)')
+#' dms <- deep_mutational_scan(csv, name = "Hietpas Hsp90", scheme = "mave", trans = NULL,
+#'                             na_value = "impute", annotate = FALSE, gene = "Hsp90",
+#'                             study = "Hietpas et al. (2011)", source = "",
+#'                             description = "Scan of 9 hsp90 positions")
 #' @export
-deep_mutational_scan <- function(df, scheme=NULL, trans=NULL, na_value="impute",
-                                 annotate=TRUE, study=NA, gene=NA) {
+deep_mutational_scan <- function(df, name, scheme=NULL, trans=NULL, na_value="impute",
+                                 annotate=FALSE, study=NA, gene=NA, source=NA, description=NA) {
   # Parse scheme
   if (!is.null(scheme)) {
     df <- parse_deep_scan(df, scheme)
@@ -169,10 +197,16 @@ deep_mutational_scan <- function(df, scheme=NULL, trans=NULL, na_value="impute",
   df <- df[df$mut %in% amino_acids, ]
   df <- dplyr::arrange(df, .data$position, .data$mut)
   df <- tidyr::pivot_wider(df, names_from = "mut", values_from = "score")
-  df <- dplyr::select(df, .data$position, .data$wt, dplyr::all_of(amino_acids), dplyr::everything())
+  df$name <- name
+  df <- dplyr::select(df, .data$name, .data$position, .data$wt, dplyr::all_of(amino_acids),
+                      dplyr::everything())
+
+  # Construct metadata
+  meta <- tibble::tibble(name = name, study = study, gene = gene, source = source,
+                         description = description, positions = dplyr::n_distinct(df$position))
 
   # Construct object
-  out <- validate_deep_mutational_scan(new_deep_mutational_scan(df = df, study = study, gene = gene))
+  out <- validate_deep_mutational_scan(new_deep_mutational_scan(df = df, meta = meta))
 
   # Impute
   # TODO note what happens when not doing this
@@ -269,15 +303,23 @@ NULL
 NULL
 #> NULL
 
-# TODO - Pretty print when extra columns added
 # TODO - too many columns?
 #' @describeIn dms_s3 S3 format method
 #' @export
 format.deep_mutational_scan <- function(x, ...) {
-  out <- c(paste("# A deep_mutational_scan"),
-           paste("# Study:", x$study),
-           paste("# Gene:", x$gene),
-           paste("#", nrow(x$data), "positions"))
+  out <- "# Deep mutational scanning data"
+
+  if (x$multi_study) {
+    out <- c(out, stringr::str_c("# ", nrow(x$meta), " scans:"),
+             stringr::str_c("# ", x$meta$study, " - ", x$meta$gene, " (", x$meta$positions,
+                            " positions, name: ", x$meta$name, ")"))
+  } else {
+    out <- c(out,
+             stringr::str_c("# Name: ", x$meta$name),
+             stringr::str_c("# Study: ", x$meta$study),
+             stringr::str_c("# Gene: ", x$meta$gene),
+             stringr::str_c("# ", x$meta$positions, " positions"))
+  }
 
   if (x$annotated) {
     out <- c(out, "# Annotated with clusters, pricipal components and UMAP coordinates")
@@ -289,9 +331,18 @@ format.deep_mutational_scan <- function(x, ...) {
     out <- crayon::make_style("darkgrey")(out)
   }
 
-  tbl <- x$data
-  tbl <- dplyr::select(tbl, dplyr::any_of("cluster"), .data$position, .data$wt,
-                       dplyr::all_of(amino_acids), dplyr::everything())
+
+
+  cols <- c("position", "wt", amino_acids)
+  if (x$annotated) {
+    cols <- c("cluster", cols)
+  }
+
+  if (x$multi_study) {
+    cols <- c("name", cols)
+  }
+
+  tbl <- dplyr::select(x$data, dplyr::all_of(cols), dplyr::everything())
   tbl_str <- format(tbl)
   out <- c(out, tbl_str[-1])
 
@@ -311,9 +362,11 @@ str.deep_mutational_scan <- function(object, ..., indent.str = " ", nest.lev = 0
     cat(indent.str)
   }
 
-  cat("deep_mutational_scan [", nrow(object$data), " positions]", "\n", sep = "")
+  cat("deep_mutational_scan [", nrow(object$meta), " scans with ", sum(object$meta$positions), " total positions]",
+      "\n", sep = "")
 
-  utils::str(list(study = object$study, gene = object$gene, annotated = object$annotated, data = as.list(object$data)),
+  utils::str(list(meta = object$meta, annotated = object$annotated, imputed = object$imputed,
+                  multi_study = object$multi_study, data = as.list(object$data)),
              no.list = TRUE, ..., nest.lev = nest.lev + 2L, indent.str = indent.str)
 }
 
@@ -329,26 +382,19 @@ dim.deep_mutational_scan <- function(x) {
 #' \code{\link[base]{data.frame}} or \code{\link[base]{list}}, with the option to add gene and study columns.
 #'
 #' @param x \code{\link{deep_mutational_scan}} object.
-#' @param full Include columns containing metadata (study, gene).
 #' @param ... Ignored.
 #' @return A \code{\link[tibble]{tibble}}, \code{\link[base]{data.frame}} or \code{\link[base]{list}}
 #' @importFrom tibble as_tibble
 #' @name as_tibble
 #' @export
-as_tibble.deep_mutational_scan <- function(x, ..., full=FALSE) { # nolint
-  if (full) {
-    out <- tibble::as_tibble(x)
-    out$study <- x$study
-    out$gene <- x$gene
-    return(dplyr::select(out, .data$study, .data$gene, dplyr::everything()))
-  }
+as_tibble.deep_mutational_scan <- function(x, ...) { # nolint
   return(x$data)
 }
 
 #' @describeIn as_tibble S3 as.data.frame method
 #' @export
-as.data.frame.deep_mutational_scan <- function(x, ..., full=FALSE) {
-  return(as.data.frame(as_tibble(x, full = full, ...)))
+as.data.frame.deep_mutational_scan <- function(x, ...) {
+  return(as.data.frame(as_tibble(x, ...)))
 }
 
 #' @describeIn as_tibble S3 as.list method
@@ -371,7 +417,11 @@ as.list.deep_mutational_scan <- function(x, ...) {
 #' @name dms_plot
 #' @importFrom ggplot2 autoplot
 autoplot.deep_mutational_scan <- function(object, ...){ # nolint
-  plot_er_heatmap(object)
+  if (object$multi_study) {
+    plot_landscape(object)
+  } else {
+    plot_er_heatmap(object)
+  }
 }
 
 #' @describeIn dms_plot S3 plot method
@@ -381,7 +431,6 @@ plot.deep_mutational_scan <- function(x, ...) {
   print(autoplot(x, ...))
 }
 
-# TODO Move the combined stuff to own file
 # TODO support these in all applicable functions
 #' Combine deep mutational scan data
 #'
@@ -389,62 +438,56 @@ plot.deep_mutational_scan <- function(x, ...) {
 #' columns giving the study and gene of each position.
 #'
 #' @param ... \code{\link{deep_mutational_scan}} objects to combine or lists of such objects.
-#' @return A \code{\link[tibble]{tibble}} whose rows contain positional data from all the provided scans.
+#' @param impute_missing Impute missing ER scores using \code{\link{impute}} where scans have not already been imputed.
+#' @param annotate_missing Annotate unannotated scans using \code{\link{annotate}}.
+#' @return A multi study \code{\link{deep_mutational_scan}}.
 #'
 #' @export
-rbind.deep_mutational_scan <- function(...) {
+bind_scans <- function(..., impute_missing = FALSE, annotate_missing = FALSE) {
   scans <- rlang::flatten(list(...))
-  df <- dplyr::bind_rows(lapply(scans, as_tibble, full = TRUE))
-  return(validate_combined_dms(df))
-}
 
-
-
-# TODO - check if scores are distributed properly or such?
-#' Check a data frame is a combined mutational scan dataset
-#'
-#' Validate a data frame to determine if it sufficiently resembles a combined deep mutational scan dataset, as produced
-#' by \code{\link{rbind.deep_mutational_scan}}. A error is raised if the data is incorrect, otherwise it is returned
-#' as a \code{\link[tibble]{tibble}}.
-#'
-#' The following tests are performed:
-#' \itemize{
-#'   \item x is a \code{\link{data.frame}}
-#'   \item There are no NA ER scores
-#'   \item The required columns are present
-#'   \item The expected additional columns are present for annotated data
-#' }
-#'
-#' @param x Data frame to check.
-#' @param annotated logical indicating the data be annotated with PCA, UMAP and Cluster information.
-#' @return x converted to a \code{\link[tibble]{tibble}}
-#' @export
-validate_combined_dms <- function(x, annotated = FALSE) {
-  if (!is.data.frame(x)) {
-    stop("Combined mutational scan datasets must inherit from data.frame")
+  if (!all(sapply(scans, is.deep_mutational_scan))) {
+    stop("All objects must be deep_mutational_scan objects or lists of these")
   }
 
-  if (any(is.na(x[amino_acids]))) {
-    stop("NA ER scores present\nUse impute() to remove these before combining data")
-  }
+  imputed <- sapply(scans, `[[`, "imputed")
+  annotated <- sapply(scans, `[[`, "annotated")
 
-  cols <- c("study", "gene", "position", "wt", amino_acids)
-  if (!all(cols %in% names(x))) {
-    stop("Data frame does not contain required columns. Must contain: ", stringr::str_c(cols, collapse = ", "))
-  }
+  imp <- all(imputed)
+  ann <- all(annotated)
 
-  if (annotated) {
-    cols <- c("cluster", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6",
-              "PC7", "PC8", "PC9", "PC10", "PC11", "PC12", "PC13", "PC14",
-              "PC15", "PC16", "PC17", "PC18", "PC19", "PC20", "umap1", "umap2",
-              "base_cluster", "permissive", "small_margin", "high_distance",
-              "dist1", "dist2", "dist3", "dist4", "dist5", "dist6", "dist7",
-              "dist8", "notes")
-    if (!all(cols %in% names(x))) {
-      stop("Data frame does not contain the required columns. Annotated data must contain: ",
-           stringr::str_c(cols, collapse = ", "))
+  if (impute_missing) {
+    scans <- lapply(scans, function(x) if (x$imputed) x else impute(x))
+    imp <- TRUE
+  } else {
+    if (any(imputed) & !imp) {
+      stop("Mixture of imputed and unimputed scans. All must be imputed or all not imputed. ",
+           "Use impute_missing = TRUE to impute ER values for unimputed scans.")
     }
   }
 
-  return(tibble::as_tibble(x))
+  if (annotate_missing) {
+    scans <- lapply(scans, function(x) if (x$annotated) x else annotate(x))
+    ann <- TRUE
+  } else {
+    if (any(imputed) & !imp) {
+      stop("Mixture of annotated and unannotated scans. All must be annoteated or all not annotated. ",
+           "Use annotate_missing = TRUE to annotate scans missing annotation.")
+    }
+  }
+
+  scan_names <- sapply(scans, function(x) x$meta$name)
+
+  if (anyDuplicated(scan_names)) {
+    stop("Scans contain duplicate names. All scans must be uniquely identified via the 'name' column in data and meta.")
+  }
+
+  df <- dplyr::bind_rows(lapply(scans, `[[`, "data"))
+  meta <- dplyr::bind_rows(lapply(scans, `[[`, "meta"))
+  out <- new_deep_mutational_scan(df, meta)
+  out$annotated <- ann
+  out$imputed <- imp
+  out$multi_study <- TRUE
+
+  return(validate_deep_mutational_scan(out))
 }

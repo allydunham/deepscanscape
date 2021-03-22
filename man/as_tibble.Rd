@@ -7,9 +7,9 @@
 \alias{as.list.deep_mutational_scan}
 \title{Convert deep_mutational_scan objects}
 \usage{
-\method{as_tibble}{deep_mutational_scan}(x, ..., full = FALSE)
+\method{as_tibble}{deep_mutational_scan}(x, ...)
 
-\method{as.data.frame}{deep_mutational_scan}(x, ..., full = FALSE)
+\method{as.data.frame}{deep_mutational_scan}(x, ...)
 
 \method{as.list}{deep_mutational_scan}(x, ...)
 }
@@ -17,8 +17,6 @@
 \item{x}{\code{\link{deep_mutational_scan}} object.}
 
 \item{...}{Ignored.}
-
-\item{full}{Include columns containing metadata (study, gene).}
 }
 \value{
 A \code{\link[tibble]{tibble}}, \code{\link[base]{data.frame}} or \code{\link[base]{list}}

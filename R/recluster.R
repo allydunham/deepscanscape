@@ -3,7 +3,7 @@
 # TODO add more parameters to clustering?
 #' Recluster DMS data with a combined dataset
 #'
-#' @param x data frame or list of \code{\link{deep_mutational_scan}} objects to recluster
+#' @param x \code{\link{deep_mutational_scan}} object to recluster
 #' @param keep_clustering logical. Keep the outputs of \link[stats]{hclust} and \link[dynamicTreeCut]{cutreeHybrid} for
 #' downstream analysis
 #' @param deep_split Named vector of deepSplit parameters to pass to \link[dynamicTreeCut]{cutreeHybrid}. Must be a
@@ -33,26 +33,17 @@ recluster <- function(x, keep_clustering = FALSE, deep_split=NULL, add_combined=
   }
 
   # Generate data
-  if (is.deep_mutational_scan(x)) {
-    df <- tibble::as_tibble(x, full = TRUE)
-  } else if (is.data.frame(x)) {
-    if (!all(c("study", "gene", "position", "wt", amino_acids) %in% names(x))) {
-      stop("x does not contain the required columns (see ?recluster)")
-    }
-    df <- tibble::as_tibble(x)
-  } else if (inherits(x, "list")) {
-    if (!all(sapply(x, is.deep_mutational_scan))) {
-      stop("Datasets to recluster must all be deep mutational scans.\nGenerate these using deep_mutational_scan()")
-    }
-    df <- do.call(rbind, x)
-  } else {
-    stop("Unrecognised input\n Pass a correctly formatted data frame or a list of deep_mutational_scan() objects")
+  if (!is.deep_mutational_scan(x)) {
+    stop("x must be a deep_mutational_scan")
   }
 
-  df <- df[c("study", "gene", "position", "wt", amino_acids)]
+  df <- dplyr::left_join(x$meta[c("name", "study", "gene")],
+                         x$data[c("name", "position", "wt", amino_acids)], by = "name")
+
   if (add_combined) {
     comb <- dplyr::select(deepscanscape::deep_landscape, .data$study, .data$gene,
                           .data$position, .data$wt, dplyr::one_of(amino_acids))
+    comb$name <- comb$study
     df <- dplyr::bind_rows(df, comb)
   }
 
@@ -70,9 +61,7 @@ recluster <- function(x, keep_clustering = FALSE, deep_split=NULL, add_combined=
   df <- df[!permissive, ]
   aa_dfs <- split(df, f = df$wt, drop = TRUE)
 
-  cluster_wrapper <- function(aa) {
-    return(cluster_df(aa_dfs[[aa]], deep_split = deep_split[aa]))
-  }
+  cluster_wrapper <- function(aa) cluster_df(aa_dfs[[aa]], deep_split = deep_split[aa])
   clusts <- sapply(names(aa_dfs), cluster_wrapper, simplify = FALSE)
 
   # Assemble output

@@ -7,13 +7,10 @@
 annotate(x)
 }
 \arguments{
-\item{x}{\code{\link{deep_mutational_scan}} or \link[=rbind.deep_mutational_scan]{combined DMS data frame}
-to annotate}
+\item{x}{\code{\link{deep_mutational_scan}} to annotate}
 }
 \value{
-An annotated \code{\link{deep_mutational_scan}} if passed a \code{\link{deep_mutational_scan}} or a
-\code{\link[tibble]{tibble}} when passed a \link[=rbind.deep_mutational_scan]{combined DMS data frame}.
-This data frame (or the cluster element of the annotated scan) contains the following added columns:
+An annotated \code{\link{deep_mutational_scan}} whose data object contains the following added columns:
 \itemize{
   \item cluster: the assigned amino acid subtype.
   \item PC1 - PC20: Principal Component coordinates.
@@ -24,7 +21,7 @@ This data frame (or the cluster element of the annotated scan) contains the foll
   an ambiguous.
   \item high_distance: The position is distant from all cluster centroids and is marked an outlier.
   \item dist1-8: The distance to each cluster of the WT amino acid.
-  \item notes: Notes on the cluster assignment.
+  \item cluster_notes: Notes on the cluster assignment.
 }
 }
 \description{

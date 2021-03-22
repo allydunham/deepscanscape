@@ -7,7 +7,7 @@
 recluster(x, keep_clustering = FALSE, deep_split = NULL, add_combined = TRUE)
 }
 \arguments{
-\item{x}{data frame or list of \code{\link{deep_mutational_scan}} objects to recluster}
+\item{x}{\code{\link{deep_mutational_scan}} object to recluster}
 
 \item{keep_clustering}{logical. Keep the outputs of \link[stats]{hclust} and \link[dynamicTreeCut]{cutreeHybrid} for
 downstream analysis}

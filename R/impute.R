@@ -1,4 +1,6 @@
 # Impute missing DMS data
+# TODO test
+# TODO allow passing custom impute er scores
 
 #' Impute missing deep mutational scan data
 #'
@@ -20,9 +22,9 @@ impute <- function(x, na_value="impute") {
   mask$mask <- 0
   mask$mask[is.na(mask$score) & mask$wt == mask$mut] <- 1
   mask$mask[is.na(mask$score) & mask$wt != mask$mut] <- 2
-  mask <- tidyr::pivot_wider(mask[c("position", "wt", "mut", "mask")],
-                             names_from = .data$mut, values_from = .data$mask)[amino_acids]
-  mask <- as.matrix(mask)
+  mask <- tidyr::pivot_wider(mask[c("position", "wt", "mut", "mask")], names_from = .data$mut,
+                             values_from = .data$mask, names_prefix = "impute_")
+
 
   df$score[df$wt == df$mut & is.na(df$score)] <- 0
 
@@ -33,7 +35,8 @@ impute <- function(x, na_value="impute") {
   }
 
   df <- tidyr::pivot_wider(df, names_from = "mut", values_from = "score")
-  x$data <- dplyr::select(df, .data$position, .data$wt, amino_acids, dplyr::everything())
-  x$impute_mask <- mask
+  df <- dplyr::bind_cols(df, dplyr::select(mask, dplyr::starts_with("impute_")))
+  x$data <- df
+  x$imputed <- TRUE
   return(x)
 }
