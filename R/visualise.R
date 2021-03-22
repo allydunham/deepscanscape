@@ -71,6 +71,39 @@ plot_er_heatmap <- function(x) {
   return(p)
 }
 
+#' Plot ER distributions
+#'
+#' Compare the ER score distribution from a collection of new studies to those in the \link{deep_landscape} dataset.
+#'
+#' @param x \code{\link{deep_mutational_scan}}.
+#' @return A \code{\link[ggplot2]{ggplot2}} plot.
+#' @examples
+#' # Plot a single studies ER
+#' dms <- deepscanscape::deep_scans$p53
+#' plot_er_distribution(dms)
+#'
+#' # Plot multiple studies
+#' comb_dms <- bind_scans(dms, annotate_missing = TRUE)
+#' plot_er_distribution(comb_dms)
+#' @export
+plot_er_distribution <- function(x) {
+  background <- dplyr::select(deepscanscape::deep_landscape, .data$A:.data$Y)
+  background <- tidyr::pivot_longer(background, cols = .data$A:.data$Y, names_to = "mut", values_to = "er")
+  background$name <- "Background"
+
+  df <- tidyr::pivot_longer(x$data[c("name", amino_acids)], cols = .data$A:.data$Y, names_to = "mut", values_to = "er")
+
+  ggplot2::ggplot() +
+    ggplot2::geom_density(data = background, mapping = ggplot2::aes(x = .data$er, fill = "Background"),
+                          colour = "grey") +
+    ggplot2::stat_density(geom = "line", data = df, position = "identity",
+                          mapping = ggplot2::aes(x = .data$er, y = .data$..density.., colour = .data$name)) +
+    ggplot2::scale_colour_brewer(name = "", palette = "Set1", direction = "qual") +
+    ggplot2::scale_fill_manual(name = "", values = c(Background = "grey")) +
+    ggplot2::labs(x = "Normalised ER", y = "Density") +
+    theme_deepscanscape()
+}
+
 # TODO special density feature for point density?
 #' Plot a new study on the deep mutational landscape
 #'
@@ -92,7 +125,6 @@ plot_er_heatmap <- function(x) {
 #' operation.
 #'
 #' @param x \code{\link{deep_mutational_scan}}.
-#' @param name Prefer to identify datasets by study or gene
 #' @param feature String name of a numeric feature from the \code{\link{deep_landscape}} dataset to project onto
 #' the background landscape.
 #' @return A \code{\link[ggplot2]{ggplot2}} plot.
@@ -100,7 +132,7 @@ plot_er_heatmap <- function(x) {
 #' dms <- deepscanscape::deep_scans$p53
 #'
 #' # Plot point positions
-#' plot_landscape(dms, name = "gene")
+#' plot_landscape(dms)
 #'
 #' # Plot against mean conservation
 #' dms <- annotate(dms)
@@ -111,7 +143,7 @@ plot_er_heatmap <- function(x) {
 #' plot_landscape(comb_dms, feature = "total_energy")
 #'
 #' @export
-plot_landscape <- function(x, name = c("study", "gene"), feature = NULL) {
+plot_landscape <- function(x, feature = NULL) {
   if (!is.deep_mutational_scan(x)) {
     stop("x is not a deep_mutational_scan")
   }

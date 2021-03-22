@@ -4,12 +4,10 @@
 \alias{plot_landscape}
 \title{Plot a new study on the deep mutational landscape}
 \usage{
-plot_landscape(x, name = c("study", "gene"), feature = NULL)
+plot_landscape(x, feature = NULL)
 }
 \arguments{
 \item{x}{\code{\link{deep_mutational_scan}}.}
-
-\item{name}{Prefer to identify datasets by study or gene}
 
 \item{feature}{String name of a numeric feature from the \code{\link{deep_landscape}} dataset to project onto
 the background landscape.}
@@ -40,7 +38,7 @@ operation.
 dms <- deepscanscape::deep_scans$p53
 
 # Plot point positions
-plot_landscape(dms, name = "gene")
+plot_landscape(dms)
 
 # Plot against mean conservation
 dms <- annotate(dms)
