@@ -4,18 +4,22 @@
 \alias{plot_cluster_frequencies}
 \title{Plot amino acid subtype frequencies}
 \usage{
-plot_cluster_frequencies(x)
+plot_cluster_frequencies(x, compare = FALSE)
 }
 \arguments{
 \item{x}{\code{\link{deep_mutational_scan}}.}
+
+\item{compare}{Compare frequendies to those in the base dataset}
 }
 \value{
-A \code{\link[ggplot2]{ggplot2}} plot.
+A \code{\link[ggplot2]{ggplot2}} plot. This is a horizontal stacked bar plot when compare = FALSE and a
+vertical side by side bar plot for compare = TRUE
 }
 \description{
 Plot the frequency each cluster occurs in an annotated deep mutational scan dataset, in order to identify data that
 strays from the expected frequencies. For example large proportions of outliers could suggest abnormal data or many
-permissive positions a weakly conserved protein.
+permissive positions a weakly conserved protein. Proportions can also be explicitly compared to the frequencies
+in teh \link{deep_landscape} dataset.
 }
 \examples{
 dms <- annotate(deepscanscape::deep_scans$p53)
@@ -24,5 +28,8 @@ plot_cluster_frequencies(dms)
 # Plot multiple studies
 comb_dms <- bind_scans(dms, annotate_missing = TRUE)
 plot_cluster_frequencies(comb_dms)
+
+# Compare to the deep_landscape dataset
+plot_cluster_frequencies(comb_dms, compare = TRUE)
 
 }

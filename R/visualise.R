@@ -249,14 +249,19 @@ get_feature_scale <- function(feature, type = c("fill", "colour")) {
   return(fill_scale)
 }
 
+# TODO (option) to facet by new studies?
 #' Plot amino acid subtype frequencies
 #'
 #' Plot the frequency each cluster occurs in an annotated deep mutational scan dataset, in order to identify data that
 #' strays from the expected frequencies. For example large proportions of outliers could suggest abnormal data or many
-#' permissive positions a weakly conserved protein.
+#' permissive positions a weakly conserved protein. Proportions can also be explicitly compared to the frequencies
+#' in teh \link{deep_landscape} dataset.
+#'
 #'
 #' @param x \code{\link{deep_mutational_scan}}.
-#' @return A \code{\link[ggplot2]{ggplot2}} plot.
+#' @param compare Compare frequendies to those in the base dataset
+#' @return A \code{\link[ggplot2]{ggplot2}} plot. This is a horizontal stacked bar plot when compare = FALSE and a
+#' vertical side by side bar plot for compare = TRUE
 #' @examples
 #' dms <- annotate(deepscanscape::deep_scans$p53)
 #' plot_cluster_frequencies(dms)
@@ -265,8 +270,11 @@ get_feature_scale <- function(feature, type = c("fill", "colour")) {
 #' comb_dms <- bind_scans(dms, annotate_missing = TRUE)
 #' plot_cluster_frequencies(comb_dms)
 #'
+#' # Compare to the deep_landscape dataset
+#' plot_cluster_frequencies(comb_dms, compare = TRUE)
+#'
 #' @export
-plot_cluster_frequencies <- function(x) {
+plot_cluster_frequencies <- function(x, compare = FALSE) {
   if (!is.deep_mutational_scan(x)) {
     stop("x is not a deep_mutational_scan")
   }
@@ -279,32 +287,59 @@ plot_cluster_frequencies <- function(x) {
   overview <- dplyr::summarise(dplyr::group_by(x$data, .data$wt, .data$cluster), n = dplyr::n(), .groups = "drop_last")
   overview <- dplyr::ungroup(dplyr::mutate(overview, prop = .data$n / sum(.data$n)))
   overview$wt <- factor(overview$wt, levels = sort(unique(overview$wt), decreasing = TRUE))
-  overview$cluster_num <- stringr::str_sub(overview$cluster, start = 2)
+  overview$cluster <- stringr::str_sub(overview$cluster, start = 2)
 
-  max_cluster <- max(as.integer(stringr::str_subset(overview$cluster_num, "[0-9]+")))
-  overview$cluster_num <- factor(overview$cluster_num, levels = c("O", "A", "P", rev(seq_len(max_cluster))))
+  if (compare) {
+    background <- dplyr::summarise(dplyr::group_by(deepscanscape::deep_landscape, .data$wt, .data$cluster),
+                                   n = dplyr::n(), .groups = "drop_last")
+    background <- dplyr::ungroup(dplyr::mutate(background, prop = .data$n / sum(.data$n)))
+    background$wt <- factor(background$wt, levels = sort(unique(overview$wt), decreasing = TRUE))
+    background$cluster <- stringr::str_sub(background$cluster, start = 2)
+    background$type <- "Background"
 
-  counts <- dplyr::summarise(dplyr::group_by(overview, .data$wt), n = sum(.data$n), .groups = "drop")
-  sec_axis <- ggplot2::dup_axis(name = "", labels = counts$n)
+    overview$type <- "New Data"
+    overview <- dplyr::bind_rows(background, overview)
+    overview$cluster <- factor(overview$cluster, levels = c(seq_len(8), "P", "O", "A"))
+    overview <- tidyr::complete(overview, .data$wt, .data$cluster, .data$type, fill = list(n = 0, prop = 0))
 
-  if (max_cluster <= 8) {
-    fill_scale <- ggplot2::scale_fill_manual(values = c("1" = "#e41a1c", "2" = "#377eb8", "3" = "#4daf4a",
-                                                        "4" = "#984ea3", "5" = "#ff7f00", "6" = "#ffff33",
-                                                        "7" = "#42b7ce", "8" = "#f781bf",
-                                                        "P" = "#adadad", "A" = "#a65628", "O" = "#666666"))
+    # TODO add stats comparison here
+    p <- ggplot2::ggplot(overview, ggplot2::aes(x = .data$cluster, y = .data$prop, fill = .data$type)) +
+      ggplot2::facet_wrap(~wt, nrow = 4, strip.position = "bottom", scales = "free_x") +
+      ggplot2::scale_y_continuous(labels = function(x) stringr::str_c(100 * x, "%")) +
+      ggplot2::geom_col(position = "dodge") +
+      ggplot2::scale_fill_manual(name = "", values = c(Background = "black", `New Data` = "red")) +
+      ggplot2::labs(x = "", y = "Percentage of Positions") +
+      theme_deepscanscape() +
+      ggplot2::theme(strip.placement = "outside")
+
   } else {
-    fill_scale <- ggplot2::scale_fill_brewer(name = "Subtype")
-  }
+    max_cluster <- max(as.integer(stringr::str_subset(overview$cluster, "[0-9]+")))
+    overview$cluster <- factor(overview$cluster, levels = c("O", "A", "P", rev(seq_len(max_cluster))))
 
-  ggplot2::ggplot(overview, ggplot2::aes(x = as.integer(.data$wt), y = .data$prop, fill = .data$cluster_num)) +
-    ggplot2::scale_x_continuous(breaks = seq_len(20), labels = counts$wt, sec.axis = sec_axis) +
-    ggplot2::scale_y_continuous(labels = function(x) stringr::str_c(100 * x, "%")) +
-    ggplot2::coord_flip(expand = FALSE) +
-    ggplot2::geom_col(position = "stack") +
-    ggplot2::labs(x = "WT Amino Acid", y = "Percentage of Positions") +
-    ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE)) +
-    fill_scale +
-    theme_deepscanscape() +
-    ggplot2::theme(panel.grid.major.y = ggplot2::element_blank(),
-                   axis.ticks.y = ggplot2::element_blank())
+    counts <- dplyr::summarise(dplyr::group_by(overview, .data$wt), n = sum(.data$n), .groups = "drop")
+    sec_axis <- ggplot2::dup_axis(name = "", labels = counts$n)
+
+    if (max_cluster <= 8) {
+      fill_scale <- ggplot2::scale_fill_manual(values = c("1" = "#e41a1c", "2" = "#377eb8", "3" = "#4daf4a",
+                                                          "4" = "#984ea3", "5" = "#ff7f00", "6" = "#ffff33",
+                                                          "7" = "#42b7ce", "8" = "#f781bf",
+                                                          "P" = "#adadad", "A" = "#a65628", "O" = "#666666"),
+                                               name = "Subtype")
+    } else {
+      fill_scale <- ggplot2::scale_fill_brewer(name = "Subtype")
+    }
+
+    p <- ggplot2::ggplot(overview, ggplot2::aes(x = as.integer(.data$wt), y = .data$prop, fill = .data$cluster)) +
+      ggplot2::scale_x_continuous(breaks = seq_len(20), labels = counts$wt, sec.axis = sec_axis) +
+      ggplot2::scale_y_continuous(labels = function(x) stringr::str_c(100 * x, "%")) +
+      ggplot2::coord_flip(expand = FALSE) +
+      ggplot2::geom_col(position = "stack") +
+      ggplot2::labs(x = "WT Amino Acid", y = "Percentage of Positions") +
+      ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE)) +
+      fill_scale +
+      theme_deepscanscape() +
+      ggplot2::theme(panel.grid.major.y = ggplot2::element_blank(),
+                     axis.ticks.y = ggplot2::element_blank())
+  }
+  return(p)
 }
