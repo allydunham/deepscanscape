@@ -37,6 +37,8 @@ proteins they are most similar to.
 \section{Visualisation Functions}{
 
 \itemize{
+  \item \code{\link{plot_er_distribution}} - Compare the distribution of ER scores in new data to the deep landscape
+  dataset.
   \item \code{\link{plot_er_heatmap}} - Plot heatmaps show fitness scores across a protein
   \item \code{\link{plot_landscape}} - Project a new dataset onto the deep mutational landscape, including
   visualising various biophysical properties.

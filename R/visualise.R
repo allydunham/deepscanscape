@@ -104,8 +104,7 @@ plot_er_distribution <- function(x) {
     theme_deepscanscape()
 }
 
-# TODO special density feature for point density?
-# TODO plot against type
+# TODO allow labels for specific points
 #' Plot a new study on the deep mutational landscape
 #'
 #' Project new data onto the deep mutational landscape derived from the combined data, viewed in UMAP space. This view
@@ -115,10 +114,12 @@ plot_er_distribution <- function(x) {
 #'
 #' Points represent positions from the new protein(s), positioned based on predicted UMAP coordinates from the
 #' combined landscape model. These are plotted on top of the whole combined landscape, which is represented as grey
-#' points when no feature is used and hexbins when one is. These bins are coloured based on the mean value of the
-#' chosen feature for all points that fall within the hexagon. If the chosen feature is a FoldX Gibbs Free Energy
-#' prediction values are initially clamped to -5 <= x <= 5 because larger values lead to difficult to read scales and
-#' are generally thought to represent program quirks rather than real biology.
+#' points when no feature is used and coloured hexagonal bins when one is. These bins are coloured based on the mean
+#' value of the chosen feature for all points that fall within the hexagon for numerical landscape features.
+#' If the chosen feature is a FoldX Gibbs Free Energy prediction values are initially clamped to -5 <= x <= 5 because
+#' larger values lead to difficult to read scales and are generally thought to represent program quirks rather than
+#' real biology. There are also two special values for feature "count" and "cluster", which colour bins by the
+#' number of landscape positions and the most common cluster type, respectively.
 #'
 #' The input data is annotated using \code{\link{annotate}} if it is not already, based on the \code{annotated} flag
 #' for deep_mutational_scan objects and the presence of the required \code{umap1/2} columns for data frames. It is
@@ -126,8 +127,9 @@ plot_er_distribution <- function(x) {
 #' operation.
 #'
 #' @param x \code{\link{deep_mutational_scan}}.
-#' @param feature String name of a numeric feature from the \code{\link{deep_landscape}} dataset to project onto
-#' the background landscape.
+#' @param feature String name of a feature to project onto the background landscape. This can be a numeric column from
+#' the \code{\link{deep_landscape}} dataset or the special values "count" or "subtype", which map the position density
+#' and most common subtype category respectively.
 #' @return A \code{\link[ggplot2]{ggplot2}} plot.
 #' @examples
 #' dms <- deepscanscape::deep_scans$p53
@@ -138,6 +140,10 @@ plot_er_distribution <- function(x) {
 #' # Plot against mean conservation
 #' dms <- annotate(dms)
 #' plot_landscape(dms, feature = "mean_sift")
+#'
+#' # Plot against spceial features
+#' plot_landscape(dms, feature = "count")
+#' plot_landscape(dms, feature = "cluster")
 #'
 #' # Plot multiple studies
 #' comb_dms <- bind_scans(dms, annotate_missing = TRUE)
@@ -154,6 +160,24 @@ plot_landscape <- function(x, feature = NULL) {
     x <- annotate(x)
   }
 
+  if (is.null(feature)) {
+    p <- plot_landscape_plain(x)
+  } else {
+    p <- plot_landscape_feature(x, feature = feature)
+  }
+
+  return(p)
+}
+
+#' Plot new data onto the plain deep mutational landscape
+#'
+#' Internal helper called by plot_landscape when no feature is passed
+#'
+#' @param x \code{\link{deep_mutational_scan}}.
+#' @return A \code{\link[ggplot2]{ggplot2}} plot.
+#' @keywords internal
+plot_landscape_plain <- function(x) {
+  # Determine study colours
   n_studies <- nrow(x$meta)
   if (n_studies == 1) {
     col_scale <- ggplot2::scale_colour_manual(name = "", values = "black")
@@ -163,41 +187,107 @@ plot_landscape <- function(x, feature = NULL) {
     col_scale <- ggplot2::scale_colour_brewer(name = "", type = "qual", palette = "Paired")
   }
 
-  if (is.null(feature)) {
-    p <- ggplot2::ggplot(mapping = ggplot2::aes(x = .data$umap1, y = .data$umap2)) +
-      ggplot2::geom_point(data = deepscanscape::deep_landscape, mapping = ggplot2::aes(fill = "Background"),
-                          shape = 21, colour = "grey") +
-      ggplot2::geom_point(data = x$data, mapping = ggplot2::aes(colour = .data$name)) +
-      col_scale +
-      ggplot2::scale_fill_manual(name = "", values = c(Background = "grey")) +
-      ggplot2::labs(x = "UMAP1", y = "UMAP2") +
-      theme_deepscanscape()
+  # Plot
+  ggplot2::ggplot(mapping = ggplot2::aes(x = .data$umap1, y = .data$umap2)) +
+    ggplot2::geom_point(data = deepscanscape::deep_landscape, mapping = ggplot2::aes(fill = "Background"),
+                        shape = 21, colour = "grey") +
+    ggplot2::geom_point(data = x$data, mapping = ggplot2::aes(colour = .data$name), shape = 16) +
+    ggplot2::scale_fill_manual(name = "", values = c(Background = "grey")) +
+    col_scale +
+    ggplot2::labs(x = "UMAP1", y = "UMAP2") +
+    theme_deepscanscape()
+}
 
-  } else {
-    if (!feature %in% names(deepscanscape::deep_landscape)) {
-      stop("Feature must be a variable in the deep_landscape dataset")
-    }
+#' Plot new data on top of deep mutational landscape features
+#'
+#' Internal helper called by plot_landscape when called with features.
+#'
+#' @param x \code{\link{deep_mutational_scan}}.
+#' @param feature String name of a feature to project onto the background landscape. This can be a numeric column from
+#' the \code{\link{deep_landscape}} dataset or the special values "count" or "cluster", which map the position density
+#' and most common subtype category respectively.
+#' @return A \code{\link[ggplot2]{ggplot2}} plot.
+#' @keywords internal
+plot_landscape_feature <- function(x, feature) {
+  comb_df <- deepscanscape::deep_landscape
 
-    if (typeof(deepscanscape::deep_landscape[[feature]]) == "character") {
-      stop("Features must be numeric variables (e.g. 'mean_sift' or 'entropy_sidechain')")
+  if (feature %in% c(names(deepscanscape::deep_landscape))) {
+    if (typeof(deepscanscape::deep_landscape[[feature]]) == "character" & feature != "cluster") {
+      stop("Deep landscape features must be numeric variables (e.g. 'mean_sift' or 'entropy_sidechain') or 'cluster'")
     }
 
     comb_df <- deepscanscape::deep_landscape[!is.na(deepscanscape::deep_landscape[[feature]]), ]
-    fill_scale <- get_feature_scale(feature)
 
     if (feature %in% foldx_terms) {
       comb_df[feature] <- clamp(comb_df[[feature]], -5, 5)
     }
-
-    p <- ggplot2::ggplot(mapping = ggplot2::aes(x = .data$umap1, y = .data$umap2)) +
-      ggplot2::stat_summary_hex(data = comb_df, fun = mean, bins = 40, mapping = ggplot2::aes(z = .data[[feature]])) +
-      ggplot2::geom_point(data = x$data, shape = 19, colour = "black") +
-      ggplot2::geom_point(data = x$data, mapping = ggplot2::aes(colour = .data$name), shape = 16) +
-      fill_scale +
-      col_scale +
-      ggplot2::labs(x = "UMAP1", y = "UMAP2") +
-      theme_deepscanscape()
+  } else if (!feature %in% c("count")) {
+    stop("Feature must be a variable in the deep_landscape dataset, 'count' or 'cluster'")
   }
+
+  # Process feature, selecting the fill scale and summary function
+  if (feature == "count") {
+    func <- length
+    fill_scale <- ggplot2::scale_fill_distiller(name = "Positions", type = "seq", palette = "YlGnBu", direction = 1)
+    feature <- "mean_sift" # any feature can be used, as all will be the same length
+    bins <- 40
+
+  } else if (feature == "cluster") {
+    comb_df <- dplyr::left_join(comb_df, deepscanscape::subtypes[c("cluster", "group")], by = "cluster")
+    comb_df$group <- as.factor(comb_df$group)
+    group_levels <- levels(comb_df$group)
+    comb_df$group_num <- as.integer(comb_df$group)
+
+    group_cols <- c(`Aliphatic` = "#ffff33", `Aromatic` = "#377eb8", `Large aliphatic` = "#a65628",
+                    `Negative` = "#f781bf", `Not aromatic` = "#e41a1c", `Not proline` = "#4daf4a",
+                    `Outlier` = "#000000", `Permissive` = "#999999", `Positive` = "#984ea3",
+                    `Small aliphatic` = "#ff7f00", `Unique` = "#00ffff")
+
+    fill_scale <- ggplot2::scale_fill_manual(name = "Subtype Group", values = group_cols)
+
+    func <- function(x) {
+      x <- table(x)
+      x <- x[names(x) != "7"] # Exclude outliers
+      return(group_levels[as.integer(names(x)[which.max(x)])])
+    }
+    feature <- "group_num"
+    bins <- 30
+  } else {
+    func <- mean
+    fill_scale <- get_feature_scale(feature)
+    bins <- 40
+  }
+
+  # Select colour scale for studies
+  n_studies <- nrow(x$meta)
+  if (n_studies == 1) {
+    col_scale <- ggplot2::scale_colour_manual(name = "", values = "black")
+  } else if (n_studies <= 8) {
+    col_scale <- ggplot2::scale_colour_brewer(name = "", type = "qual", palette = "Set1")
+  } else {
+    col_scale <- ggplot2::scale_colour_brewer(name = "", type = "qual", palette = "Paired")
+  }
+
+  # Make base plot
+  p <- ggplot2::ggplot(mapping = ggplot2::aes(x = .data$umap1, y = .data$umap2)) +
+    ggplot2::stat_summary_hex(data = comb_df, fun = func, bins = bins, mapping = ggplot2::aes(z = .data[[feature]])) +
+    fill_scale +
+    col_scale +
+    ggplot2::labs(x = "UMAP1", y = "UMAP2") +
+    theme_deepscanscape()
+
+  # Add points depending on shape required
+  if (n_studies == 1) {
+    p <- p + ggplot2::geom_point(data = x$data, mapping = ggplot2::aes(colour = .data$name), shape = 16)
+  } else if (n_studies <= 6) {
+    p <- p + ggplot2::geom_point(data = x$data, mapping = ggplot2::aes(shape = .data$name), size = 2.5) +
+      ggplot2::geom_point(data = x$data, mapping = ggplot2::aes(shape = .data$name, colour = .data$name), size = 0.9) +
+      ggplot2::scale_shape(name = "")
+  } else {
+    p <- p + ggplot2::geom_point(data = x$data, shape = 16, size = 2.5, colour = "black") +
+      ggplot2::geom_point(data = x$data, mapping = ggplot2::aes(colour = .data$name), shape = 16, size = 0.9)
+  }
+
   return(p)
 }
 

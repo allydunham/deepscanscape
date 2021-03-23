@@ -9,8 +9,9 @@ plot_landscape(x, feature = NULL)
 \arguments{
 \item{x}{\code{\link{deep_mutational_scan}}.}
 
-\item{feature}{String name of a numeric feature from the \code{\link{deep_landscape}} dataset to project onto
-the background landscape.}
+\item{feature}{String name of a feature to project onto the background landscape. This can be a numeric column from
+the \code{\link{deep_landscape}} dataset or the special values "count" or "subtype", which map the position density
+and most common subtype category respectively.}
 }
 \value{
 A \code{\link[ggplot2]{ggplot2}} plot.
@@ -24,10 +25,12 @@ new protein.
 \details{
 Points represent positions from the new protein(s), positioned based on predicted UMAP coordinates from the
 combined landscape model. These are plotted on top of the whole combined landscape, which is represented as grey
-points when no feature is used and hexbins when one is. These bins are coloured based on the mean value of the
-chosen feature for all points that fall within the hexagon. If the chosen feature is a FoldX Gibbs Free Energy
-prediction values are initially clamped to -5 <= x <= 5 because larger values lead to difficult to read scales and
-are generally thought to represent program quirks rather than real biology.
+points when no feature is used and coloured hexagonal bins when one is. These bins are coloured based on the mean
+value of the chosen feature for all points that fall within the hexagon for numerical landscape features.
+If the chosen feature is a FoldX Gibbs Free Energy prediction values are initially clamped to -5 <= x <= 5 because
+larger values lead to difficult to read scales and are generally thought to represent program quirks rather than
+real biology. There are also two special values for feature "count" and "cluster", which colour bins by the
+number of landscape positions and the most common cluster type, respectively.
 
 The input data is annotated using \code{\link{annotate}} if it is not already, based on the \code{annotated} flag
 for deep_mutational_scan objects and the presence of the required \code{umap1/2} columns for data frames. It is
@@ -43,6 +46,10 @@ plot_landscape(dms)
 # Plot against mean conservation
 dms <- annotate(dms)
 plot_landscape(dms, feature = "mean_sift")
+
+# Plot against spceial features
+plot_landscape(dms, feature = "count")
+plot_landscape(dms, feature = "cluster")
 
 # Plot multiple studies
 comb_dms <- bind_scans(dms, annotate_missing = TRUE)
