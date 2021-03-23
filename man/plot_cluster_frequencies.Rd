@@ -9,7 +9,7 @@ plot_cluster_frequencies(x, compare = FALSE)
 \arguments{
 \item{x}{\code{\link{deep_mutational_scan}}.}
 
-\item{compare}{Compare frequendies to those in the base dataset}
+\item{compare}{Compare frequencies to those in the base dataset.}
 }
 \value{
 A \code{\link[ggplot2]{ggplot2}} plot. This is a horizontal stacked bar plot when compare = FALSE and a
@@ -19,7 +19,8 @@ vertical side by side bar plot for compare = TRUE
 Plot the frequency each cluster occurs in an annotated deep mutational scan dataset, in order to identify data that
 strays from the expected frequencies. For example large proportions of outliers could suggest abnormal data or many
 permissive positions a weakly conserved protein. Proportions can also be explicitly compared to the frequencies
-in teh \link{deep_landscape} dataset.
+in the \link{deep_landscape} dataset. In this case differences are tested using an FDR corrected two sided binomial
+test.
 }
 \examples{
 dms <- annotate(deepscanscape::deep_scans$p53)

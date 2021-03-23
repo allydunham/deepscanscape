@@ -105,6 +105,7 @@ plot_er_distribution <- function(x) {
 }
 
 # TODO special density feature for point density?
+# TODO plot against type
 #' Plot a new study on the deep mutational landscape
 #'
 #' Project new data onto the deep mutational landscape derived from the combined data, viewed in UMAP space. This view
@@ -233,7 +234,8 @@ get_feature_scale <- function(feature, type = c("fill", "colour")) {
   } else if (feature %in% amino_acids) {
     fill_scale <- scale_gradient2(name = feature, low = "#4575b4", mid = "#ffffbf", high = "#d73027")
   } else if (feature == "all_atom_rel") {
-    fill_scale <- scale_gradientn(colours = c("#1a2a6c", "#b21f1f", "#fdbb2d"), values = c(0, 0.4, 1))
+    fill_scale <- scale_gradientn(name = "Surface Accessibility", colours = c("#1a2a6c", "#b21f1f", "#fdbb2d"),
+                                  values = c(0, 0.4, 1))
   } else if (feature %in% foldx_terms) {
     fill_scale <- scale_gradient2(name = pretty, low = "#4575b4", mid = "#ffffbf", high = "#d73027")
   } else if (feature == "hydrophobicity") {
@@ -249,17 +251,16 @@ get_feature_scale <- function(feature, type = c("fill", "colour")) {
   return(fill_scale)
 }
 
-# TODO (option) to facet by new studies?
 #' Plot amino acid subtype frequencies
 #'
 #' Plot the frequency each cluster occurs in an annotated deep mutational scan dataset, in order to identify data that
 #' strays from the expected frequencies. For example large proportions of outliers could suggest abnormal data or many
 #' permissive positions a weakly conserved protein. Proportions can also be explicitly compared to the frequencies
-#' in teh \link{deep_landscape} dataset.
-#'
+#' in the \link{deep_landscape} dataset. In this case differences are tested using an FDR corrected two sided binomial
+#' test.
 #'
 #' @param x \code{\link{deep_mutational_scan}}.
-#' @param compare Compare frequendies to those in the base dataset
+#' @param compare Compare frequencies to those in the base dataset.
 #' @return A \code{\link[ggplot2]{ggplot2}} plot. This is a horizontal stacked bar plot when compare = FALSE and a
 #' vertical side by side bar plot for compare = TRUE
 #' @examples
@@ -284,39 +285,51 @@ plot_cluster_frequencies <- function(x, compare = FALSE) {
     x <- annotate(x)
   }
 
-  overview <- dplyr::summarise(dplyr::group_by(x$data, .data$wt, .data$cluster), n = dplyr::n(), .groups = "drop_last")
-  overview <- dplyr::ungroup(dplyr::mutate(overview, prop = .data$n / sum(.data$n)))
-  overview$wt <- factor(overview$wt, levels = sort(unique(overview$wt), decreasing = TRUE))
-  overview$cluster <- stringr::str_sub(overview$cluster, start = 2)
+  new_freq <- dplyr::summarise(dplyr::group_by(x$data, .data$wt, .data$cluster), n = dplyr::n(), .groups = "drop_last")
+  new_freq <- dplyr::ungroup(dplyr::mutate(new_freq, prop = .data$n / sum(.data$n)))
+  new_freq$wt <- factor(new_freq$wt, levels = sort(unique(new_freq$wt), decreasing = TRUE))
+  new_freq$cluster <- stringr::str_sub(new_freq$cluster, start = 2)
 
   if (compare) {
     background <- dplyr::summarise(dplyr::group_by(deepscanscape::deep_landscape, .data$wt, .data$cluster),
                                    n = dplyr::n(), .groups = "drop_last")
     background <- dplyr::ungroup(dplyr::mutate(background, prop = .data$n / sum(.data$n)))
-    background$wt <- factor(background$wt, levels = sort(unique(overview$wt), decreasing = TRUE))
+    background$wt <- factor(background$wt, levels = sort(unique(new_freq$wt), decreasing = TRUE))
     background$cluster <- stringr::str_sub(background$cluster, start = 2)
-    background$type <- "Background"
 
-    overview$type <- "New Data"
-    overview <- dplyr::bind_rows(background, overview)
+    overview <- dplyr::bind_rows(Background = background, `New Data` = new_freq, .id = "type")
     overview$cluster <- factor(overview$cluster, levels = c(seq_len(8), "P", "O", "A"))
     overview <- tidyr::complete(overview, .data$wt, .data$cluster, .data$type, fill = list(n = 0, prop = 0))
 
-    # TODO add stats comparison here
-    p <- ggplot2::ggplot(overview, ggplot2::aes(x = .data$cluster, y = .data$prop, fill = .data$type)) +
+    # Test new freqs
+    binom <- new_freq[new_freq$cluster != "A", c("wt", "cluster", "n", "prop")]
+    binom <- dplyr::group_by(binom, .data$wt)
+    binom <- dplyr::ungroup(dplyr::mutate(binom, tot = sum(.data$n)))
+    binom <- dplyr::left_join(binom, dplyr::select(background, .data$wt, .data$cluster, p = .data$prop),
+                              by = c("wt", "cluster"))
+    binom$pvalue <- mapply(function(x, n, p) stats::binom.test(x, n, p)$p.value,
+                           x = binom$n, n = binom$tot, p = binom$p)
+    binom$padj <- stats::p.adjust(binom$pvalue, method = "fdr")
+    binom$symb <- as.character(stats::symnum(binom$padj, cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1),
+                                             symbols = c("***", "**", "*", ".", " ")))
+
+    p <- ggplot2::ggplot(overview, ggplot2::aes(x = .data$cluster, y = .data$prop)) +
       ggplot2::facet_wrap(~wt, nrow = 4, strip.position = "bottom", scales = "free_x") +
-      ggplot2::scale_y_continuous(labels = function(x) stringr::str_c(100 * x, "%")) +
-      ggplot2::geom_col(position = "dodge") +
+      ggplot2::scale_y_continuous(labels = function(x) stringr::str_c(100 * x, "%"), breaks = seq(0, 1, 0.25),
+                                  limits = c(0, 1.15)) +
+      ggplot2::geom_col(ggplot2::aes(fill = .data$type), position = "dodge") +
+      ggplot2::geom_text(data = binom, mapping = ggplot2::aes(label = .data$symb, y = .data$prop + 0.15)) +
       ggplot2::scale_fill_manual(name = "", values = c(Background = "black", `New Data` = "red")) +
       ggplot2::labs(x = "", y = "Percentage of Positions") +
+      ggplot2::coord_cartesian(clip = "off") +
       theme_deepscanscape() +
       ggplot2::theme(strip.placement = "outside")
 
   } else {
-    max_cluster <- max(as.integer(stringr::str_subset(overview$cluster, "[0-9]+")))
-    overview$cluster <- factor(overview$cluster, levels = c("O", "A", "P", rev(seq_len(max_cluster))))
+    max_cluster <- max(as.integer(stringr::str_subset(new_freq$cluster, "[0-9]+")))
+    new_freq$cluster <- factor(new_freq$cluster, levels = c("O", "A", "P", rev(seq_len(max_cluster))))
 
-    counts <- dplyr::summarise(dplyr::group_by(overview, .data$wt), n = sum(.data$n), .groups = "drop")
+    counts <- dplyr::summarise(dplyr::group_by(new_freq, .data$wt), n = sum(.data$n), .groups = "drop")
     sec_axis <- ggplot2::dup_axis(name = "", labels = counts$n)
 
     if (max_cluster <= 8) {
@@ -329,7 +342,7 @@ plot_cluster_frequencies <- function(x, compare = FALSE) {
       fill_scale <- ggplot2::scale_fill_brewer(name = "Subtype")
     }
 
-    p <- ggplot2::ggplot(overview, ggplot2::aes(x = as.integer(.data$wt), y = .data$prop, fill = .data$cluster)) +
+    p <- ggplot2::ggplot(new_freq, ggplot2::aes(x = as.integer(.data$wt), y = .data$prop, fill = .data$cluster)) +
       ggplot2::scale_x_continuous(breaks = seq_len(20), labels = counts$wt, sec.axis = sec_axis) +
       ggplot2::scale_y_continuous(labels = function(x) stringr::str_c(100 * x, "%")) +
       ggplot2::coord_flip(expand = FALSE) +
