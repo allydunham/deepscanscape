@@ -1,0 +1,3 @@
+"id","cause","explanation"
+"positive_er","Median ER score > 0","Fitness is potentially inverted either by experimental design or processing"
+"low_x1/2","Unexpectedly low proportion of X1/2 subtypes", "Either positions perform unusual roles or cluster assignment is poor. One cause of this is an incorrect WT sequence, for example if all positions are off by one"

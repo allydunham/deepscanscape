@@ -17,6 +17,7 @@ proteins they are most similar to.
 \itemize{
   \item \code{\link{deep_mutational_scan}} - Construct standardised deep mutational scan datasets. This creates an
   S3 object with various generics.
+  \item \code{\link{check_data}} - Check a deep_mutational_scan for common abnormalities
   \item \code{\link{bind_scans}} - Combined deep mutational scan datasets
   \item \code{\link{parse_deep_scan}} - Parse common deep scan data formats
   \item \code{\link{transform_er}} - Transform ER scores from common score types to a standardised scale

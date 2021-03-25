@@ -43,5 +43,8 @@ cluster_centers <- select(cluster_centers, PC2:PC20) %>%
   as.matrix() %>%
   magrittr::set_rownames(cluster_centers$cluster)
 
-usethis::use_data(dms_pca, median_scores, cluster_centers, aa_3_to_1, amino_acids, foldx_terms,
+# Data check messages
+check_msgs <- read_csv("data_raw/checks.csv", quote = '"')
+
+usethis::use_data(dms_pca, median_scores, cluster_centers, aa_3_to_1, amino_acids, foldx_terms, check_msgs,
                   internal = TRUE, overwrite = TRUE, compress = "xz", version = 3)
