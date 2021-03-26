@@ -12,6 +12,10 @@ normalise_er(x, q = 0.1)
 \item{q}{Quantile to normalise against. Values other than 0.1 differ from
 those used in the combined dataset}
 }
+\value{
+Numeric vector of normalised ER scores
+}
 \description{
-Normalise deep mutational scanning fitness scores
+Normalise log2(ER) scores by dividing my the median of the lowest 10% of score, under the assumption these will
+represent complete protein knockout and will therefore be somewhat comparable between studies.
 }

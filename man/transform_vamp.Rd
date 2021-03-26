@@ -2,11 +2,17 @@
 % Please edit documentation in R/standardise.R
 \name{transform_vamp}
 \alias{transform_vamp}
-\title{Transform VAMP-seq data}
+\title{Transform VAMP-Seq fitness scores}
 \usage{
-transform_vamp(x, ...)
+transform_vamp(x)
+}
+\arguments{
+\item{x}{Vector of fitness scores}
+}
+\value{
+Numeric vector of transformed scores
 }
 \description{
-Transform VAMP-seq data
+Transform VAMP-Seq fitness scores to the standard log2(ER) scale. The VAMP-Seq scores have the median null variant
+at 0, neutral variants at 1 and beneficial variant >1.
 }
-\keyword{internal}

@@ -2,15 +2,21 @@
 % Please edit documentation in R/parse.R
 \name{parse_wide}
 \alias{parse_wide}
-\title{Parse data in the wide format (called from parse_dms_data)}
+\title{Parse data in the wide format}
 \usage{
 parse_wide(x, ...)
 }
 \arguments{
-\item{x}{A tibble.}
+\item{x}{A data frame.}
 
 \item{...}{Ignored.}
 }
+\value{
+A long format \code{\link[tibble]{tibble}} with columns specifying each variants 'position', 'wt', 'mut' and
+'score'.
+}
 \description{
-Parse data in the wide format (called from parse_dms_data)
+Parse wide format data into the standard layout. The input data frame must have columns specifying 'position',
+'wt', and ER score ('score') for each amino acid (named 'A', 'C', ...). Usually called internally by
+\code{\link{parse_deep_scan}} but is exposed to help users get their input into the correct format.
 }

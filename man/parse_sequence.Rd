@@ -2,15 +2,26 @@
 % Please edit documentation in R/parse.R
 \name{parse_sequence}
 \alias{parse_sequence}
-\title{Parse data in the sequence format (called from parse_dms_data)}
+\title{Parse data in the sequence format}
 \usage{
-parse_sequence(x, ...)
+parse_sequence(x, wt_seq = NULL, average_multi = FALSE, ...)
 }
 \arguments{
-\item{x}{A tibble.}
+\item{x}{A data frame with columns 'sequence' and 'score'.}
+
+\item{wt_seq}{Character vector. Wild type sequence to calculate variants against. If NULL it is assumed to be the
+most common amino acid in each position.}
+
+\item{average_multi}{Average scores for variants included in multiply mutated sequences, where they have not been
+measured individually. Care should be taken to check that the type of multiple mutation makes this appropriate.}
 
 \item{...}{Ignored.}
 }
+\value{
+A long format data frame with columns for 'position', 'wt', 'mut' and 'score'.
+}
 \description{
-Parse data in the sequence format (called from parse_dms_data)
+Extract variants from sequences and ER scores. The most frequent amino acid at each position in the sequence is
+assumed to be the wild type if a wild type sequence is not provided. Usually called internally by
+\code{\link{parse_deep_scan}} but is exposed to help users get their input into the correct format.
 }

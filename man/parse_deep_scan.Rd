@@ -18,12 +18,32 @@ parse_deep_scan(
 \item{scheme}{Original data scheme (see description). Accepts any unambiguous
 substring.}
 
-\item{position_offset}{Offset all positions by this amount}
+\item{position_offset}{Offset all position}
 
 \item{duplicates}{How to handle duplicate scores for a single mutation}
 
-\item{...}{Arguments passed to the chosen parsing function}
+\item{...}{Arguments passed to the chosen parsing function, including specifying parsing for multiply mutated
+sequences (see individual methods for details).}
+}
+\value{
+A long format \code{\link[tibble]{tibble}} with columns for 'position', 'wt', 'mut' and 'score'.
 }
 \description{
-Parse deep mutational scanning data
+Processes deep mutational scanning data from recognised formats and convert it into a standardised data frame, with
+one row per variant and position, wt, mut and score columns. Duplicate scores can also be averaged to account for
+multiple replicates and single variant scores averaged from multiply mutated sequences for some input formats.
+}
+\details{
+The following input formats are supported:
+\itemize{
+  \item \code{\link[=parse_mavedb]{mavedb}}: Data downloaded from \url{mavedb.org}. This format additionally supports
+  averaging over multiply mutated sequences.
+  \item long: Data in long format, which already has the required columns (position, wt, mut and score). This allows
+  duplicates to be averaged conveniently if data is already in the standard format.
+  \item \code{\link[=parse_wide]{wide}}: Process wide format data, with columns for position, wt and scores for each
+  amino acid
+  \item \code{\link[=parse_sequence]{sequence}}: Each score is associated with a sequence, from which variants are
+  extracted. This method supports averaging over multiply mutated sequences. It is the most frequent use for the
+  position_offset parameter.
+}
 }

@@ -2,16 +2,30 @@
 % Please edit documentation in R/standardise.R
 \name{transform_er}
 \alias{transform_er}
-\title{Standardise DMS data}
+\title{Transform deep_mutational scanning scores onto a standard scale}
 \usage{
-transform_er(x, trans = c("log2", "vamp-seq", "unit"))
+transform_er(x, trans = c("log2", "vamp-seq", "invert"))
 }
 \arguments{
 \item{x}{Vector of fitness scores}
 
-\item{trans}{Transform to apply (see description). Accepts either a
-string or function}
+\item{trans}{Transform to apply (see description). Accepts either a string or a function.}
+}
+\value{
+Numeric vector of transformed scores
 }
 \description{
-Standardise DMS data
+Transform deep mutational scanning fitness scores onto a standard scale aligned to the log2 enrichment ratio (ER)
+scale. This scale has neutral variants at 0, deleterious variants with negative scores and beneficial variants with
+positive scores. Standard transforms are provided and common transforms can be passed for more unusual ones.
+}
+\details{
+The supported transforms are:
+\itemize{
+  \item log2: log2 transform to change raw read ratios onto the log2 ER scale.
+  \item \code{\link[=transform_vamp]{vamp-seq}}: Transform scores produced by the VAMP-Seq method. These have the
+  median null mutation at 0, neutral variants at 1 and positive variants greater than 1.
+  \item invert: Multiply scores by -1, for example if the experimental fitness is inverted compared to natural
+  fitness
+}
 }

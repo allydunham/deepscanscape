@@ -2,17 +2,27 @@
 % Please edit documentation in R/parse.R
 \name{parse_mavedb}
 \alias{parse_mavedb}
-\title{Parse data in the MaveDB format (called from parse_dms_data)}
+\title{Parse data in the MaveDB format}
 \usage{
-parse_mavedb(x, score_col = "score", ...)
+parse_mavedb(x, score_col = "score", average_multi = FALSE, ...)
 }
 \arguments{
-\item{x}{A tibble.}
+\item{x}{A data frame with a column 'hgvs_pro' gicing the HGVS protein mutation string describing the variant(s) and
+a fitness score column ('score' by default).}
 
-\item{score_col}{String. Column containing fitness scores.}
+\item{score_col}{String. Column containing fitness scores, to conveniently use an additional data column as the score
+where mutliple measurements are included in the data.}
+
+\item{average_multi}{Average scores for variants included in multiply mutated sequences, where they have not been
+measured individually. Care should be taken to check that the type of multiple mutation makes this appropriate.}
 
 \item{...}{Ignored.}
 }
+\value{
+A long format \code{\link[tibble]{tibble}} with columns specifying 'position', 'wt', 'mut' and 'score'.
+}
 \description{
-Parse data in the MaveDB format (called from parse_dms_data)
+Parse data downloaded from \href{mavedb.org}{MaveDB}, including averaging across multiply mutated sequences.
+Usually called internally by\code{\link{parse_deep_scan}} but is exposed to help users get their input into the
+correct format.
 }
