@@ -1,5 +1,6 @@
 # Perform a full analysis on user supplied data and generate
 
+# TODO add support for positions of interest
 #' Generate an HTML report for new deep mutational scan data
 #'
 #' Perform a full analysis on new deep mutational scan data and summarise the results as an HTML report. The

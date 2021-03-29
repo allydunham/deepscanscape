@@ -6,13 +6,71 @@ params:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center")
 ```
 
-# DeepScanScape
+```{r load_study, include=FALSE}
+if (length(params$studies) == 1) {
+  dms <- params$studies[[1]]
+} else {
+  dms <- bind_scans(params$studies)
+}
 
-Parameters passed to the report
+if (!dms$imputed) {
+  dms <- impute(dms)
+}
 
-```{r}
-print(params)
+if (!dms$annotated) {
+  dms <- annotate(dms)
+}
+
+checks <- check_data(dms, warn = FALSE)
+```
+
+This report contains a summary analysis of the following deep mutational scan(s):
+
+`r knitr::kable(dms$meta)`
+
+`r if(nrow(checks) > 0) "# Consistency Checks"`
+`r if(nrow(checks) > 0) "These checks identify common abnormalities in deep scan datasets. The following were found:"`
+`r if(nrow(checks) > 0) knitr::kable(checks)`
+
+# Fitness Score Distribution
+
+The distribution of fitness scores can tell you properties of the protein(s) studied or indicate incorrectly transformed data.
+ER scores on the standard log<sub>2</sub>(ER) generally form a bimodal distribution with a peak of neutral variants near to 0 and a peak of negative deleterious variants.
+The overall distribution from the combined landscape dataset is also shown, which can be used to identify deviations.
+
+
+```{r er_distribution}
+plot_er_distribution(dms)
+```
+
+# Fitness Heatmap
+
+Viewing the fitness scores across protein positions can identify regions of interest, for example those that are very sensitive to mutations. 
+
+```{r er_heatmap}
+plot_er_heatmap(dms)
+```
+
+# Mutational Landscape
+
+Mapping new positions onto the deep mutational landscape can also highlight potential properties of the scanned positions.
+Here we colour the landscape by most common subtype group, which identifies the general properties of positions that tend to fall in the region.
+The `plot_landscape` function can be used to highlight other properties of the landscape as well, for example regions mean SIFT4G score or FoldX $\Delta\Delta G$.
+
+```{r mutational_landscape}
+plot_landscape(dms, feature = "cluster")
+```
+
+# Subtypes
+
+The deep mutational landscape can also be divided positional amino acid subtypes, which groups positions of each aminno acid into clusters with similar mutational profiles.
+New positions can be mapped to these clusters, based on the nearest neighbour cluster center in PCA space using cosine distance as in the clustering procedure.
+This highlights potential properties of each position, based on analysis of positions in that subtype in the deep landscape dataset.
+An overview is shown here, and details for each position can be identified using the `describe_clusters` function.
+
+```{r subtypes}
+  plot_cluster_frequencies(dms)
 ```

@@ -20,7 +20,7 @@
 #'
 #' @param x \code{\link{deep_mutational_scan}}.
 #' @param warn Produce warnings when anomalies are detected.
-#' @return Character vector of anomalies detected
+#' @return Data frame of anomalies detected
 #' @export
 check_data <- function(x, warn = TRUE) {
   if (!is.deep_mutational_scan(x)) {
@@ -46,7 +46,6 @@ check_data <- function(x, warn = TRUE) {
     if (btest$p.value < 0.05) {
       ids <- c(ids, "low_x1/2")
     }
-
 
   } else {
     warning("x is not annotated, skipping some checks")
