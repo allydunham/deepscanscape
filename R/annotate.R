@@ -149,7 +149,52 @@ cluster_notes <- function(permissive, ambiguous, high_distance) {
   return(notes)
 }
 
-# Better description of ambinguous clusters
+# TODO predict sift or not? low r2
+#' Predict positions properties from their position in the deep mutational landscape
+#'
+#' Predict positions properties based on the average properties of \code{\link{deep_landscape}} positions in the same
+#' hexagonal bin as them.
+#'
+#' @param x \link{deep_mutational_scan}.
+#' @param bins Number of bins to divide landscape into. The default value was chosen to give the best results on a
+#' benchmark dataset.
+#' @returns A \code{\link[tibble]{tibble}}, with each row detailing a row of the input data and columns matching
+#' those in the \code{\link{subtypes}} dataset, describing the predicted properties of the position.
+#' @examples
+#' dms <- annotate(deepscanscape::deep_scans$p53)
+#' properties <- landscape_properties(dms)
+#' @export
+landscape_properties <- function(x, bins = 20) {
+  if (!is.deep_mutational_scan(x)) {
+    stop("x must be a deep_mutational_scan")
+  }
+
+  if (!x$annotated) {
+    warning("deep_mutational_scan is not annotated. Annotating using annotate_dms().", immediate. = TRUE)
+    x <- annotate(x)
+  }
+
+  df <- x$data
+  xbnds <- range(c(deepscanscape::deep_landscape$umap1, df$umap1))
+  ybnds <- range(c(deepscanscape::deep_landscape$umap2, df$umap2))
+
+  hex <- hexbin::hexbin(deepscanscape::deep_landscape$umap1, deepscanscape::deep_landscape$umap2,
+                        xbins = bins, IDs = TRUE, xbnds = xbnds, ybnds = ybnds)
+
+  hex_summary <- dplyr::group_by(dplyr::mutate(deepscanscape::deep_landscape, hex = hex@cID), .data$hex)
+  hex_summary <- dplyr::summarise(hex_summary,
+                                  dplyr::across(c(.data$mean_sift:.data$energy_ionisation, .data$all_atom_rel),
+                                                mean, na.rm = TRUE),
+                                  .groups = "drop")
+
+  new_hexes <- hexbin::hexbin(df$umap1, df$umap2, xbins = bins, xbnds = xbnds, ybnds = ybnds, IDs = TRUE)
+  df <- df[, c("name", "position", "wt")]
+  df$hex <- new_hexes@cID
+  df <- dplyr::select(dplyr::left_join(df, hex_summary, by = "hex"), -.data$hex)
+  return(df)
+}
+
+# TODO Better description of ambiguous clusters
 #' Describe amino acid positional subtypes
 #'
 #' Add descriptions and frequencies from the cluster assigned to each position in an annotated deep_mutational_scan

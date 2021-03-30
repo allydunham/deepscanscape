@@ -33,7 +33,7 @@ check_data <- function(x, warn = TRUE) {
 
   # Check median ER score
   if (stats::median(as.matrix(x$data[amino_acids])) > 0) {
-    ids <- c(ids, "positivie_er")
+    ids <- c(ids, "positive_er")
   }
 
 
@@ -41,7 +41,7 @@ check_data <- function(x, warn = TRUE) {
     # Expected proportion of 1/2 subtypes
     common_subtype <- sum(stringr::str_ends(x$data$cluster, "[12]"))
     n <- sum(stringr::str_ends(x$data$cluster, "[^A]"))
-    btest <- stats::binom.test(common_subtype, n, p = 0.6001258, alternative = "less")
+    btest <- stats::binom.test(common_subtype, n, p = 0.6, alternative = "less")
 
     if (btest$p.value < 0.05) {
       ids <- c(ids, "low_x1/2")

@@ -10,7 +10,7 @@ plot_landscape(x, feature = NULL)
 \item{x}{\code{\link{deep_mutational_scan}}.}
 
 \item{feature}{String name of a feature to project onto the background landscape. This can be a numeric column from
-the \code{\link{deep_landscape}} dataset or the special values "count" or "subtype", which map the position density
+the \code{\link{deep_landscape}} dataset or the special values "count" or "cluster", which map the position density
 and most common subtype category respectively.}
 }
 \value{

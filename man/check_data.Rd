@@ -12,7 +12,7 @@ check_data(x, warn = TRUE)
 \item{warn}{Produce warnings when anomalies are detected.}
 }
 \value{
-Character vector of anomalies detected
+Data frame of anomalies detected
 }
 \description{
 Identify common potential anomalies in deep mutational scanning data, for example an unusual distribution of ER
