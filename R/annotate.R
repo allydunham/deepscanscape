@@ -1,5 +1,4 @@
 # Annotate positions based on the overall dataset
-# TODO test annotation functions
 
 #' Annotate positions based on the deep mutational landscape
 #'

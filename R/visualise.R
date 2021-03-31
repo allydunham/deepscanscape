@@ -1,5 +1,4 @@
 # Visualise new DMS datasets
-# TODO - test
 
 #' Default deepscanscape GGPlot2 theme
 #'
@@ -104,7 +103,6 @@ plot_er_distribution <- function(x) {
     theme_deepscanscape()
 }
 
-# TODO allow labels for specific points
 #' Plot a new study on the deep mutational landscape
 #'
 #' Project new data onto the deep mutational landscape derived from the combined data, viewed in UMAP space. This view
@@ -130,6 +128,8 @@ plot_er_distribution <- function(x) {
 #' @param feature String name of a feature to project onto the background landscape. This can be a numeric column from
 #' the \code{\link{deep_landscape}} dataset or the special values "count" or "cluster", which map the position density
 #' and most common subtype category respectively.
+#' @param highlight Positions to label. This can be a vector for deep_mutational_scan objects with a single study or
+#' a named list of such vectors if multi_study == TRUE.
 #' @return A \code{\link[ggplot2]{ggplot2}} plot.
 #' @examples
 #' dms <- deepscanscape::deep_scans$p53
@@ -146,11 +146,15 @@ plot_er_distribution <- function(x) {
 #' plot_landscape(dms, feature = "cluster")
 #'
 #' # Plot multiple studies
-#' comb_dms <- bind_scans(dms, annotate_missing = TRUE)
+#' comb_dms <- bind_scans(deep_scans, annotate_missing = TRUE)
 #' plot_landscape(comb_dms, feature = "total_energy")
 #'
+#' # Highlight Positions
+#' highlight <- list(`Hietpas Hsp90`=c(1,2), `Kotler p53`=c(10, 30, 50))
+#' plot_landscape(comb_dms, feature = "cluster", highlight = highlight)
+#'
 #' @export
-plot_landscape <- function(x, feature = NULL) {
+plot_landscape <- function(x, feature = NULL, highlight = NULL) {
   if (!is.deep_mutational_scan(x)) {
     stop("x is not a deep_mutational_scan")
   }
@@ -160,10 +164,24 @@ plot_landscape <- function(x, feature = NULL) {
     x <- annotate(x)
   }
 
+  if (!is.null(highlight)) {
+    if (x$multi_study) {
+      if (!is.list(highlight)) {
+        stop("highlight must be a list when x$multi_study == TRUE")
+      }
+    } else if (!is.list(highlight)) {
+      highlight <- list(x1 = highlight)
+      names(highlight) <- unique(x$data$name)
+    }
+
+    highlight <- tibble::tibble(name = rep(names(highlight), times = sapply(highlight, length)),
+                                position = unlist(highlight))
+  }
+
   if (is.null(feature)) {
-    p <- plot_landscape_plain(x)
+    p <- plot_landscape_plain(x, highlight = highlight)
   } else {
-    p <- plot_landscape_feature(x, feature = feature)
+    p <- plot_landscape_feature(x, feature = feature, highlight = highlight)
   }
 
   return(p)
@@ -174,9 +192,10 @@ plot_landscape <- function(x, feature = NULL) {
 #' Internal helper called by plot_landscape when no feature is passed
 #'
 #' @param x \code{\link{deep_mutational_scan}}.
+#' @param highlight Data frame giving the name/position of positions to label
 #' @return A \code{\link[ggplot2]{ggplot2}} plot.
 #' @keywords internal
-plot_landscape_plain <- function(x) {
+plot_landscape_plain <- function(x, highlight) {
   # Determine study colours
   n_studies <- nrow(x$meta)
   if (n_studies == 1) {
@@ -188,7 +207,7 @@ plot_landscape_plain <- function(x) {
   }
 
   # Plot
-  ggplot2::ggplot(mapping = ggplot2::aes(x = .data$umap1, y = .data$umap2)) +
+  p <- ggplot2::ggplot(mapping = ggplot2::aes(x = .data$umap1, y = .data$umap2)) +
     ggplot2::geom_point(data = deepscanscape::deep_landscape, mapping = ggplot2::aes(fill = "Background"),
                         shape = 21, colour = "grey") +
     ggplot2::geom_point(data = x$data, mapping = ggplot2::aes(colour = .data$name), shape = 16) +
@@ -196,6 +215,12 @@ plot_landscape_plain <- function(x) {
     col_scale +
     ggplot2::labs(x = "UMAP1", y = "UMAP2") +
     theme_deepscanscape()
+
+  if (!is.null(highlight)) {
+    p <- p + ggplot2::geom_label(data = dplyr::left_join(highlight, x$data, by = c("name", "position")),
+                                mapping = ggplot2::aes(label = .data$position), show.legend = FALSE,
+                                nudge_y = 0.25)
+  }
 }
 
 #' Plot new data on top of deep mutational landscape features
@@ -206,9 +231,10 @@ plot_landscape_plain <- function(x) {
 #' @param feature String name of a feature to project onto the background landscape. This can be a numeric column from
 #' the \code{\link{deep_landscape}} dataset or the special values "count" or "cluster", which map the position density
 #' and most common subtype category respectively.
+#' @param highlight Data frame giving the name/position of positions to label
 #' @return A \code{\link[ggplot2]{ggplot2}} plot.
 #' @keywords internal
-plot_landscape_feature <- function(x, feature) {
+plot_landscape_feature <- function(x, feature, highlight) {
   comb_df <- deepscanscape::deep_landscape
 
   if (feature %in% c(names(deepscanscape::deep_landscape))) {
@@ -286,6 +312,13 @@ plot_landscape_feature <- function(x, feature) {
   } else {
     p <- p + ggplot2::geom_point(data = x$data, shape = 16, size = 2.5, colour = "black") +
       ggplot2::geom_point(data = x$data, mapping = ggplot2::aes(colour = .data$name), shape = 16, size = 0.9)
+  }
+
+  # Add Labels
+  if (!is.null(highlight)) {
+    p <- p + ggplot2::geom_label(data = dplyr::left_join(highlight, x$data, by = c("name", "position")),
+                                 mapping = ggplot2::aes(label = .data$position),
+                                 show.legend = FALSE, nudge_y = 0.25, colour = "black")
   }
 
   return(p)

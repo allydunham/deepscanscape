@@ -4,10 +4,12 @@
 \alias{plot_landscape_plain}
 \title{Plot new data onto the plain deep mutational landscape}
 \usage{
-plot_landscape_plain(x)
+plot_landscape_plain(x, highlight)
 }
 \arguments{
 \item{x}{\code{\link{deep_mutational_scan}}.}
+
+\item{highlight}{Data frame giving the name/position of positions to label}
 }
 \value{
 A \code{\link[ggplot2]{ggplot2}} plot.

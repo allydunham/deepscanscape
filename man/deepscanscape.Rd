@@ -31,8 +31,10 @@ proteins they are most similar to.
 \itemize{
   \item \code{\link{annotate}} - Add annotations from the combined landscape to deep mutational scan data
   \item \code{\link{describe_clusters}} - Add details on positions assigned clusters
-  \item \code{\link{landscape_properties}} - Predict features of a position from its location in teh mutational
+  \item \code{\link{landscape_properties}} - Predict features of a position from its location in the mutational
   landscape
+  \item \code{\link{landscape_outliers}} - Identify rows of a deep_mutational_scan that lie away from the studied
+  regions of the deep landscape.
   \item \code{\link{recluster}} - Perform the original clustering procedure on a new deep mutational scan dataset
 }
 }

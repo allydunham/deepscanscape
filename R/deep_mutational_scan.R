@@ -1,5 +1,4 @@
 # S3 class to store a dms dataset
-# TODO - Test these funcs
 
 #' Internal deep_mutational_scan constructor
 #'
@@ -19,6 +18,7 @@ new_deep_mutational_scan <- function(df, meta) {
 }
 
 # TODO Use this check more widely?
+# TODO Check there are not any unexpected data columns?
 #' Validate deep_mutational_scan objects
 #'
 #' Check properties of deep_mutational_scan object adhere to various baseline expectations, which would lead to
@@ -182,7 +182,7 @@ deep_mutational_scan <- function(df, name, scheme=NULL, trans=NULL, na_value="im
     if (!all(c("position", "wt", "mut", "score") %in% names(df))) {
       stop("Incorrect input df, must include position, wt, mut and score columns")
     }
-    df <- dplyr::select(df, .data$position, .data$wt, .data$mut, .data$score, dplyr::everything())
+    df <- dplyr::select(df, .data$position, .data$wt, .data$mut, .data$score)
   }
 
   # Transform
@@ -209,9 +209,9 @@ deep_mutational_scan <- function(df, name, scheme=NULL, trans=NULL, na_value="im
   out <- validate_deep_mutational_scan(new_deep_mutational_scan(df = df, meta = meta))
 
   # Impute
-  # TODO note what happens when not doing this
+  # TODO note what happens when not doing this - maybe force to do?
   if (!(is.na(na_value) | is.null(na_value))) {
-    out <- impute(out)
+    out <- impute(out, na_value = na_value)
   }
 
   # Annotate
@@ -231,7 +231,6 @@ is.deep_mutational_scan <- function(x) { # nolint
   return(inherits(x, "deep_mutational_scan"))
 }
 
-# TODO Document this fully - [ and [[ go to data tbl, $ goes to list
 #' Extracting and replacing deep mutational scanning data
 #'
 #' Extracting and replacing data from \code{\link{deep_mutational_scan}} objects uses a mixture of list and data frame
@@ -431,7 +430,6 @@ plot.deep_mutational_scan <- function(x, ...) {
   print(autoplot(x, ...))
 }
 
-# TODO support these in all applicable functions
 #' Combine deep mutational scan data
 #'
 #' Combine multiple \code{\link{deep_mutational_scan}} objects into a single \code{\link[tibble]{tibble}}, including

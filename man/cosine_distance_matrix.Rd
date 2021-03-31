@@ -9,6 +9,9 @@ cosine_distance_matrix(x, y = NULL)
 \arguments{
 \item{x, y}{Numeric matrices. The distance between rows of x is calculated if y = NULL.}
 }
+\value{
+Numeric matrix of the cosine distance between the rows of x and y.
+}
 \description{
 Calculate the cosine distance between rows of a matrix or matrices.
 }
@@ -18,4 +21,3 @@ the domain of acos, so cosine similarities are rounded to 8 digits before being 
 beyond the precision required for most applications and does not pose a problem, especially here where the
 experimental uncertainty of ER scores are greater than this.
 }
-\keyword{internal}

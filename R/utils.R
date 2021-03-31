@@ -14,7 +14,7 @@ clamp <- function(x, lower=-Inf, upper=Inf) {
   return(x)
 }
 
-# TODO export these functions? maybe useful if people want to tinker with clustering
+# TODO - Expand docs
 #' Cosine distance matrix
 #'
 #' Calculate the cosine distance between rows of a matrix or matrices.
@@ -25,7 +25,8 @@ clamp <- function(x, lower=-Inf, upper=Inf) {
 #' experimental uncertainty of ER scores are greater than this.
 #'
 #' @param x,y Numeric matrices. The distance between rows of x is calculated if y = NULL.
-#' @keywords internal
+#' @return Numeric matrix of the cosine distance between the rows of x and y.
+#' @export
 cosine_distance_matrix <- function(x, y = NULL) {
   if (is.null(y)) {
     y <- x

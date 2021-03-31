@@ -4,7 +4,7 @@
 \alias{plot_landscape_feature}
 \title{Plot new data on top of deep mutational landscape features}
 \usage{
-plot_landscape_feature(x, feature)
+plot_landscape_feature(x, feature, highlight)
 }
 \arguments{
 \item{x}{\code{\link{deep_mutational_scan}}.}
@@ -12,6 +12,8 @@ plot_landscape_feature(x, feature)
 \item{feature}{String name of a feature to project onto the background landscape. This can be a numeric column from
 the \code{\link{deep_landscape}} dataset or the special values "count" or "cluster", which map the position density
 and most common subtype category respectively.}
+
+\item{highlight}{Data frame giving the name/position of positions to label}
 }
 \value{
 A \code{\link[ggplot2]{ggplot2}} plot.

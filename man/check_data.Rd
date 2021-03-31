@@ -23,11 +23,17 @@ warning, if it is not.
 The following checks are performed:
 \itemize{
   \item Median ER is positive, suggesting it has possibly been inverted.
+  \item Mean WT |ER| > 0.1, suggesting an incorrect sequence.
 }
 
 If \code{x} is annotated the following additional checks are performed:
 \itemize{
-  \item There's an unusually low number of common subtypes (1 and 2), suggesting unusual positions or an error like
-  an incorrect sequence.
+  \item Positions fall outside the mutational landscape, suggesting they may have unusual function or the experiment
+  selects unusual properties.
+  \item There are an unusually high number of permissive positions, based on a binomial test. This can suggest a
+  weakly selective region or experiment.
 }
+}
+\examples{
+check_data(deep_scans$p53, warn = TRUE)
 }

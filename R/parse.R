@@ -1,5 +1,4 @@
 # Parse common input formats in preparation for analysis
-# TODO - Test funcs
 
 #' Parse deep mutational scanning data
 #'

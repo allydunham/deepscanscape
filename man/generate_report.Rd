@@ -4,12 +4,19 @@
 \alias{generate_report}
 \title{Generate an HTML report for new deep mutational scan data}
 \usage{
-generate_report(..., output_path = "deepscanscape_report.html")
+generate_report(
+  ...,
+  output_path = "deepscanscape_report.html",
+  highlight = NULL
+)
 }
 \arguments{
-\item{...}{\code{\link{deep_landscape}} objects to report.}
+\item{...}{\code{\link{deep_landscape}} objects or lists of such objects to report on.}
 
 \item{output_path}{Path to write report to.}
+
+\item{highlight}{A named list of positions to highlight, where each element is named for a study in ... and contains
+the positions in that study to highlight.}
 }
 \value{
 Path to the generated report.
@@ -20,4 +27,14 @@ report provides an overview of the new data and then compares the properties of 
 included in the \code{\link{deep_landscape}} dataset. This helps to identify unusual properties, map the
 features of the protein on the common mutational landscape and assign each position to an amino acid subtype, which
 informs on its properties.
+}
+\examples{
+\dontrun{
+  # For a single study
+  generate_report(deep_scans$p53)
+
+  # For multiple studies
+  highlight <- list(`Elazar GpA`=c(1,2,3), `Kotler p53`=c(50, 100, 110))
+  generate_report(deep_scans, highlight = highlight)
+}
 }

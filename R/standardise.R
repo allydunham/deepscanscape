@@ -1,5 +1,4 @@
 # Normalise and standardise DMS scores
-# TODO - test functions
 
 #' Normalise deep mutational scanning fitness scores
 #'

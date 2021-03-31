@@ -1,7 +1,6 @@
 # Impute missing DMS data
-# TODO test
-# TODO allow passing custom impute er scores
 
+# TODO allow passing custom impute er scores
 #' Impute missing deep mutational scan data
 #'
 #' @param x \code{\link{deep_mutational_scan}} to impute data from
@@ -14,6 +13,10 @@ impute <- function(x, na_value="impute") {
     stop("Unrecognised data.\nCreate a standardised dataset using deep_mutational_scan()")
   }
 
+  if (x$imputed) {
+    stop("x has already been imputed")
+  }
+
   df <- tidyr::pivot_longer(x$data, dplyr::one_of(amino_acids), names_to = "mut", values_to = "score")
 
   # Calculate impute mask
@@ -22,7 +25,7 @@ impute <- function(x, na_value="impute") {
   mask$mask <- 0
   mask$mask[is.na(mask$score) & mask$wt == mask$mut] <- 1
   mask$mask[is.na(mask$score) & mask$wt != mask$mut] <- 2
-  mask <- tidyr::pivot_wider(mask[c("position", "wt", "mut", "mask")], names_from = .data$mut,
+  mask <- tidyr::pivot_wider(mask[c("name", "position", "wt", "mut", "mask")], names_from = .data$mut,
                              values_from = .data$mask, names_prefix = "impute_")
 
 

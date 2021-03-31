@@ -36,10 +36,10 @@ summary.deep_mutational_scan <- function(object, ...) {
                    `Mean per position` = mean(rowSums(impute_mask > 0)))
 
   if (out$annotated) {
-    # TODO move things like detecting permissive / outliers into utility function?
-    out$clusters <- list(permissive = sum(stringr::str_ends(object$data$cluster, "P")),
+    out$clusters <- list(ambiguous = sum(stringr::str_ends(object$data$cluster, "A")),
+                         permissive = sum(stringr::str_ends(object$data$cluster, "P")),
                          outlier = sum(stringr::str_ends(object$data$cluster, "O")),
-                         subtype = sum(!stringr::str_detect(object$data$cluster, "[A-Z][OP]{1}")),
+                         subtype = sum(!stringr::str_detect(object$data$cluster, "[A-Z][AOP]{1}")),
                          nclusters = length(unique(object$data$cluster[!stringr::str_ends(object$data$cluster, "O")])))
   }
 
@@ -71,6 +71,7 @@ format.deep_mutational_scan_summary <- function(x, ...) { # nolint
       "",
       "Annotated with amino acid subtypes, pricipal components and UMAP coordinates",
       stringr::str_c("  Permissive positions: ", x$clusters$permissive),
+      stringr::str_c("  Ambiguous positions: ", x$clusters$ambiguous),
       stringr::str_c("  Outlier positions: ", x$clusters$outlier),
       stringr::str_c("  Subtype positions: ", x$clusters$subtype),
       stringr::str_c("  Subtypes represented (incl. permissive): ", x$clusters$nclusters)

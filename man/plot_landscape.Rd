@@ -4,7 +4,7 @@
 \alias{plot_landscape}
 \title{Plot a new study on the deep mutational landscape}
 \usage{
-plot_landscape(x, feature = NULL)
+plot_landscape(x, feature = NULL, highlight = NULL)
 }
 \arguments{
 \item{x}{\code{\link{deep_mutational_scan}}.}
@@ -12,6 +12,9 @@ plot_landscape(x, feature = NULL)
 \item{feature}{String name of a feature to project onto the background landscape. This can be a numeric column from
 the \code{\link{deep_landscape}} dataset or the special values "count" or "cluster", which map the position density
 and most common subtype category respectively.}
+
+\item{highlight}{Positions to label. This can be a vector for deep_mutational_scan objects with a single study or
+a named list of such vectors if multi_study == TRUE.}
 }
 \value{
 A \code{\link[ggplot2]{ggplot2}} plot.
@@ -52,7 +55,11 @@ plot_landscape(dms, feature = "count")
 plot_landscape(dms, feature = "cluster")
 
 # Plot multiple studies
-comb_dms <- bind_scans(dms, annotate_missing = TRUE)
+comb_dms <- bind_scans(deep_scans, annotate_missing = TRUE)
 plot_landscape(comb_dms, feature = "total_energy")
+
+# Highlight Positions
+highlight <- list(`Hietpas Hsp90`=c(1,2), `Kotler p53`=c(10, 30, 50))
+plot_landscape(comb_dms, feature = "cluster", highlight = highlight)
 
 }

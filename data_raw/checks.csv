@@ -1,3 +1,5 @@
 "id","cause","explanation"
 "positive_er","Median ER score > 0","Fitness is potentially inverted either by experimental design or processing"
-"low_x1/2","Unexpectedly low proportion of X1/2 subtypes", "Either positions perform unusual roles or cluster assignment is poor. One cause of this is an incorrect WT sequence, for example if all positions are off by one"
+"wt_high","Mean WT |ER| > 0.1","Apparantly synonymous mutations change fitness, potentially the WT sequence is incorrect."
+"landscape_outliers","Positions fall outside the studied landscape","The study contains positions with unusual ER profiles, possibly indicating a type of position not contained in the original dataset or an unusual experimental design that doesn't necessarily mirror standard biological properties. Identify positions using landscape_outliers()."
+"permissive","More permissive positions than expected","This suggests the protein region may be weakly selected or the experimental design was less selective than usual."

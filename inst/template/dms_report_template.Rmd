@@ -2,7 +2,8 @@
 title: "DeepScanScape Report"
 output: html_document
 params:
-  studies: null
+  dms: null
+  highlight: null
 ---
 
 ```{r setup, include=FALSE}
@@ -10,11 +11,7 @@ knitr::opts_chunk$set(echo = TRUE, fig.align = "center")
 ```
 
 ```{r load_study, include=FALSE}
-if (length(params$studies) == 1) {
-  dms <- params$studies[[1]]
-} else {
-  dms <- bind_scans(params$studies)
-}
+dms <- params$dms
 
 if (!dms$imputed) {
   dms <- impute(dms)
@@ -61,16 +58,32 @@ Here we colour the landscape by most common subtype group, which identifies the 
 The `plot_landscape` function can be used to highlight other properties of the landscape as well, for example regions mean SIFT4G score or FoldX $\Delta\Delta G$.
 
 ```{r mutational_landscape}
-plot_landscape(dms, feature = "cluster")
+plot_landscape(dms, feature = "cluster", highlight = params$highlight)
 ```
 
 # Subtypes
 
-The deep mutational landscape can also be divided positional amino acid subtypes, which groups positions of each aminno acid into clusters with similar mutational profiles.
-New positions can be mapped to these clusters, based on the nearest neighbour cluster center in PCA space using cosine distance as in the clustering procedure.
-This highlights potential properties of each position, based on analysis of positions in that subtype in the deep landscape dataset.
-An overview is shown here, and details for each position can be identified using the `describe_clusters` function.
+The deep mutational landscape can also be divided positional amino acid subtypes, which groups positions of each amino acid into clusters with similar mutational profiles.
+New positions can be mapped to these clusters, based on the nearest neighbour cluster centre in PCA space using cosine distance as in the clustering procedure.
 
 ```{r subtypes}
-  plot_cluster_frequencies(dms)
+plot_cluster_frequencies(dms)
+```
+
+These subtypes can inform about the potential properties of positions, both in broad qualitative terms and by making approximate predictions for quantitative properties such as structural destabilisation.
+Basic annotations for `r if (is.null(highlight)) "a subset of positons" else "positions of interest"` are shown here, with the full annotation for all positions accessible using the `describe_clusters` function.
+
+```{r subtypes_desc, echo=FALSE}
+cols <- c("name", "position", "wt", "cluster", "global_cluster_freq", "group", "description", "notes")
+desc <- describe_clusters(dms, full = TRUE)
+
+if (is.null(params$highlight)) {
+  desc <- desc[1:10, ]
+} else {
+  highlight <- tibble::tibble(name = rep(names(params$highlight), times = unname(sapply(params$highlight, length))),
+                              position = unlist(params$highlight))
+  desc <- dplyr::left_join(highlight, desc, by = c("name", "position"))
+}
+
+knitr::kable(desc[cols])
 ```
