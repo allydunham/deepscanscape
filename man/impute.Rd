@@ -9,9 +9,38 @@ impute(x, na_value = "impute")
 \arguments{
 \item{x}{\code{\link{deep_mutational_scan}} to impute data from}
 
-\item{na_value}{Value to set missense NA values to. Setting this to "impute" sets scores to the median score for that
-substitution (e.g A -> C) in the combined dataset}
+\item{na_value}{Value to set missense NA values to. Can be "impute", a single value or a matrix of substitution
+scores (see details).}
+}
+\value{
+An imputed \code{\link{deep_mutational_scan}}
 }
 \description{
-Impute missing deep mutational scan data
+Impute NA values in a deep_mutational_scan objects ER scores. Values can be imputed as the median scores from the
+combined landscape dataset or using custom values.
+}
+\details{
+If na_value == "impute" missense NA scores are imputed to be the median value of that substitution (e.g. A -> C) from
+the \code{\link{deep_landscape}} dataset. If na_value is a matrix it should have rows and column names corresponding
+to single letter amino acid codes and have cell i,j correspond to the imputed score for substitutions from i to j.
+Any other value of na_value is interpreted as the score to impute all NA values to.
+
+An impute mask is also generated and added to the data tibble of the deep_mutational_scan. This consists of one
+column for each amino acid (impute_X) which contains '0' if the corresponding score in that row is not imputed, '1'
+for synonymous substitution imputed as 0 and '2' for non-synonymous substitutions that have undergone imputation.
+}
+\examples{
+# Load an unimputed DMS object
+path <- system.file("extdata", "urn_mavedb_00000011_a_1_scores.csv",
+                    package = "deepscanscape")
+csv <- read.csv(path, skip = 4)
+dms <- deep_mutational_scan(csv, name = "Hietpas Hsp90", scheme = "mave", trans = NULL,
+                            na_value = NULL, annotate = FALSE)
+
+# Set NA to a constant
+impute(dms, na_value = 1)
+
+# Use the built in imputed values
+impute(dms, na_value = "impute")
+
 }

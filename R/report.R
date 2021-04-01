@@ -1,6 +1,5 @@
 # Perform a full analysis on user supplied data and generate
 
-# TODO show total energy etc?
 #' Generate an HTML report for new deep mutational scan data
 #'
 #' Perform a full analysis on new deep mutational scan data and summarise the results as an HTML report. The
@@ -17,7 +16,7 @@
 #' @examples
 #' \dontrun{
 #'   # For a single study
-#'   generate_report(deep_scans$p53)
+#'   generate_report(deep_scans$p53, highlight = c(50, 100, 110))
 #'
 #'   # For multiple studies
 #'   highlight <- list(`Elazar GpA`=c(1,2,3), `Kotler p53`=c(50, 100, 110))
@@ -33,8 +32,16 @@ generate_report <- function(..., output_path = "deepscanscape_report.html", high
     dms <- bind_scans(scans)
   }
 
-  if (!is.null(highlight) & !is.list(highlight)) {
-    stop("highlight must be NULL or a list of position vectors to select")
+  if (!is.null(highlight)) {
+    if (!dms$multi_study & !is.list(highlight)) {
+      highlight <- list(x = highlight)
+      names(highlight) <- dms$meta$name
+    }
+
+    if (!is.list(highlight)) {
+      stop("highlight must be NULL, a vector of positions (only if a single, single study scan is passed) or ",
+           "a list of position vectors (applicable for all input)")
+    }
   }
 
   rmarkdown::render(system.file("template", "dms_report_template.Rmd", package = "deepscanscape"),

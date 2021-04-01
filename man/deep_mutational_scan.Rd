@@ -27,7 +27,7 @@ deep_mutational_scan(
 \item{trans}{Function to transform scores onto the standard scale. Accepts a string corresponding to known transforms
 or a custom function (\code{\link{transform_er}}).}
 
-\item{na_value}{Value to set missense NA scores to (see \code{\link{impute}}).}
+\item{na_value}{How to set missense NA scores (see \code{\link{impute}}).}
 
 \item{annotate}{Annotate the dataset with mutational landscape data (PCA, UMAP and amino acid subtypes).}
 
@@ -42,18 +42,36 @@ not used internally.}
 }
 \value{
 A deep_mutational_scan S3 object, containing the following fields:
-  \itemize{
-    \item data: wide format \code{\link[tibble]{tibble}} containing ER scores and other positional data
-    \item meta: Tibble containing meta data about each study in the dataset
-    \item imputed: logical indicating the dataset has been completed via imputation(see \code{\link{impute}}
-    for details)
-    \item annotated: logical indicating if the data has been annotated with PCs, UMAP coordinates and clusters
-    \item multi_study: logical indicating the dataset contains data from multiple studies
-  }
-  The class is used like a list apart from [ accesses the main data tibble (see \link[=dms_extract]{details}).
-  The class is also associated with other common generics (see \link[=dms_s3]{basic functions},
-  \link[=dms_summary]{summary}, \link[=as_tibble]{data frames}, \link[=dms_plot]{plotting}. Multiple deep_mutational
-  scan objects can be combined using \link{bind_scans}).
+\itemize{
+  \item data: wide format \code{\link[tibble]{tibble}} containing ER scores and other positional data
+  \item meta: Tibble containing meta data about each study in the dataset
+  \item imputed: logical indicating the dataset has been completed via imputation(see \code{\link{impute}}
+  for details)
+  \item annotated: logical indicating if the data has been annotated with PCs, UMAP coordinates and clusters
+  \item multi_study: logical indicating the dataset contains data from multiple studies
+}
+
+The \code{data} tibble contains the following fields (those marked * are not always present):
+\itemize{
+  \item name: Name of the scan this position is from.
+  \item position: Position in the protein.
+  \item wt: Wild type amino acid.
+  \item A-Y: Fitness for each substitution.
+  \item impute_A-impute_Y: Whether the fitness score is imputed (see \code{\link{impute}}).
+  \item PC1-PC20: Deep landscape principal component coordinates.
+  \item umap1-umap2: Deep landscape UMAP coordinates.
+  \item cluster: Assigned amino acid subtype.
+  \item base_cluster: Nearest functional subtypes centroid in PC cosine space, which is the assigned subtype before
+  corrections are made for permissive, outlier and ambiguous subtypes.
+  \item permissive, ambiguous, high_distance: Whether the position fulfilled the criteria for the special subtypes.
+  \item dist1-dist8: PC cosine distance to each cluster centroid for subtypes of that amino acid.
+  \item cluster_notes: Notes about cluster assignment.
+}
+
+The class is used like a list apart from [ accesses the main data tibble (see \link[=dms_extract]{details}).
+The class is also associated with other common generics (see \link[=dms_s3]{basic functions},
+\link[=dms_summary]{summary}, \link[=as_tibble]{data frames}, \link[=dms_plot]{plotting}. Multiple deep_mutational
+scan objects can be combined using \link{bind_scans}).
 }
 \description{
 Store deep mutational scanning data in a standardised format, alongside

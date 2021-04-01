@@ -1,7 +1,7 @@
 Package: deepscanscape
 Type: Package
 Title: Annotate New Data Using Deep Mutational Landscapes
-Version: 0.0.0.9027
+Version: 0.0.0.9028
 Authors@R: person("Alistair", "Dunham", email = "ally@ebi.ac.uk", role = c("aut", "cre"))
 Description: Process and annotate new deep mutational scanning study data
     based on a deep mutational landscape derived from 28 previous studies.
@@ -21,13 +21,13 @@ Imports:
     dplyr,
     uwot (== 0.1.10),
     ggpubr,
-    hexbin,
     pdist,
     knitr,
     rmarkdown
 Suggests:
     dynamicTreeCut,
     testthat (>= 3.0.0),
+    hexbin,
     crayon
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr

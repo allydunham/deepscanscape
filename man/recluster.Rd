@@ -4,7 +4,16 @@
 \alias{recluster}
 \title{Recluster DMS data with a combined dataset}
 \usage{
-recluster(x, keep_clustering = FALSE, deep_split = NULL, add_combined = TRUE)
+recluster(
+  x,
+  keep_clustering = FALSE,
+  deep_split = NULL,
+  permissive = 0.4,
+  add_combined = TRUE,
+  cols = NULL,
+  method = "average",
+  ...
+)
 }
 \arguments{
 \item{x}{\code{\link{deep_mutational_scan}} object to recluster}
@@ -15,8 +24,34 @@ downstream analysis}
 \item{deep_split}{Named vector of deepSplit parameters to pass to \link[dynamicTreeCut]{cutreeHybrid}. Must be a
 numeric vector with a named entry for each amino acid or a single integer to apply to all amino acids}
 
+\item{permissive}{Absolute value threshold for considering a substitution permissive. Positions with all
+substitution scores below this threshold are assigned to the permissive subtype.}
+
 \item{add_combined}{Combine the supplied data with the \link{deep_landscape} dataset.}
+
+\item{cols}{Columns to cluster on, defaults to PC2:20}
+
+\item{method}{\code{\link[stats]{hclust}} linkage method.}
+
+\item{...}{Additional arguments passed on to \code{\link[dynamicTreeCut]{cutreeHybrid}}. deepSplit should not be
+included here as it is specified per AA using deep_split.}
+}
+\value{
+A \code{\link[tibble]{tibble}} containing the clustered data.
 }
 \description{
-Recluster DMS data with a combined dataset
+Apply the clustering method used in Dunham & Beltrao (2020) to a new deep mutational landscape dataset based on
+a standardised \code{\link{deep_mutational_scan}} dataset.
+}
+\details{
+This will be most valuable if \code{x} is a large \code{multi_study} dataset including quite a few new scans,
+otherwise results will either be similar to the original dataset if \code{add_combined = TRUE} or based on too few
+positions to be meaningful if not.
+
+The default parameters apply the procedure used in the paper and a few parameters are provided to allow some
+adjustments or experimentation. Larger more novel changes will likely require adapting the code itself.
+}
+\examples{
+new_studies <- bind_scans(deep_scans)
+reclust <- recluster(new_studies)
 }

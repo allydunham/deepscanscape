@@ -74,7 +74,8 @@ These subtypes can inform about the potential properties of positions, both in b
 Basic annotations for `r if (is.null(highlight)) "a subset of positons" else "positions of interest"` are shown here, with the full annotation for all positions accessible using the `describe_clusters` function.
 
 ```{r subtypes_desc, echo=FALSE}
-cols <- c("name", "position", "wt", "cluster", "global_cluster_freq", "group", "description", "notes")
+cols <- c("name", "position", "wt", "cluster", "global_cluster_freq", "group", "description", "notes", "mean_score",
+          "total_energy")
 desc <- describe_clusters(dms, full = TRUE)
 
 if (is.null(params$highlight)) {

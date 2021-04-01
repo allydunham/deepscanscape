@@ -31,7 +31,7 @@ informs on its properties.
 \examples{
 \dontrun{
   # For a single study
-  generate_report(deep_scans$p53)
+  generate_report(deep_scans$p53, highlight = c(50, 100, 110))
 
   # For multiple studies
   highlight <- list(`Elazar GpA`=c(1,2,3), `Kotler p53`=c(50, 100, 110))

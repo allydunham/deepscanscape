@@ -42,6 +42,8 @@ plot_er_heatmap <- function(x) {
     stop("x is not a deep_mutational_scan()")
   }
 
+  x <- validate_deep_mutational_scan(x)
+
   df <- tidyr::pivot_longer(x$data[c("name", "position", "wt", amino_acids)],
                             cols = .data$A:.data$Y, names_to = "mut", values_to = "er")
   means <- dplyr::summarise(dplyr::group_by(df, .data$name, .data$position, .data$wt),
@@ -86,6 +88,12 @@ plot_er_heatmap <- function(x) {
 #' plot_er_distribution(comb_dms)
 #' @export
 plot_er_distribution <- function(x) {
+  if (!is.deep_mutational_scan(x)) {
+    stop("x is not a deep_mutational_scan()")
+  }
+
+  x <- validate_deep_mutational_scan(x)
+
   background <- dplyr::select(deepscanscape::deep_landscape, .data$A:.data$Y)
   background <- tidyr::pivot_longer(background, cols = .data$A:.data$Y, names_to = "mut", values_to = "er")
   background$name <- "Background"
@@ -158,6 +166,8 @@ plot_landscape <- function(x, feature = NULL, highlight = NULL) {
   if (!is.deep_mutational_scan(x)) {
     stop("x is not a deep_mutational_scan")
   }
+
+  x <- validate_deep_mutational_scan(x)
 
   if (!x$annotated) {
     warning("deep_mutational_scan is not annotated. Annotating using annotate().", immediate. = TRUE)
@@ -402,6 +412,8 @@ plot_cluster_frequencies <- function(x, compare = FALSE) {
   if (!is.deep_mutational_scan(x)) {
     stop("x is not a deep_mutational_scan")
   }
+
+  x <- validate_deep_mutational_scan(x)
 
   if (!x$annotated) {
     warning("deep_mutational_scan is not annotated. Annotating using annotate().", immediate. = TRUE)

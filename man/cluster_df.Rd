@@ -4,13 +4,20 @@
 \alias{cluster_df}
 \title{Cluster rows of a data frame using hierarchical clustering and dynamic tree cutting}
 \usage{
-cluster_df(tbl, deep_split = 0)
+cluster_df(tbl, deep_split = 0, cols = NULL, method = "average", ...)
 }
 \arguments{
-\item{tbl}{Data frame containing columns}
+\item{tbl}{Data frame containing cols}
 
 \item{deep_split}{deepSplit parameter passed to \link[dynamicTreeCut]{cutreeHybrid}}
+
+\item{cols}{Columns to cluster, defaults to PC2:20}
+
+\item{method}{\code{\link[stats]{hclust}} linkage method.}
+
+\item{...}{Arguments passed on to \code{\link[dynamicTreeCut]{cutreeHybrid}}}
 }
 \description{
 Cluster rows of a data frame using hierarchical clustering and dynamic tree cutting
 }
+\keyword{internal}

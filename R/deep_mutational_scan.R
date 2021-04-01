@@ -17,8 +17,6 @@ new_deep_mutational_scan <- function(df, meta) {
   return(out)
 }
 
-# TODO Use this check more widely?
-# TODO Check there are not any unexpected data columns?
 #' Validate deep_mutational_scan objects
 #'
 #' Check properties of deep_mutational_scan object adhere to various baseline expectations, which would lead to
@@ -32,7 +30,7 @@ new_deep_mutational_scan <- function(df, meta) {
 #'   \item \code{imputed} is logical
 #'   \item \code{annotated} is logical
 #'   \item \code{multi_study} is logical
-#'   \item \code{data} contains the correct columns
+#'   \item \code{data} contains the correct columns and no incorrect ones
 #'   \item \code{data} contains no duplicate rows
 #'   \item \code{meta} list is correctly structured
 #'   \item \code{meta} list contains values for each unique name
@@ -45,6 +43,13 @@ new_deep_mutational_scan <- function(df, meta) {
 #' @return The input is returned unaltered, since the main purpose of the function is to raise an error if the
 #'   object is erroneous.
 validate_deep_mutational_scan <- function(x) { # nolint
+  # Expected headers
+  data_headers <- c("name", "position", "wt", amino_acids)
+  impute_headers <- paste0("impute_", amino_acids)
+  annotated_headers <- c(paste0("PC", seq_len(20)), "umap1", "umap2", "cluster", "base_cluster", "permissive",
+                         "ambiguous", "high_distance", paste0("dist", seq_len(8)), "cluster_notes")
+  meta_headers <- c("name", "study", "gene", "source", "positions")
+
   # Check fundamental structure
   if (!is.deep_mutational_scan(x)) {
     stop("Not a deep_mutational_scan (check class(x))")
@@ -76,20 +81,22 @@ validate_deep_mutational_scan <- function(x) { # nolint
   }
 
   # Check data object
-  missing_headers <- c("position", "wt", amino_acids)[which(!c("position", "wt", amino_acids) %in% names(x$data))]
+  missing_headers <- data_headers[which(!data_headers %in% names(x$data))]
   if (length(missing_headers) > 0) {
     stop("Missing data columns: ", paste(missing_headers, sep = ", "))
+  }
+
+  unexpected_headers <- names(x$data)[!names(x$data) %in% c(data_headers, impute_headers, annotated_headers)]
+  if (length(unexpected_headers) > 0) {
+    stop("Data contains unsupported columns:", paste(unexpected_headers, sep = ", "))
   }
 
   if (nrow(x$data) != nrow(dplyr::distinct(x$data[c("name", "position", "wt")]))) {
     stop("Data contains duplicated positions")
   }
 
-  # TODO - Check scores fit right profile? (Maybe too fragile)
-
   # Check meta object
-  missing_headers <- c("name", "study", "gene", "source", "positions")
-  missing_headers <- missing_headers[which(!missing_headers %in% names(x$meta))]
+  missing_headers <- meta_headers[which(!meta_headers %in% names(x$meta))]
   if (length(missing_headers) > 0) {
     stop("Missing meta columns: ", paste(missing_headers, sep = ", "))
   }
@@ -104,8 +111,7 @@ validate_deep_mutational_scan <- function(x) { # nolint
       stop("Scan is marked as imputed by has NA ER scores")
     }
 
-    impute_headers <- paste0("impute_", amino_acids)
-    missing_headers <- missing_headers[which(!missing_headers %in% names(x$data))]
+    missing_headers <- impute_headers[which(!impute_headers %in% names(x$data))]
     if (length(missing_headers) > 0) {
       stop("Scan is marked as imputed by is missing data columns: ", paste(missing_headers, sep = ", "))
     }
@@ -117,9 +123,7 @@ validate_deep_mutational_scan <- function(x) { # nolint
 
   # Check annotation
   if (x$annotated) {
-    missing_headers <- c(paste0("PC", seq_len(20)), "umap1", "umap2", "cluster", "base_cluster", "permissive",
-                         "ambiguous", "high_distance", paste0("dist", seq_len(8)), "cluster_notes")
-    missing_headers <- missing_headers[which(!missing_headers %in% names(x$data))]
+    missing_headers <- annotated_headers[which(!annotated_headers %in% names(x$data))]
     if (length(missing_headers) > 0) {
       stop("Scan is marked as annotated by is missing data columns: ", paste(missing_headers, sep = ", "))
     }
@@ -128,7 +132,6 @@ validate_deep_mutational_scan <- function(x) { # nolint
   return(x)
 }
 
-# TODO - Document data tibble format
 #' Deep mutational scan data
 #'
 #' Store deep mutational scanning data in a standardised format, alongside
@@ -141,7 +144,7 @@ validate_deep_mutational_scan <- function(x) { # nolint
 #' @param scheme Original data scheme (see \code{\link{parse_deep_scan}}).
 #' @param trans Function to transform scores onto the standard scale. Accepts a string corresponding to known transforms
 #' or a custom function (\code{\link{transform_er}}).
-#' @param na_value Value to set missense NA scores to (see \code{\link{impute}}).
+#' @param na_value How to set missense NA scores (see \code{\link{impute}}).
 #' @param annotate Annotate the dataset with mutational landscape data (PCA, UMAP and amino acid subtypes).
 #' @param study Study in which the scan was performed.
 #' @param gene Gene scanned.
@@ -149,18 +152,36 @@ validate_deep_mutational_scan <- function(x) { # nolint
 #' @param description Description of study, containing any miscellaneous details. This is for reference only and is
 #' not used internally.
 #' @return A deep_mutational_scan S3 object, containing the following fields:
-#'   \itemize{
-#'     \item data: wide format \code{\link[tibble]{tibble}} containing ER scores and other positional data
-#'     \item meta: Tibble containing meta data about each study in the dataset
-#'     \item imputed: logical indicating the dataset has been completed via imputation(see \code{\link{impute}}
-#'     for details)
-#'     \item annotated: logical indicating if the data has been annotated with PCs, UMAP coordinates and clusters
-#'     \item multi_study: logical indicating the dataset contains data from multiple studies
-#'   }
-#'   The class is used like a list apart from [ accesses the main data tibble (see \link[=dms_extract]{details}).
-#'   The class is also associated with other common generics (see \link[=dms_s3]{basic functions},
-#'   \link[=dms_summary]{summary}, \link[=as_tibble]{data frames}, \link[=dms_plot]{plotting}. Multiple deep_mutational
-#'   scan objects can be combined using \link{bind_scans}).
+#' \itemize{
+#'   \item data: wide format \code{\link[tibble]{tibble}} containing ER scores and other positional data
+#'   \item meta: Tibble containing meta data about each study in the dataset
+#'   \item imputed: logical indicating the dataset has been completed via imputation(see \code{\link{impute}}
+#'   for details)
+#'   \item annotated: logical indicating if the data has been annotated with PCs, UMAP coordinates and clusters
+#'   \item multi_study: logical indicating the dataset contains data from multiple studies
+#' }
+#'
+#' The \code{data} tibble contains the following fields (those marked * are not always present):
+#' \itemize{
+#'   \item name: Name of the scan this position is from.
+#'   \item position: Position in the protein.
+#'   \item wt: Wild type amino acid.
+#'   \item A-Y: Fitness for each substitution.
+#'   \item impute_A-impute_Y: Whether the fitness score is imputed (see \code{\link{impute}}).
+#'   \item PC1-PC20: Deep landscape principal component coordinates.
+#'   \item umap1-umap2: Deep landscape UMAP coordinates.
+#'   \item cluster: Assigned amino acid subtype.
+#'   \item base_cluster: Nearest functional subtypes centroid in PC cosine space, which is the assigned subtype before
+#'   corrections are made for permissive, outlier and ambiguous subtypes.
+#'   \item permissive, ambiguous, high_distance: Whether the position fulfilled the criteria for the special subtypes.
+#'   \item dist1-dist8: PC cosine distance to each cluster centroid for subtypes of that amino acid.
+#'   \item cluster_notes: Notes about cluster assignment.
+#' }
+#'
+#' The class is used like a list apart from [ accesses the main data tibble (see \link[=dms_extract]{details}).
+#' The class is also associated with other common generics (see \link[=dms_s3]{basic functions},
+#' \link[=dms_summary]{summary}, \link[=as_tibble]{data frames}, \link[=dms_plot]{plotting}. Multiple deep_mutational
+#' scan objects can be combined using \link{bind_scans}).
 #' @examples
 #'
 #' # Create a scan object
@@ -209,9 +230,17 @@ deep_mutational_scan <- function(df, name, scheme=NULL, trans=NULL, na_value="im
   out <- validate_deep_mutational_scan(new_deep_mutational_scan(df = df, meta = meta))
 
   # Impute
-  # TODO note what happens when not doing this - maybe force to do?
-  if (!(is.na(na_value) | is.null(na_value))) {
+  if (is.null(na_value)) {
+    na_value <- NA
+  }
+
+  if (!is.na(na_value)) {
     out <- impute(out, na_value = na_value)
+  } else {
+    if (any(is.na(out$data[amino_acids]))) {
+      warning("No imputation applied but NA values present. ",
+              "Data may not be suitable for downstream analysis until NA values are removed.")
+    }
   }
 
   # Annotate
@@ -302,7 +331,6 @@ NULL
 NULL
 #> NULL
 
-# TODO - too many columns?
 #' @describeIn dms_s3 S3 format method
 #' @export
 format.deep_mutational_scan <- function(x, ...) {

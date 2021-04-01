@@ -1,6 +1,5 @@
 # Make summary objects for deep mutational scan objects
 
-# TODO more summary stats?
 #' Summarise Deep Mutational Scans
 #'
 #' @param object,x A \code{\link{deep_mutational_scan}} object.

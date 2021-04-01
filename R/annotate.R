@@ -38,6 +38,12 @@ annotate <- function(x) {
     stop("x must be a deep_mutational_scan")
   }
 
+  x <- validate_deep_mutational_scan(x)
+
+  if (any(is.na(x$data[amino_acids]))) {
+    stop("NA fitness scores present, which prevents annotation. Remove missing values by filtering or using impute().")
+  }
+
   if (x$annotated) {
       warning("deep_mutational_scan already annotated. Clearing annotation and reapplying", immediate. = TRUE)
       x$data <- dplyr::select(x$data, -dplyr::starts_with("PC"), -.data$umap1, -.data$umap2, -.data$cluster,
@@ -148,25 +154,31 @@ cluster_notes <- function(permissive, ambiguous, high_distance) {
   return(notes)
 }
 
-# TODO predict sift or not? low r2
 #' Predict positions properties from their position in the deep mutational landscape
 #'
 #' Predict positions properties based on the average properties of \code{\link{deep_landscape}} positions in the same
 #' hexagonal bin as them.
+#'
+#' This function is not externally exposed or used for other annotation because subtype based annotation is found to be
+#' at least as accurate in almost all cases, and often better. It is included for illustration and potential further
+#' development work.
 #'
 #' @param x \link{deep_mutational_scan}.
 #' @param bins Number of bins to divide landscape into. The default value was chosen to give the best results on a
 #' benchmark dataset.
 #' @returns A \code{\link[tibble]{tibble}}, with each row detailing a row of the input data and columns matching
 #' those in the \code{\link{subtypes}} dataset, describing the predicted properties of the position.
-#' @examples
-#' dms <- annotate(deepscanscape::deep_scans$p53)
-#' properties <- landscape_properties(dms)
-#' @export
+#' @keywords internal
 landscape_properties <- function(x, bins = 20) {
+  if (!requireNamespace("hexbin", quietly = TRUE)) {
+    stop("Install hexbin to perform hex based binning")
+  }
+
   if (!is.deep_mutational_scan(x)) {
     stop("x must be a deep_mutational_scan")
   }
+
+  x <- validate_deep_mutational_scan(x)
 
   if (!x$annotated) {
     warning("deep_mutational_scan is not annotated. Annotating using annotate_dms().", immediate. = TRUE)
@@ -193,13 +205,19 @@ landscape_properties <- function(x, bins = 20) {
   return(df)
 }
 
-# TODO Better description of ambiguous clusters
 #' Describe amino acid positional subtypes
 #'
 #' Add descriptions and frequencies from the cluster assigned to each position in an annotated deep_mutational_scan
 #' dataset. These were determined through analysis of the larger \code{\link{deep_landscape}} dataset. Numerical
 #' summary statistics based on the same dataset can also be added, which give the mean characteristics of the subtype.
-#' They include results from SIFT4G, FoldX, Naccess and mean ER fitness score profiles.
+#' They include results from FoldX and Naccess and mean ER fitness score profiles.
+#'
+#' The deep landscape properties summarised where chosen by benchmarking subtype based predictions against the
+#' landscape data and a separate deep mutational scan of SARS-CoV-2 Spike by Starr et al. (2020). Metrics are only shown
+#' when the average value of positions of that subtype is meaningfully related to the observed values.
+#'
+#' Properties are not shown for outlier subtypes, which do not have consistent properties, and ambiguously assigned
+#' positions, since the properties could be that of either of the subtypes the position could have been assigned to.
 #'
 #' @param x \link{deep_mutational_scan}.
 #' @param full Logical. Include average statistics from the \code{\link{deep_landscape}} dataset in
@@ -221,6 +239,8 @@ describe_clusters <- function(x, full = FALSE) {
     stop("x must be a deep_mutational_scan")
   }
 
+  x <- validate_deep_mutational_scan(x)
+
   if (!x$annotated) {
     warning("deep_mutational_scan is not annotated. Annotating using annotate_dms().", immediate. = TRUE)
     x <- annotate(x)
@@ -228,7 +248,14 @@ describe_clusters <- function(x, full = FALSE) {
 
   df <- x$data
 
-  extra <- dplyr::rename(deepscanscape::subtypes, global_cluster_freq = .data$prop)
+  cols <- c("wt", "cluster", "prop", "group", "description", "notes", amino_acids,
+            "mean_score", "total_energy", "backbone_hbond", "sidechain_hbond",
+            "van_der_waals", "electrostatics", "solvation_polar", "solvation_hydrophobic",
+            "van_der_waals_clashes", "entropy_sidechain", "entropy_mainchain", "cis_bond",
+            "torsional_clash", "backbone_clash", "disulfide", "partial_covalent_bonds",
+            "energy_ionisation", "all_atom_rel")
+  extra <- dplyr::select(deepscanscape::subtypes, dplyr::all_of(cols))
+  extra <- dplyr::rename(extra, global_cluster_freq = .data$prop)
   if (!full) {
     extra <- extra[c("wt", "cluster", "global_cluster_freq", "group", "description", "notes")]
   }

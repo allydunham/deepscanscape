@@ -20,7 +20,15 @@ those in the \code{\link{subtypes}} dataset.
 Add descriptions and frequencies from the cluster assigned to each position in an annotated deep_mutational_scan
 dataset. These were determined through analysis of the larger \code{\link{deep_landscape}} dataset. Numerical
 summary statistics based on the same dataset can also be added, which give the mean characteristics of the subtype.
-They include results from SIFT4G, FoldX, Naccess and mean ER fitness score profiles.
+They include results from FoldX and Naccess and mean ER fitness score profiles.
+}
+\details{
+The deep landscape properties summarised where chosen by benchmarking subtype based predictions against the
+landscape data and a separate deep mutational scan of SARS-CoV-2 Spike by Starr et al. (2020). Metrics are only shown
+when the average value of positions of that subtype is meaningfully related to the observed values.
+
+Properties are not shown for outlier subtypes, which do not have consistent properties, and ambiguously assigned
+positions, since the properties could be that of either of the subtypes the position could have been assigned to.
 }
 \examples{
 dms <- deepscanscape::deep_scans$p53

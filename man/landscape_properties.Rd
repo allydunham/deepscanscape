@@ -20,7 +20,9 @@ those in the \code{\link{subtypes}} dataset, describing the predicted properties
 Predict positions properties based on the average properties of \code{\link{deep_landscape}} positions in the same
 hexagonal bin as them.
 }
-\examples{
-dms <- annotate(deepscanscape::deep_scans$p53)
-properties <- landscape_properties(dms)
+\details{
+This function is not externally exposed or used for other annotation because subtype based annotation is found to be
+at least as accurate in almost all cases, and often better. It is included for illustration and potential further
+development work.
 }
+\keyword{internal}

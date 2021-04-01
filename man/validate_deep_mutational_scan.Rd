@@ -26,7 +26,7 @@ The following assumptions are currently checked:
   \item \code{imputed} is logical
   \item \code{annotated} is logical
   \item \code{multi_study} is logical
-  \item \code{data} contains the correct columns
+  \item \code{data} contains the correct columns and no incorrect ones
   \item \code{data} contains no duplicate rows
   \item \code{meta} list is correctly structured
   \item \code{meta} list contains values for each unique name
