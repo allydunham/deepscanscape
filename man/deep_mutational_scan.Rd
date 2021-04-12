@@ -14,7 +14,8 @@ deep_mutational_scan(
   study = NA,
   gene = NA,
   source = NA,
-  description = NA
+  description = NA,
+  ...
 )
 }
 \arguments{
@@ -39,6 +40,8 @@ or a custom function (\code{\link{transform_er}}).}
 
 \item{description}{Description of study, containing any miscellaneous details. This is for reference only and is
 not used internally.}
+
+\item{...}{Additional arguments passed to \code{\link{parse_deep_scan}}.}
 }
 \value{
 A deep_mutational_scan S3 object, containing the following fields:

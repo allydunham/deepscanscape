@@ -151,6 +151,7 @@ validate_deep_mutational_scan <- function(x) { # nolint
 #' @param source Source of study. This is for reference only and is not used internally.
 #' @param description Description of study, containing any miscellaneous details. This is for reference only and is
 #' not used internally.
+#' @param ... Additional arguments passed to \code{\link{parse_deep_scan}}.
 #' @return A deep_mutational_scan S3 object, containing the following fields:
 #' \itemize{
 #'   \item data: wide format \code{\link[tibble]{tibble}} containing ER scores and other positional data
@@ -194,10 +195,10 @@ validate_deep_mutational_scan <- function(x) { # nolint
 #'                             description = "Scan of 9 hsp90 positions")
 #' @export
 deep_mutational_scan <- function(df, name, scheme=NULL, trans=NULL, na_value="impute",
-                                 annotate=FALSE, study=NA, gene=NA, source=NA, description=NA) {
+                                 annotate=FALSE, study=NA, gene=NA, source=NA, description=NA, ...) {
   # Parse scheme
   if (!is.null(scheme)) {
-    df <- parse_deep_scan(df, scheme)
+    df <- parse_deep_scan(df, scheme = scheme, ...)
   } else {
     df <- tibble::as_tibble(df)
     if (!all(c("position", "wt", "mut", "score") %in% names(df))) {

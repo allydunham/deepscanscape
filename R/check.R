@@ -70,7 +70,7 @@ check_data <- function(x, warn = TRUE) {
   out <- check_msgs[check_msgs$id %in% ids, ]
 
   if (warn) {
-    sapply(stringr::str_wrap(stringr::str_c(out$cause, ":", out$explanation), width = 100), warning)
+    warning(stringr::str_c(out$cause, sep = "\n"), call. = FALSE)
   }
 
   return(out)
