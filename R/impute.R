@@ -6,7 +6,8 @@
 #' combined landscape dataset or using custom values.
 #'
 #' If na_value == "impute" missense NA scores are imputed to be the median value of that substitution (e.g. A -> C) from
-#' the \code{\link{deep_landscape}} dataset. If na_value is a matrix it should have rows and column names corresponding
+#' the \code{\link{deep_landscape}} dataset. If na_value == "average" missense NA scores are set to the average missense
+#' score for that position. If na_value is a matrix it should have rows and column names corresponding
 #' to single letter amino acid codes and have cell i,j correspond to the imputed score for substitutions from i to j.
 #' Any other value of na_value is interpreted as the score to impute all NA values to.
 #'
@@ -15,8 +16,8 @@
 #' for synonymous substitution imputed as 0 and '2' for non-synonymous substitutions that have undergone imputation.
 #'
 #' @param x \code{\link{deep_mutational_scan}} to impute data from
-#' @param na_value Value to set missense NA values to. Can be "impute", a single value or a matrix of substitution
-#' scores (see details).
+#' @param na_value Value to set missense NA values to. Can be "impute", "average", a single value or a matrix of
+#' substitution scores (see details).
 #' @return An imputed \code{\link{deep_mutational_scan}}
 #' @examples
 #' # Load an unimputed DMS object
@@ -58,6 +59,13 @@ impute <- function(x, na_value="impute") {
 
   if (na_value == "impute") {
     df$score[is.na(df$score)] <- median_scores[as.matrix(df[is.na(df$score), c("wt", "mut")])]
+
+  } else if (na_value == "average") {
+    df <- dplyr::group_by(df, .data$position)
+    df <- dplyr::mutate(df, mean = mean(.data$score[.data$wt != .data$mut], na.rm = TRUE))
+    df <- dplyr::ungroup(df)
+    df$score[is.na(df$score)] <- df$mean[is.na(df$score)]
+    df <- dplyr::select(df, -.data$mean)
 
   } else if (is.matrix(na_value)) {
     if (!(rownames(na_value) == amino_acids & colnames(na_value) == na_value)) {

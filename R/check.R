@@ -69,7 +69,7 @@ check_data <- function(x, warn = TRUE) {
 
   out <- check_msgs[check_msgs$id %in% ids, ]
 
-  if (warn) {
+  if (warn & nrow(out) > 0) {
     warning(stringr::str_c(out$cause, sep = "\n"), call. = FALSE)
   }
 

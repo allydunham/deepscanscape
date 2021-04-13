@@ -54,6 +54,10 @@ parse_deep_scan <- function(x, scheme = c("mavedb", "long", "wide", "sequence"),
   }
 
   x$position <- x$position + position_offset
+
+  # Check amino acids - filter any that are unrecognised
+  x <- dplyr::filter(x, .data$wt %in% amino_acids, .data$mut %in% amino_acids)
+
   return(x)
 }
 

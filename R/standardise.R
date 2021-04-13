@@ -37,7 +37,7 @@ normalise_er <- function(x, q=0.1) {
 transform_er <- function(x, trans = c("log2", "vamp-seq", "invert")) {
   if (is.character(trans)) {
     trans <- match.arg(trans)
-    methods <- c("vamp-Seq" = transform_vamp, "log2" = log2, "invert" = function(x) -x)
+    methods <- c(`vamp-seq` = transform_vamp, `log2` = log2, `invert` = function(x) -x)
     f <- methods[[trans]]
   } else if (is.function(trans)) {
     f <- trans

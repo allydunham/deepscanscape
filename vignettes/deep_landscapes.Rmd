@@ -10,7 +10,8 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.align = "center"
 )
 ```
 
@@ -27,7 +28,7 @@ dms <- list()
 We will use the following studies as examples:
 
 * p53 ([Kotler et al. 2018](https://doi.org/10.1016/j.molcel.2018.06.012))
-* GFP ([Sarkisyan et al. 2016](https://doi.org/10.1038/nature17995))
+* UBE2i ([Weile et al. 2017](https://doi.org/10.15252/msb.20177908))
 * Influenza Nucleoprotein ([Doud et al. 2015](https://doi.org/10.1093/molbev/msv167))
 * hYAP65 WW domain ([Araya et al. 2012](https://doi.org/10.1073/pnas.1209751109))
 
@@ -49,20 +50,60 @@ In this case there are duplicate scores and multiply mutated sequences so we use
 The scores are already in log<sub>2</sub> form, so do not need further transforming.
 
 ```{r p53_dms}
-dms$p53 <- deep_mutational_scan(df_p53, name = "Kotler p53", gene = 'p53', study = 'Kotler et al. (2018)',
+dms$p53 <- deep_mutational_scan(df_p53, name = "p53", gene = 'p53', study = 'Kotler et al. (2018)',
                                 source = "https://www.mavedb.org/scoreset/urn:mavedb:00000059-a-1/",
                                 scheme = "mavedb", trans = NULL, na_value = 'impute', duplicates = "mean",
                                 average_multi = TRUE)
 dms$p53
 ```
 
-## GFP
+## UBE2i 
+
+This is another dataset from MaveDB, so can be processed in the same way.
+However, in this case the data was processed using the VAMP-Seq method ([Matreyek et al. 2018](https://doi.org/10.1038/s41588-018-0122-z)) and scores are presented on a different scale, with neutral variants $\approx 1$ and null variants $\approx 0$.
+DeepScanScape requires scores to be transformed onto the $log_2ER$ scale, including built in transformations for common score formats.
+More unusual scores require a custom function to transform them.
+
+```{r ube2i}
+df_ube2i <- read.csv(system.file("extdata", "urn_mavedb_00000001-a-1_scores.csv", package = "deepscanscape"), skip = 4)
+dms$ube2i <- deep_mutational_scan(df_ube2i, name = "UBE2i", gene = 'UBE2i', study = 'Weile et al. (2017)',
+                                  scheme = "mavedb", trans = "vamp-seq", na_value = 'impute', duplicates = "mean",
+                                  average_multi = TRUE)
+dms$ube2i
+```
 
 ## Nucleoprotein
 
+The data from this study is stored in a different format, with each row representing a position in the protein and columns for the percentage observed in the post selection library for each amino acid.
+
+```{r np}
+df_np <- read.delim(file = system.file("extdata", "doud_2015_np.csv", package = "deepscanscape"), sep = " ")
+df_np
+```
+
+This format is similar to the wide format supported by DeepScanScape, except scores are not yet normalised against the WT value.
+We will therefore normalise each column by the WT score for that row before using the wide parsing mode and $log_2$ transform to create the standard object.
+
+```{r np_dms}
+# Set colnames
+amino_acids <- c("A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y")
+names(df_np) <- c("position", "wt", "entropy", amino_acids)
+
+# Normalise Scores
+scores <- as.matrix(df_np[, amino_acids])
+wt_score <- scores[matrix(c(1:nrow(scores), match(df_np$wt, amino_acids)), ncol = 2)]
+scores <- scores / wt_score
+df_np <- cbind(df_np[c("position", "wt")], scores)
+
+# Create deep_mutational_scan
+dms$np <- deep_mutational_scan(df_np, name = "NP", gene = "NP", study = "Doud et al. 2015",
+                               scheme = "wide", trans = "log2", na_value = "impute")
+dms$np
+```
+
 ## hYAP65 WW Domain
 
-This study associates each variant effect score (the "fitness" column) with a sequence for the entire WW domain.
+This study associates each variant effect score (the "fitness" column) with a sequence for the entire WW domain - another input format supported by the package.
 It also contains columns giving the mutations, position and mutant amino acid as comma separated strings as well as additional data from which the fitness was calculated.
 
 ```{r hyap65}
@@ -74,7 +115,7 @@ We will use the "sequence" parsing mode, in addition to demonstrating the positi
 This requires parsing the input data before passing it to the deep_mutational_scan.
 Since the data contains multiple mutations per score scores will be averaged to generate scores for each single mutant where a single mutant is not available.
 These averages are not representative when there is an early stop codon, so we will filter all rows containing these before parsing.
-The scores already expressed as log<sub>2</sub> enrichment ratios so don't need further transforming.
+The scores are expressed as enrichment ratios so only require a $log_2$ transformation.
 
 ```{r hyap65_dms}
 df_hyap65 <- df_hyap65[grepl("\\*", df_hyap65$sequence), c("sequence", "fitness")]
@@ -82,7 +123,7 @@ names(df_hyap65) <- c("sequence", "score")
 
 parsed_df_hyap65 <- parse_deep_scan(df_hyap65, scheme = "sequence", average_multi = TRUE, position_offset = 169)
 dms$hyap65 <- deep_mutational_scan(parsed_df_hyap65, name = "hYAP65", gene = "hYAP65", study = "Araya et al. 2012", 
-                                   scheme = NULL, trans = NULL)
+                                   scheme = NULL, trans = "log2")
 dms$hyap65
 ```
 
@@ -102,19 +143,63 @@ In this case the new data conforms well to our expectations, suggesting we can m
 ```{r er_distribution}
 plot_er_distribution(dms$p53)
 ```
-># TODO Example where distribution is not so good
+
+In other cases the score distributions can be more unusual and suggest something unexpected about the study.
+For example, NP has a much larger proportion of deleterious variants than usual, potentially suggesting it is a particularly conserved protein.
+Similarly the hYAP65 domain doesn't have a clear deleterious peak, suggesting there are not many particularly problematic variants in this region.
+Larger deviations, for example a large number of positive scores or a big deviation from the expected peaks can suggest an unusual feature of the experiment or problems with the processing or transformation applied.
+
+```{r er_distribution_unusual}
+ggpubr::ggarrange(plot_er_distribution(dms$np) + ggplot2::labs(title = "NP"),
+                  plot_er_distribution(dms$hyap65) + ggplot2::labs(title = "hYAP65 WW Domain"),
+                  nrow = 1, common.legend = TRUE)
+```
+
+The package provides some explicit checks to help identify unusual properties.
+We can demonstrate this by creating a badly transformed version of our UBE2i scan:
+
+```{r bad_scan}
+bad_scan <- deep_mutational_scan(df_ube2i, name = "UBE2i", gene = 'UBE2i', study = 'Weile et al. (2017)',
+                                  scheme = "mavedb", trans = NULL, na_value = 'impute', duplicates = "mean",
+                                  average_multi = TRUE, annotate = TRUE)
+plot_er_distribution(bad_scan)
+```
+The check_data function creates a table of potentially unusual properties detected in the dataset.
+In this case we identify a generally positive score distribution, which can suggest an incorrect transformation (as in this case) or unusual score properties.
+
+```{r check}
+check_data(bad_scan, warn = FALSE)
+```
 
 # Analysis using the Deep Landscape
+
+># TODO - analysis section
 
 # Combining Deep Scans
 
 In some cases you may want to analyse multiple scans together, for example if you have several scans of one gene under different conditions or several similar genes in the same condition.
 The deep_mutational_scan object supports combined data of this sort, allowing most of the same analyses.
-The first stage is combining data from multiple scans into one object:
+The first stage is combining data from multiple scans into one object, which can be visualised in a similar manner:
 
 ```{r binding}
-combined_scans <- bind_scans(dms)
+combined_scans <- bind_scans(dms, annotate_missing = TRUE)
+ggpubr::ggarrange(plot_er_heatmap(combined_scans), plot_er_distribution(combined_scans), ncol = 1)
+```
+
+Similar deep landscape analyses can also be performed, for example projecting points onto the deep landscape:
+
+```{r combined_deep_landscape}
+plot_landscape(combined_scans, feature = "cluster")
 ```
 
 # Re-clustering the Deep Landscape
 
+Finally, the package provides a function to apply the amino acid subtype clustering procedure to new data, including in combination with the original dataset.
+This is only likely to be useful when a reasonably large number of additional studies are added and the downstream analysis is more technical so it is only recommended for more advanced users.
+Some basic parameters are provided to tweak the clustering procedure but larger changes will require modifying the code and so are also more complicated.
+A basic example of re-clustering is shown below, using our example p53 scan that was not already in the dataset:
+
+```{r recluster}
+reclust <- recluster(dms$p53, add_combined = TRUE)
+plot_recluster(reclust)
+```

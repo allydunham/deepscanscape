@@ -9,8 +9,8 @@ impute(x, na_value = "impute")
 \arguments{
 \item{x}{\code{\link{deep_mutational_scan}} to impute data from}
 
-\item{na_value}{Value to set missense NA values to. Can be "impute", a single value or a matrix of substitution
-scores (see details).}
+\item{na_value}{Value to set missense NA values to. Can be "impute", "average", a single value or a matrix of
+substitution scores (see details).}
 }
 \value{
 An imputed \code{\link{deep_mutational_scan}}
@@ -21,7 +21,8 @@ combined landscape dataset or using custom values.
 }
 \details{
 If na_value == "impute" missense NA scores are imputed to be the median value of that substitution (e.g. A -> C) from
-the \code{\link{deep_landscape}} dataset. If na_value is a matrix it should have rows and column names corresponding
+the \code{\link{deep_landscape}} dataset. If na_value == "average" missense NA scores are set to the average missense
+score for that position. If na_value is a matrix it should have rows and column names corresponding
 to single letter amino acid codes and have cell i,j correspond to the imputed score for substitutions from i to j.
 Any other value of na_value is interpreted as the score to impute all NA values to.
 
