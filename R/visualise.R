@@ -284,6 +284,9 @@ plot_landscape_feature <- function(x, feature, highlight) {
     func <- function(x) {
       x <- table(x)
       x <- x[names(x) != "7"] # Exclude outliers
+      if (length(x) == 0) {
+        return(NA)
+      }
       return(group_levels[as.integer(names(x)[which.max(x)])])
     }
     feature <- "group_num"
