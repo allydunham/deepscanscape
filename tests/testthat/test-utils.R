@@ -45,3 +45,13 @@ test_that("cosine_distance_matrix is correct", {
   expect_equal(signif(cosine_distance_matrix(x_na), 3), x_res_na)
   expect_equal(signif(cosine_distance_matrix(x, y), 3), xy_res)
 })
+
+test_that("permissive_positions works", {
+  pos <- matrix(
+    c(-0.8, 0.4, 0.9, -1.2, 1.4, 0.9, 0.1, 2.0, 1.1, 1.4, 1.1, 0.3, -0.3, 0.3, -0.6, 1.4, 0.1, -0.9, -0.1, 0.8,
+      -0.3, 0.2, 0.1, -0.2, 0.1, 0.2, 0.1, 0.3, 0.2, 0.2, 0.1, 0.3, -0.3, 0.3, -0.2, 0.1, 0.1, -0.1, -0.1, 0.2),
+    ncol = 20, byrow = TRUE
+  )
+  expect <- c(FALSE, TRUE)
+  expect_equal(permissive_positions(pos), expect)
+})
