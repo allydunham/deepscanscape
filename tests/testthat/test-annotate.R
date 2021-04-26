@@ -32,3 +32,17 @@ test_that("calculate_cluster_distances works", {
   colnames(expectation) <- paste0("dist", 1:8)
   expect_equal(signif(calculate_cluster_distances(aa, pca_mat), 3), expectation)
 })
+
+test_that("ambiguous_assignment works", {
+  m <- matrix(c(0.1, 0.2, 0.3, 0.2, 0.2, NA, NA, NA,
+                0.1, 0.11, 0.3, 0.2, NA, NA, NA, NA),
+              ncol = 8, byrow = TRUE)
+  expect_equal(ambiguous_assignment(m), c(FALSE, TRUE))
+})
+
+test_that("outlier_positions works", {
+  m <- matrix(c(0.1, 0.2, 0.3, 0.2, 0.2, NA, NA, NA,
+                0.5, 0.6, 0.46, 0.5, NA, NA, NA, NA),
+              ncol = 8, byrow = TRUE)
+  expect_equal(outlier_positions(m), c(FALSE, TRUE))
+})
