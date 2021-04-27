@@ -46,3 +46,17 @@ test_that("outlier_positions works", {
               ncol = 8, byrow = TRUE)
   expect_equal(outlier_positions(m), c(FALSE, TRUE))
 })
+
+test_that("cluster_notes works", {
+  expect_equal(cluster_notes(permissive =    c(TRUE, FALSE, FALSE, TRUE, TRUE, FALSE, TRUE, FALSE),
+                             ambiguous =     c(FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, FALSE),
+                             high_distance = c(FALSE, FALSE, TRUE, FALSE, TRUE, TRUE, TRUE, FALSE)),
+               c("No mutation with |ER| > 0.4",
+                 "Top cluster is only nearer by a small margin, making assignment ambiguous",
+                 "Not close to any cluster center",
+                 "No mutation with |ER| > 0.4",
+                 "No mutation with |ER| > 0.4",
+                 "Both distant and only nearer one by a small margin",
+                 "No mutation with |ER| > 0.4",
+                 NA))
+})
