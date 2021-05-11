@@ -11,7 +11,10 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.align = "center"
+  fig.align = "center",
+  out.width = "100%",
+  out.height = "50%",
+  dpi = 300
 )
 ```
 
@@ -77,7 +80,7 @@ The data from this study is stored in a custom format, with each row representin
 
 ```{r np}
 df_np <- read.delim(file = system.file("extdata", "doud_2015_np.csv", package = "deepscanscape"), sep = " ")
-df_np
+tibble::as_tibble(df_np)
 ```
 
 This format is similar to the "wide" format supported by DeepScanScape, except scores are not yet normalised against the WT value.
@@ -132,14 +135,14 @@ Once the data has been loaded and parsed we can visualise them and identify pote
 We will primarily focus on the scan of p53, since that contains data not already incorporated in the landscape.
 First, we can get an overview of the protein by plotting a heatmap showing all normalised variant effect scores:
 
-```{r heatmap}
+```{r heatmap, fig.width=10, fig.height=8}
 plot_er_heatmap(dms$p53)
 ```
 We can also examine the distribution of variant effect scores to check that it matches expectations, including through comparison to the overall distribution in the deep landscape.
 It is expected that scores have a bimodal distribution with a peak around 0 comprising neutral variants and a smaller negative peak of deleterious variants.
 In this case the new data conforms well to our expectations, suggesting we can meaningfully analyse it using the deep landscape since it contains scores of the same form.
 
-```{r er_distribution}
+```{r er_distribution, fig.width=10, fig.height=8}
 plot_er_distribution(dms$p53)
 ```
 
@@ -148,7 +151,7 @@ For example, NP has a much larger proportion of deleterious variants than usual,
 Similarly the hYAP65 domain doesn't have a clear deleterious peak, suggesting there are not many particularly problematic variants in this region.
 Larger deviations, for example a large number of positive scores or a big deviation from the expected peaks can suggest an unusual feature of the experiment or problems with the processing or transformation applied.
 
-```{r er_distribution_unusual}
+```{r er_distribution_unusual, fig.width=10, fig.height=8}
 ggpubr::ggarrange(plot_er_distribution(dms$np) + ggplot2::labs(title = "NP"),
                   plot_er_distribution(dms$hyap65) + ggplot2::labs(title = "hYAP65 WW Domain"),
                   nrow = 1, common.legend = TRUE)
@@ -157,7 +160,7 @@ ggpubr::ggarrange(plot_er_distribution(dms$np) + ggplot2::labs(title = "NP"),
 The package provides some explicit checks to help identify unusual properties.
 We can demonstrate this by creating a badly transformed version of our UBE2i scan:
 
-```{r bad_scan}
+```{r bad_scan, fig.width=10, fig.height=8}
 bad_scan <- deep_mutational_scan(df_ube2i, name = "UBE2i", gene = 'UBE2i', study = 'Weile et al. (2017)',
                                   scheme = "mavedb", trans = NULL, na_value = 'impute', duplicates = "mean",
                                   average_multi = TRUE, annotate = TRUE)
@@ -183,7 +186,7 @@ head(describe_clusters(annotated_dms), n = 10)
 We can also visualise the new positions on the annotated deep landscape, for example against the distribution of SIFT4G scores or FoldX $\Delta\Delta G$ predictions.
 This plot also allows us to highlight specific positions of interest:
 
-```{r deep_landscape}
+```{r deep_landscape, fig.width=10, fig.height=8}
 ggpubr::ggarrange(plot_landscape(annotated_dms, feature = "mean_sift"),
                   plot_landscape(annotated_dms, feature = "total_energy", highlight = c(5, 10, 20)),
                   nrow = 1)
@@ -191,7 +194,7 @@ ggpubr::ggarrange(plot_landscape(annotated_dms, feature = "mean_sift"),
 
 These plots can be made for any numerical features of the deep landscape dataset and two special modes, projecting landscape position density and the most prevalent subtype group at that position:
 
-```{r deep_landscape_modes}
+```{r deep_landscape_modes, fig.width=10, fig.height=8}
 ggpubr::ggarrange(plot_landscape(annotated_dms, feature = "count"),
                   plot_landscape(annotated_dms, feature = "cluster"),
                   nrow = 1)
@@ -199,7 +202,7 @@ ggpubr::ggarrange(plot_landscape(annotated_dms, feature = "count"),
 
 Finally we can visualise the frequencies of each subtype in the new dataset, with an option to explicitly compare them to the main landscape:
 
-```{r subtype_freqs}
+```{r subtype_freqs, fig.width=10, fig.height=8}
 plot_cluster_frequencies(annotated_dms)
 ```
 
@@ -209,14 +212,14 @@ In some cases you may want to analyse multiple scans together, for example if yo
 The deep_mutational_scan object supports combined data of this sort, allowing the same analyses.
 The first stage is combining data from multiple scans into one object, which can be visualised in a similar manner:
 
-```{r binding}
+```{r binding, fig.width=8, fig.height=15, out.height="80%"}
 combined_scans <- bind_scans(dms, annotate_missing = TRUE)
 ggpubr::ggarrange(plot_er_heatmap(combined_scans), plot_er_distribution(combined_scans), ncol = 1)
 ```
 
 Similar deep landscape analyses can also be performed, for example projecting points onto the deep landscape:
 
-```{r combined_deep_landscape}
+```{r combined_deep_landscape, fig.width=10, fig.height=8}
 plot_landscape(combined_scans, feature = "cluster")
 ```
 
@@ -227,7 +230,7 @@ This is only likely to be useful when a reasonably large number of additional st
 Some basic parameters are provided to tweak the clustering procedure but larger changes will require modifying the code and so are also more complicated.
 A basic example of re-clustering is shown below, using our example p53 scan that was not already in the dataset:
 
-```{r recluster}
+```{r recluster, fig.width=10, fig.height=8}
 reclust <- recluster(dms$p53, add_combined = TRUE)
 plot_recluster(reclust)
 ```

@@ -43,6 +43,19 @@ p_spike <- ggplot(s_pred, aes(x = measure, y = pred, colour = method)) +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
   ggpubr::theme_pubclean()
 
+p_spike_r_squared <- filter(lms_spike, !method == "hex") %>%
+  group_by(name) %>%
+  filter(any(adj.r.squared > 0.15)) %>%
+  ggplot(aes(x = name, y = adj.r.squared, fill = method)) +
+  geom_col(position = "dodge", width = 0.5) +
+  coord_flip() +
+  scale_fill_brewer(name = "Method", type = "qual", palette = "Dark2") +
+  theme_deepscanscape() +
+  theme(panel.grid.major.x = element_line(colour = "grey", linetype = "dotted"),
+        panel.grid.major.y = element_blank(),
+        text = element_text(size = 12)) +
+  labs(y = "Adjusted R Squared", x = "Feature")
+
 ### Whole dataset predictions
 dl <- mutate(deep_landscape,
              hex = hexbin(deepscanscape::deep_landscape$umap1, deepscanscape::deep_landscape$umap2, xbins = 20, IDs = TRUE)@cID)
