@@ -1,8 +1,8 @@
 ---
-title: "Analysis Using Deep Landscapes"
+title: "DeepScanScape: Deep Mutational Landscape Analysis"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Analysis Using Deep Landscapes}
+  %\VignetteIndexEntry{DeepScanScape: Deep Mutational Landscape Analysis}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

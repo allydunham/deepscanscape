@@ -6,3 +6,6 @@
 ^\.lintr$
 ^test_data\.R$
 ^analysis$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
