@@ -1,0 +1,10 @@
+pandoc: '2.13'
+pkgdown: 1.6.1
+pkgdown_sha: ~
+articles:
+  deepscanscape: deepscanscape.html
+last_built: 2021-05-13T17:23Z
+urls:
+  reference: https://allydunham.github.io/deepscanscape//reference
+  article: https://allydunham.github.io/deepscanscape//articles
+
