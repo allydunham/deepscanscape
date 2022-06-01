@@ -3,7 +3,7 @@
 [![R-CMD-check](https://github.com/allydunham/deepscanscape/workflows/R-CMD-check/badge.svg)](https://github.com/allydunham/deepscanscape/actions)
 <!-- badges: end -->
 
-Process and annotate deep mutational scanning data using a deep mutational landscape derived from 28 previous studies [(Dunham & Beltrao 2020)](https://www.biorxiv.org/content/10.1101/2020.05.26.116756v1), highlighting unusual properties, visualising data and assigning positions to amino acid subtypes that predict their likely features.
+Process and annotate deep mutational scanning data using a deep mutational landscape derived from 28 previous studies [(Dunham & Beltrao 2021)](https://doi.org/10.15252/msb.202110305), highlighting unusual properties, visualising data and assigning positions to amino acid subtypes that predict their likely features.
 
 ## Installation
 

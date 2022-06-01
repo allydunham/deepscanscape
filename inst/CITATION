@@ -2,14 +2,14 @@ citHeader("To cite deepscanscape in publications use:")
 
 citEntry(entry = "Article",
   title        = "Exploring amino acid functions in a deep mutational landscape",
-  author       = personList(as.person("Alistair Dunham"),
+  author       = personList(as.person("Alistair S. Dunham"),
                             as.person("Pedro Beltrao")),
-  journal      = "bioRxiv",
-  year         = "2020",
-  url          = "https://www.biorxiv.org/content/10.1101/2020.05.26.116756v1",
+  journal      = "Molecular Systems Biology",
+  year         = "2021",
+  url          = "https://www.embopress.org/doi/full/10.15252/msb.202110305",
 
   textVersion  =
-  paste("Alistair Dunham & Pedro Beltrao (2020).",
+  paste("Alistair S. Dunham & Pedro Beltrao (2021).",
         "Exploring amino acid functions in a deep mutational landscape.",
-        "bioRxiv 2020.05.26.116756; doi: https://doi.org/10.1101/2020.05.26.116756")
+        "MSB 2021.07.22; doi: https://doi.org/10.15252/msb.202110305")
 )
