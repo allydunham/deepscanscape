@@ -24,5 +24,5 @@ Reading the publication describing the theory behind the deep landscape may also
 
 ## Citation
 
-Alistair Dunham & Pedro Beltrao (2020). Exploring amino acid functions in a deep mutational landscape. bioRxiv [2020.05.26.116756](https://www.biorxiv.org/content/10.1101/2020.05.26.116756v1); doi:
-<https://doi.org/10.1101/2020.05.26.116756>
+Alistair S. Dunham & Pedro Beltrao (2021). Exploring amino acid functions in a deep mutational landscape. MSB doi:
+<https://doi.org/10.15252/msb.202110305>

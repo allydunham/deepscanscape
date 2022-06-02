@@ -231,6 +231,8 @@ plot_landscape_plain <- function(x, highlight) {
                                 mapping = ggplot2::aes(label = .data$position), show.legend = FALSE,
                                 nudge_y = 0.25)
   }
+
+  return(p)
 }
 
 #' Plot new data on top of deep mutational landscape features
