@@ -40,7 +40,7 @@ included here as it is specified per AA using deep_split.}
 A \code{\link[tibble]{tibble}} containing the clustered data.
 }
 \description{
-Apply the clustering method used in Dunham & Beltrao (2020) to a new deep mutational landscape dataset based on
+Apply the clustering method used in Dunham & Beltrao (2021) to a new deep mutational landscape dataset based on
 a standardised \code{\link{deep_mutational_scan}} dataset.
 }
 \details{

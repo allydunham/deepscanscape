@@ -25,10 +25,10 @@ A \code{\link[tibble]{tibble}}, \code{\link[base]{data.frame}} or \code{\link[ba
 Conveniently convert \code{\link{deep_mutational_scan}} objects to a \code{\link[tibble]{tibble}} or
 \code{\link[base]{data.frame}} or \code{\link[base]{list}}, with the option to add gene and study columns.
 }
-\section{Methods (by class)}{
+\section{Functions}{
 \itemize{
-\item \code{deep_mutational_scan}: S3 as.data.frame method
+\item \code{as.data.frame(deep_mutational_scan)}: S3 as.data.frame method
 
-\item \code{deep_mutational_scan}: S3 as.list method
+\item \code{as.list(deep_mutational_scan)}: S3 as.list method
+
 }}
-

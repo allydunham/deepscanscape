@@ -3,7 +3,7 @@
 # TODO examples, test
 #' Recluster DMS data with a combined dataset
 #'
-#' Apply the clustering method used in Dunham & Beltrao (2020) to a new deep mutational landscape dataset based on
+#' Apply the clustering method used in Dunham & Beltrao (2021) to a new deep mutational landscape dataset based on
 #' a standardised \code{\link{deep_mutational_scan}} dataset.
 #'
 #' This will be most valuable if \code{x} is a large \code{multi_study} dataset including quite a few new scans,

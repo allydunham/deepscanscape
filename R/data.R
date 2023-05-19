@@ -6,7 +6,7 @@
 #'
 #' @name deep_landscape
 #' @docType data
-#' @source \href{https://www.biorxiv.org/content/10.1101/2020.05.26.116756v1}{Dunham and Beltrao (2020)}
+#' @source \href{https://www.embopress.org/doi/full/10.15252/msb.202110305}{Dunham and Beltrao (2021)}
 #' @keywords data
 #' @format A data frame with 6357 rows
 #' \describe{
@@ -94,7 +94,7 @@
 #'
 #' @name subtypes
 #' @docType data
-#' @source \href{https://www.biorxiv.org/content/10.1101/2020.05.26.116756v1}{Dunham and Beltrao (2020)}
+#' @source \href{https://www.embopress.org/doi/full/10.15252/msb.202110305}{Dunham and Beltrao (2021)}
 #' @keywords data
 #' @format A data frame with 119 rows and 5 columns
 #' \describe{

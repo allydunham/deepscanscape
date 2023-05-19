@@ -30,7 +30,7 @@ Suggests:
     testthat (>= 3.0.0),
     hexbin,
     crayon
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Depends: 

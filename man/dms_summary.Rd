@@ -35,8 +35,8 @@ Summarise Deep Mutational Scans
 }
 \section{Functions}{
 \itemize{
-\item \code{format.deep_mutational_scan_summary}: S3 format method
+\item \code{format(deep_mutational_scan_summary)}: S3 format method
 
-\item \code{print.deep_mutational_scan_summary}: S3 print method
+\item \code{print(deep_mutational_scan_summary)}: S3 print method
+
 }}
-

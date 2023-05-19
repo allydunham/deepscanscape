@@ -50,4 +50,3 @@ NULL
 # TODO - Add vignettes
 # TODO - Add to documentation - values, description, details, authour etc.
 # TODO - consistency of cluster/subtype
-# TODO - update citations over whole package

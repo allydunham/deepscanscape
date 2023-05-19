@@ -24,6 +24,6 @@ each substitution at each position.
 }
 \section{Functions}{
 \itemize{
-\item \code{plot.deep_mutational_scan}: S3 plot method
-}}
+\item \code{plot(deep_mutational_scan)}: S3 plot method
 
+}}

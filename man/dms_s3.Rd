@@ -33,12 +33,12 @@ short-cut to the main data frame.
 }
 \section{Functions}{
 \itemize{
-\item \code{format.deep_mutational_scan}: S3 format method
+\item \code{format(deep_mutational_scan)}: S3 format method
 
-\item \code{print.deep_mutational_scan}: S3 print method
+\item \code{print(deep_mutational_scan)}: S3 print method
 
-\item \code{str.deep_mutational_scan}: S3 str method
+\item \code{str(deep_mutational_scan)}: S3 str method
 
-\item \code{dim.deep_mutational_scan}: S3 dim method
+\item \code{dim(deep_mutational_scan)}: S3 dim method
+
 }}
-

@@ -26,11 +26,11 @@ provides a shortcut to access the main data table, which can otherwise be access
 }
 \section{Functions}{
 \itemize{
-\item \code{[.deep_mutational_scan}: Extract
+\item \code{[}: Extract
 
-\item \code{[<-.deep_mutational_scan}: Assign
+\item \code{`[`(deep_mutational_scan) <- value}: Assign
+
 }}
-
 \examples{
 dms <- deepscanscape::deep_scans$p53
 

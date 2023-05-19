@@ -1,6 +1,6 @@
 # Generate subtype descriptions object
 # This is based on the supplementary data from
-# Dunham & Beltrao (2020) - https://www.biorxiv.org/content/10.1101/2020.05.26.116756v1
+# Dunham & Beltrao (2021) - https://www.embopress.org/doi/full/10.15252/msb.202110305
 library(readr)
 library(dplyr)
 library(stringr)
