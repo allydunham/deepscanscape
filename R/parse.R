@@ -20,20 +20,21 @@
 #' }
 #'
 #' @param x A tibble or an object that can be converted to one
-#' @param scheme Original data scheme (see description). Accepts any unambiguous
-#' substring.
+#' @param scheme Original data scheme (see description). Accepts any unambiguous substring.
 #' @param position_offset Offset all position
 #' @param duplicates How to handle duplicate scores for a single mutation
+#' @param synonymous Character vector of strings to consider as synonymous variants. Amino acid letters are silently filtered
 #' @param ... Arguments passed to the chosen parsing function, including specifying parsing for multiply mutated
 #' sequences (see individual methods for details).
 #' @return A long format \code{\link[tibble]{tibble}} with columns for 'position', 'wt', 'mut' and 'score'.
 #' @export
 parse_deep_scan <- function(x, scheme = c("mavedb", "long", "wide", "sequence"), position_offset = 0,
-                            duplicates = c("warn", "mean", "median", "error"), ...) {
+                            duplicates = c("warn", "mean", "median", "error"), synonymous = c("=", "sym"), ...) {
   scheme <- match.arg(scheme)
   methods <- c("mavedb" = parse_mavedb, "long" = identity,
                "wide" = parse_wide, "sequence" = parse_sequence)
-
+  synonymous <- synonymous[!synonymous %in% amino_acids]
+  
   x <- tibble::as_tibble(x)
   f <- methods[[scheme]]
   x <- f(x, ...)
@@ -55,6 +56,9 @@ parse_deep_scan <- function(x, scheme = c("mavedb", "long", "wide", "sequence"),
 
   x$position <- x$position + position_offset
 
+  # Convert synonymous variants to the corresponding wt
+  x$mut[x$mut %in% synonymous] <- x$wt[x$mut %in% synonymous]
+  
   # Check amino acids - filter any that are unrecognised
   x <- dplyr::filter(x, .data$wt %in% amino_acids, .data$mut %in% amino_acids)
 

@@ -9,18 +9,20 @@ parse_deep_scan(
   scheme = c("mavedb", "long", "wide", "sequence"),
   position_offset = 0,
   duplicates = c("warn", "mean", "median", "error"),
+  synonymous = c("=", "sym"),
   ...
 )
 }
 \arguments{
 \item{x}{A tibble or an object that can be converted to one}
 
-\item{scheme}{Original data scheme (see description). Accepts any unambiguous
-substring.}
+\item{scheme}{Original data scheme (see description). Accepts any unambiguous substring.}
 
 \item{position_offset}{Offset all position}
 
 \item{duplicates}{How to handle duplicate scores for a single mutation}
+
+\item{synonymous}{Character vector of strings to consider as synonymous variants}
 
 \item{...}{Arguments passed to the chosen parsing function, including specifying parsing for multiply mutated
 sequences (see individual methods for details).}
