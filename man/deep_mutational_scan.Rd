@@ -60,6 +60,7 @@ The \code{data} tibble contains the following fields (those marked * are not alw
   \item position: Position in the protein.
   \item wt: Wild type amino acid.
   \item A-Y: Fitness for each substitution.
+  \item stop: Fitness for early stop substitutions
   \item impute_A-impute_Y: Whether the fitness score is imputed (see \code{\link{impute}}).
   \item PC1-PC20: Deep landscape principal component coordinates.
   \item umap1-umap2: Deep landscape UMAP coordinates.

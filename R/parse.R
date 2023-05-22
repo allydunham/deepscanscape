@@ -24,16 +24,19 @@
 #' @param position_offset Offset all position
 #' @param duplicates How to handle duplicate scores for a single mutation
 #' @param synonymous Character vector of strings to consider as synonymous variants. Amino acid letters are silently filtered
+#' @param stop_codons Character vector of strings to consider as stop codons. Amino acid letters are silently filtered
 #' @param ... Arguments passed to the chosen parsing function, including specifying parsing for multiply mutated
 #' sequences (see individual methods for details).
 #' @return A long format \code{\link[tibble]{tibble}} with columns for 'position', 'wt', 'mut' and 'score'.
 #' @export
 parse_deep_scan <- function(x, scheme = c("mavedb", "long", "wide", "sequence"), position_offset = 0,
-                            duplicates = c("warn", "mean", "median", "error"), synonymous = c("=", "sym"), ...) {
+                            duplicates = c("warn", "mean", "median", "error"), synonymous = c("=", "sym"),
+                            stop_codons = c("*", "Ter", "ter", "stop"), ...) {
   scheme <- match.arg(scheme)
   methods <- c("mavedb" = parse_mavedb, "long" = identity,
                "wide" = parse_wide, "sequence" = parse_sequence)
   synonymous <- synonymous[!synonymous %in% amino_acids]
+  stop_codons <- stop_codons[!stop_codons %in% amino_acids]
   
   x <- tibble::as_tibble(x)
   f <- methods[[scheme]]
@@ -59,8 +62,11 @@ parse_deep_scan <- function(x, scheme = c("mavedb", "long", "wide", "sequence"),
   # Convert synonymous variants to the corresponding wt
   x$mut[x$mut %in% synonymous] <- x$wt[x$mut %in% synonymous]
   
+  # Normalise stop codons to stop (avoiding * symbol column name)
+  x$mut[x$mut %in% stop_codons] <- "stop"
+  
   # Check amino acids - filter any that are unrecognised
-  x <- dplyr::filter(x, .data$wt %in% amino_acids, .data$mut %in% amino_acids)
+  x <- dplyr::filter(x, .data$wt %in% amino_acids, .data$mut %in% c(amino_acids, "stop"))
 
   return(x)
 }

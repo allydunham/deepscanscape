@@ -44,7 +44,7 @@ new_deep_mutational_scan <- function(df, meta) {
 #'   object is erroneous.
 validate_deep_mutational_scan <- function(x) { # nolint
   # Expected headers
-  data_headers <- c("name", "position", "wt", amino_acids)
+  data_headers <- c("name", "position", "wt", amino_acids, "stop")
   impute_headers <- paste0("impute_", amino_acids)
   annotated_headers <- c(paste0("PC", seq_len(20)), "umap1", "umap2", "cluster", "base_cluster", "permissive",
                          "ambiguous", "high_distance", paste0("dist", seq_len(8)), "cluster_notes")
@@ -168,6 +168,7 @@ validate_deep_mutational_scan <- function(x) { # nolint
 #'   \item position: Position in the protein.
 #'   \item wt: Wild type amino acid.
 #'   \item A-Y: Fitness for each substitution.
+#'   \item stop: Fitness for early stop substitutions
 #'   \item impute_A-impute_Y: Whether the fitness score is imputed (see \code{\link{impute}}).
 #'   \item PC1-PC20: Deep landscape principal component coordinates.
 #'   \item umap1-umap2: Deep landscape UMAP coordinates.
@@ -216,11 +217,13 @@ deep_mutational_scan <- function(df, name, scheme=NULL, trans=NULL, na_value="im
   df$score <- normalise_er(df$score)
 
   # Format tibble
-  df <- df[df$mut %in% amino_acids, ]
+  df <- df[df$mut %in% c(amino_acids, "stop"), ]
   df <- dplyr::arrange(df, .data$position, .data$mut)
   df <- tidyr::pivot_wider(df, names_from = "mut", values_from = "score")
+  exp_cols <- structure(rep(NA_real_, 21), names = c(amino_acids, "stop"))
+  df <- tibble::add_column(df, !!!exp_cols[setdiff(names(exp_cols), names(df))])
   df$name <- name
-  df <- dplyr::select(df, .data$name, .data$position, .data$wt, dplyr::all_of(amino_acids),
+  df <- dplyr::select(df, .data$name, .data$position, .data$wt, dplyr::all_of(amino_acids), .data$stop,
                       dplyr::everything())
 
   # Construct metadata
@@ -361,7 +364,7 @@ format.deep_mutational_scan <- function(x, ...) {
 
 
 
-  cols <- c("position", "wt", amino_acids)
+  cols <- c("position", "wt", amino_acids, "stop")
   if (x$annotated) {
     cols <- c("cluster", cols)
   }

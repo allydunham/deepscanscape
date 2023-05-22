@@ -45,7 +45,7 @@ impute <- function(x, na_value="impute") {
     stop("x has already been imputed")
   }
 
-  df <- tidyr::pivot_longer(x$data, dplyr::one_of(amino_acids), names_to = "mut", values_to = "score")
+  df <- tidyr::pivot_longer(x$data, c(dplyr::one_of(amino_acids), stop), names_to = "mut", values_to = "score")
 
   # Calculate impute mask
   mask <- df
@@ -55,20 +55,23 @@ impute <- function(x, na_value="impute") {
   mask <- tidyr::pivot_wider(mask[c("name", "position", "wt", "mut", "mask")], names_from = .data$mut,
                              values_from = .data$mask, names_prefix = "impute_")
 
+  # Impute synonymous
   df$score[df$wt == df$mut & is.na(df$score)] <- 0
-
+  
+  # Impute missense
+  na_muts <- is.na(df$score) & df$mut %in% amino_acids
   if (na_value == "impute") {
-    df$score[is.na(df$score)] <- median_scores[as.matrix(df[is.na(df$score), c("wt", "mut")])]
+    df$score[na_muts] <- median_scores[as.matrix(df[na_muts, c("wt", "mut")])]
 
   } else if (na_value == "average") {
     df <- dplyr::group_by(df, .data$position)
     df <- dplyr::mutate(df, mean = mean(.data$score[.data$wt != .data$mut], na.rm = TRUE))
     df <- dplyr::ungroup(df)
-    df$score[is.na(df$score)] <- df$mean[is.na(df$score)]
+    df$score[na_muts] <- df$mean[na_muts]
     df <- dplyr::select(df, -.data$mean)
 
   } else if (is.matrix(na_value)) {
-    if (!(rownames(na_value) == amino_acids & colnames(na_value) == na_value)) {
+    if (!(rownames(na_value) == amino_acids & colnames(na_value) == amino_acids)) {
       stop("na_value must have rows and column names corresponding to the amino acids (A, C, D, etc.)")
     }
 
@@ -76,17 +79,19 @@ impute <- function(x, na_value="impute") {
       stop("The imputation matrix must be numeric and contain no NA values")
     }
 
-    df$score[is.na(df$score)] <- na_value[as.matrix(df[is.na(df$score), c("wt", "mut")])]
+    df$score[na_muts] <- na_value[as.matrix(df[na_muts, c("wt", "mut")])]
 
   } else if (length(na_value) == 1 & is.numeric(na_value)) {
-    df$score[is.na(df$score)] <- na_value
+    df$score[na_muts] <- na_value
 
   } else {
-    stop("na_value must be 'impute', a correctly formatted matrix or a single numeric value")
+    stop("na_value must be 'impute', 'average', a correctly formatted matrix or a single numeric value")
   }
 
+  # Stop imputation not supported currently
+  
   df <- tidyr::pivot_wider(df, names_from = "mut", values_from = "score")
-  df <- dplyr::bind_cols(df, dplyr::select(mask, dplyr::starts_with("impute_")))
+  df <- dplyr::bind_cols(df, dplyr::select(mask, dplyr::starts_with("impute_"), -.data$impute_stop))
   x$data <- df
   x$imputed <- TRUE
   return(x)

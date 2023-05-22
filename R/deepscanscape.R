@@ -45,8 +45,6 @@
 NULL
 #>NULL
 
-# TODO - TESTS!
-# TODO - Add examples to all functions
+# TODO - Add more tests
 # TODO - Add vignettes
-# TODO - Add to documentation - values, description, details, authour etc.
-# TODO - consistency of cluster/subtype
+# TODO - Add to documentation - example, values, description, details, authour etc.

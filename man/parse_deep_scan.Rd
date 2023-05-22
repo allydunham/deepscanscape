@@ -10,6 +10,7 @@ parse_deep_scan(
   position_offset = 0,
   duplicates = c("warn", "mean", "median", "error"),
   synonymous = c("=", "sym"),
+  stop_codons = c("*", "Ter", "ter", "stop"),
   ...
 )
 }
@@ -22,7 +23,9 @@ parse_deep_scan(
 
 \item{duplicates}{How to handle duplicate scores for a single mutation}
 
-\item{synonymous}{Character vector of strings to consider as synonymous variants}
+\item{synonymous}{Character vector of strings to consider as synonymous variants. Amino acid letters are silently filtered}
+
+\item{stop_codons}{Character vector of strings to consider as stop codons. Amino acid letters are silently filtered}
 
 \item{...}{Arguments passed to the chosen parsing function, including specifying parsing for multiply mutated
 sequences (see individual methods for details).}

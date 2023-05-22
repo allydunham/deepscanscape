@@ -44,12 +44,12 @@ plot_er_heatmap <- function(x) {
 
   x <- validate_deep_mutational_scan(x)
 
-  df <- tidyr::pivot_longer(x$data[c("name", "position", "wt", amino_acids)],
-                            cols = .data$A:.data$Y, names_to = "mut", values_to = "er")
-  means <- dplyr::summarise(dplyr::group_by(df, .data$name, .data$position, .data$wt),
-                            er = mean(.data$er), mut = "Mean", .groups = "drop")
+  df <- tidyr::pivot_longer(x$data[c("name", "position", "wt", amino_acids, "stop")],
+                            cols = .data$A:.data$stop, names_to = "mut", values_to = "er")
+  means <- dplyr::summarise(dplyr::group_by(df[!df$mut == "stop",], .data$name, .data$position, .data$wt),
+                            er = mean(.data$er), mut = "mean", .groups = "drop")
   df <- dplyr::bind_rows(df, means)
-  df$mut <- factor(df$mut, levels = c(amino_acids, "", "Mean"))
+  df$mut <- factor(df$mut, levels = c(amino_acids, "gap1", "mean", "gap2", "stop"))
 
   limit <- rep(max(abs(df$er)), 2) * c(-1, 1)
   p <- ggplot2::ggplot(mapping = ggplot2::aes(x = .data$position, y = as.integer(.data$mut), fill = .data$er)) +
@@ -58,7 +58,7 @@ plot_er_heatmap <- function(x) {
     ggplot2::scale_fill_distiller(name = "ER", limits = limit, type = "div", palette = "RdBu", direction = 1) +
     ggplot2::scale_colour_manual(name = "", values = c(WT = "black")) +
     ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(fill = "white"))) +
-    ggplot2::scale_y_continuous(breaks = 1:22, labels = c(amino_acids, "", "Mean")) +
+    ggplot2::scale_y_continuous(breaks = 1:24, labels = c(amino_acids, "", "Mean", "", "Early Stop")) +
     ggplot2::labs(x = "Position", y = "") +
     theme_deepscanscape() +
     ggplot2::theme(panel.grid.major.y = ggplot2::element_blank(),
