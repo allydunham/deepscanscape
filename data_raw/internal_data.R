@@ -13,7 +13,7 @@ aa_3_to_1 <- c(ala = "A", arg = "R", asn = "N", asp = "D", cys = "C", gln = "Q",
                met = "M", phe = "F", pro = "P", ser = "S", thr = "T", trp = "W",
                tyr = "Y", val = "V", sec = "U", pyl = "O", asx = "B", xle = "J",
                glx = "Z", xaa = "X", ter = "*", stop = "*", sym = "=", "*" = "*", 
-               "=" = "=")
+               '=' = "=")
 
 # aa_1_to_3 <- c(A = "ala", R = "arg", N = "asn", D = "asp", C = "cys", Q = "gln",
 #                E = "glu", G = "gly", H = "his", I = "ile", L = "leu", K = "lys",

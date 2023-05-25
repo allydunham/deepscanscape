@@ -7,7 +7,7 @@
 parse_mavedb(x, score_col = "score", average_multi = FALSE, ...)
 }
 \arguments{
-\item{x}{A data frame with a column 'hgvs_pro' gicing the HGVS protein mutation string describing the variant(s) and
+\item{x}{A data frame with a column 'hgvs_pro' giving the HGVS protein mutation string describing the variant(s) and
 a fitness score column ('score' by default).}
 
 \item{score_col}{String. Column containing fitness scores, to conveniently use an additional data column as the score
@@ -25,4 +25,11 @@ A long format \code{\link[tibble]{tibble}} with columns specifying 'position', '
 Parse data downloaded from \href{mavedb.org}{MaveDB}, including averaging across multiply mutated sequences.
 Usually called internally by\code{\link{parse_deep_scan}} but is exposed to help users get their input into the
 correct format.
+}
+\details{
+\code{\link{deep_mutational_scan}} objects support missense, synonymous and nonsense mutations, which will all be
+imported from the MaveDB data as long as the HGVS protein variants are correctly formatted. Missense variants should
+be listed in three letter code form (p.Asp12Glu). Synonymous variants can be in this form or the mutant replaced with
+'=' or 'Sym' (p.Asp12=). Nonsense variants can be marked with 'Ter' or '\*' (p.Asp12Ter/p.Asp12\*). Frameshifts and 
+indels are not supported and will be silently discarded.
 }
